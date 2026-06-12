@@ -67,12 +67,21 @@ Plans:
   4. SPY/QQQ market regime states are configurable, tested, and do not force blanket liquidation.
 
 **Plans**: 4 plans
-
 Plans:
+**Wave 1**
 
 - [ ] 02-01: Verify current LEAN APIs and establish QuantConnect integration conventions.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 02-02: Dynamic universe selection and data-quality pipeline.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 02-03: SymbolData lifecycle and required indicator readiness.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 02-04: SPY/QQQ market regime and regime tests.
 
 ### Phase 3: Trend Pullback
