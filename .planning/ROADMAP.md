@@ -13,7 +13,7 @@ Dahan MarketPilot v1 is planned as a safety-first sequence. The project starts w
 
 - [x] **Phase 1: Foundation and Safety** - Repository foundation, licensing, paper-only guard, configuration, domain models, tests, and minimal non-trading app surfaces. (completed 2026-06-12)
 - [x] **Phase 2: QuantConnect Foundation and Universe** - Verify current LEAN APIs, add dynamic universe, data quality, SymbolData lifecycle, indicators, and market regime. (completed 2026-06-13)
-- [ ] **Phase 3: Trend Pullback** - Implement and test the Trend Pullback setup with evidence, rejections, scoring components, and explanations.
+- [x] **Phase 3: Trend Pullback** - Implement and test the Trend Pullback setup with evidence, rejections, scoring components, and explanations. (completed 2026-06-13)
 - [ ] **Phase 4: Volume Breakout** - Implement and test prior-resistance breakout logic with current-bar exclusion and volume confirmation.
 - [ ] **Phase 5: Relative Strength and Unified Scoring** - Implement Relative Strength Leader, candidate ranking, MarketPilot Score, classification, confidence, and setup comparison.
 - [ ] **Phase 6: Portfolio Risk and Order Lifecycle** - Add portfolio constraints, sizing, order state, stops, targets, exits, restart state, and notification-domain events.
@@ -100,15 +100,15 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 03-01: Trend Pullback rule contract and fixture design.
+- [x] 03-01: Trend Pullback rule contract and fixture design.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 03-02: Trend Pullback detection, rejection, and evidence generation.
+- [x] 03-02: Trend Pullback detection, rejection, and evidence generation.
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 03-03: Trend Pullback scoring components, explanations, and tests.
+- [x] 03-03: Trend Pullback scoring components, explanations, and tests.
 
 ### Phase 4: Volume Breakout
 
@@ -266,7 +266,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 |-------|----------------|--------|-----------|
 | 1. Foundation and Safety | 4/4 | Complete    | 2026-06-12 |
 | 2. QuantConnect Foundation and Universe | 4/4 | Complete | 2026-06-13 |
-| 3. Trend Pullback | 0/3 | Not started | - |
+| 3. Trend Pullback | 3/3 | Complete | 2026-06-13 |
 | 4. Volume Breakout | 0/3 | Not started | - |
 | 5. Relative Strength and Unified Scoring | 0/3 | Not started | - |
 | 6. Portfolio Risk and Order Lifecycle | 0/5 | Not started | - |
