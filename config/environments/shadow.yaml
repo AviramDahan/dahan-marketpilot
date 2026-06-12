@@ -1,0 +1,12 @@
+environment:
+  name: shadow
+  paper_trading_only: true
+  live_money_enabled: false
+  real_broker_enabled: false
+  starting_budget_nis: 100000
+  initial_usd_ils_rate: 3.7
+  starting_cash_usd: 27027.027027
+  trading_currency: USD
+  display_currency: NIS
+  fx_rate_timestamp: "2026-06-12T00:00:00Z"
+  fx_rate_source: "manual launch seed"

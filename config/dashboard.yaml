@@ -1,0 +1,7 @@
+dashboard:
+  paper_trading_only: true
+  read_only: true
+  manual_order_controls_enabled: false
+  display_currency: NIS
+  trading_currency: USD
+  no_live_data_connected: true

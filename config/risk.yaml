@@ -1,0 +1,11 @@
+risk:
+  paper_trading_only: true
+  leverage_allowed: false
+  margin_allowed: false
+  short_selling_allowed: false
+  options_allowed: false
+  futures_allowed: false
+  cryptocurrency_allowed: false
+  forex_allowed: false
+  max_open_positions: 0
+  notes: "Risk rules are placeholders for safe validation only in Phase 1."
