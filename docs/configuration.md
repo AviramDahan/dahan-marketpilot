@@ -1,7 +1,8 @@
 # Configuration
 
-Configuration must fail closed. Any attempt to disable the paper-only boundary
-or add real-money trading capability must be rejected.
+Configuration must fail closed. Any attempt to disable the paper-only boundary,
+including `PAPER_TRADING_ONLY`, or add real-money trading capability must be
+rejected.
 
 Planned Phase 1 configuration files:
 
@@ -37,3 +38,20 @@ must be visible to users.
 Unsafe keys such as real broker settings, live-money flags, leverage, margin,
 short selling, options, futures, cryptocurrency, Forex, and manual order
 controls must fail validation.
+
+## Foundational Models
+
+Phase 1 introduces safe foundational model concepts only:
+
+- `TradingMode`
+- `EnvironmentName`
+- `CurrencyCode`
+- `Money`
+- `FxSeed`
+- `SafetyStatus`
+- `ReadOnlyStatus`
+- `ValidationIssue`
+
+These models support configuration, safety display, and validation messages.
+Strategy entries, candidate scoring, execution lifecycle, active holdings, and
+portfolio state remain deferred to later phases.

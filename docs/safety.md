@@ -20,9 +20,8 @@ Disallowed features:
 QuantConnect is the source of truth for simulated cash, portfolio equity,
 holdings, open positions, orders, fills, Paper Trading state, algorithm status,
 and QuantConnect Backtest results. Render must remain read-only and must not
-maintain authoritative active portfolio state. Telegram is a notification
-channel only; Telegram delivery failures must not control or block trading
-safety logic.
+maintain authoritative active portfolio state. Telegram is a notification channel only;
+Telegram delivery failures must not control or block trading safety logic.
 
 Credentials and secrets must never appear in source files, logs, tests, reports,
 planning artifacts, documentation examples, or chat. Use approved secret stores
