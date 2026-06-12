@@ -32,6 +32,8 @@ Current Phase 1 suites:
 - `tests/test_quantconnect_verification_docs.py`
 - `tests/test_data_quality.py`
 - `tests/test_universe.py`
+- `tests/test_indicators.py`
+- `tests/test_symbol_data.py`
 
 QuantConnect verification contracts are documented in
 `docs/quantconnect_verification.md`.
@@ -64,3 +66,7 @@ Phase 2 universe tests use offline fixtures only. They verify strict
 data-quality rejection, accepted/rejected counts, additions, removals, sector
 distribution, and QuantConnect API contract documentation without importing
 QuantConnect runtime modules.
+
+Phase 2 indicator and SymbolData tests verify readiness-first behavior,
+invalid-data rejection, cleanup for removed symbols, and no strategy signal or
+order behavior.

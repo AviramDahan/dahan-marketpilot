@@ -1,0 +1,16 @@
+indicators:
+  paper_trading_only: true
+  ema_periods: [8, 20, 50, 200]
+  rsi_period: 14
+  macd:
+    fast_period: 12
+    slow_period: 26
+    signal_period: 9
+  roc_periods: [20, 60]
+  atr_period: 14
+  average_volume_periods: [20, 50]
+  average_dollar_volume_periods: [20, 50]
+  relative_strength_windows: [20, 60]
+  week_52_high_distance:
+    trading_days: 252
+
