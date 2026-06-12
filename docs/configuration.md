@@ -14,6 +14,10 @@ Planned Phase 1 configuration files:
 - `config/environments/shadow.yaml`
 - `config/environments/paper.yaml`
 
+Phase 2 adds:
+
+- `config/universe.yaml`
+
 Required safety and FX seed keys include:
 
 - `paper_trading_only: true`
@@ -55,3 +59,21 @@ Phase 1 introduces safe foundational model concepts only:
 These models support configuration, safety display, and validation messages.
 Strategy entries, candidate scoring, execution lifecycle, active holdings, and
 portfolio state remain deferred to later phases.
+
+## Universe Configuration
+
+`config/universe.yaml` is a Phase 2 offline filtering contract. Required keys
+include:
+
+- `paper_trading_only: true`
+- `common_equity_only: true`
+- `min_price_usd: 5`
+- `min_history_bars: 250`
+- `min_average_volume_20: 500000`
+- `min_average_dollar_volume_20: 20000000`
+- `min_market_cap_usd`
+- exclusions for ETF, ADR, OTC, preferred shares, warrants, stale data,
+  critical missing data, and unsupported securities
+
+Universe configuration does not authorize strategy signals, scoring, orders,
+portfolio state, broker settings, or credentials.

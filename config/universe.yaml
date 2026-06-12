@@ -1,0 +1,19 @@
+universe:
+  paper_trading_only: true
+  common_equity_only: true
+  min_price_usd: 5
+  min_history_bars: 250
+  min_average_volume_20: 500000
+  min_average_dollar_volume_20: 20000000
+  min_market_cap_usd: 1000000000
+  reject_stale_after_days: 5
+  exclusions:
+    etf: true
+    adr: true
+    otc: true
+    preferred_share: true
+    warrant: true
+    stale_data: true
+    critical_missing_data: true
+    unsupported_security: true
+

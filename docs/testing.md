@@ -30,6 +30,8 @@ Current Phase 1 suites:
 - `tests/test_lean_static_safety.py`
 - `tests/test_dashboard.py`
 - `tests/test_quantconnect_verification_docs.py`
+- `tests/test_data_quality.py`
+- `tests/test_universe.py`
 
 QuantConnect verification contracts are documented in
 `docs/quantconnect_verification.md`.
@@ -57,3 +59,8 @@ connect to QuantConnect, Render, Telegram, brokers, or live market data.
 Phase 1 does not test strategy signals, order lifecycle, portfolio state,
 Telegram delivery, Render deployment, QuantConnect Paper Trading, or real
 market data access.
+
+Phase 2 universe tests use offline fixtures only. They verify strict
+data-quality rejection, accepted/rejected counts, additions, removals, sector
+distribution, and QuantConnect API contract documentation without importing
+QuantConnect runtime modules.
