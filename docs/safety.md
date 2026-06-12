@@ -23,6 +23,12 @@ and QuantConnect Backtest results. Render must remain read-only and must not
 maintain authoritative active portfolio state. Telegram is a notification channel only;
 Telegram delivery failures must not control or block trading safety logic.
 
+Phase 2 QuantConnect verification is documented in
+`docs/quantconnect_verification.md`. That verification may reference LEAN CLI
+and Cloud API documentation, but it does not authorize repository credentials,
+broker settings, cloud backtest execution, Paper Trading deployment, or live
+deployment.
+
 Credentials and secrets must never appear in source files, logs, tests, reports,
 planning artifacts, documentation examples, or chat. Use approved secret stores
 for QuantConnect, GitHub Actions, Telegram, Render, and dashboard secrets.

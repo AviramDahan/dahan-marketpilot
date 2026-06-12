@@ -1,6 +1,6 @@
 # Testing
 
-Phase 1 tests are deterministic and offline.
+Phase 1 and Phase 2 tests are deterministic and offline.
 
 Run the local suite with:
 
@@ -29,6 +29,10 @@ Current Phase 1 suites:
 - `tests/test_project_files.py`
 - `tests/test_lean_static_safety.py`
 - `tests/test_dashboard.py`
+- `tests/test_quantconnect_verification_docs.py`
+
+QuantConnect verification contracts are documented in
+`docs/quantconnect_verification.md`.
 
 LEAN compile verification is external and may require Docker, the LEAN CLI,
 `lean login`, `lean init`, and QuantConnect organization access. When available,
@@ -38,7 +42,8 @@ run:
 lean build
 ```
 
-Do not store credentials in this repository.
+If LEAN prerequisites are unavailable, record the check as not run. Do not store
+credentials in this repository or paste them into chat.
 
 The local dashboard preview is optional and must remain local-only:
 

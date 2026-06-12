@@ -14,7 +14,7 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements-dev.txt
 ```
 
-Phase 1 tests are offline and must not require QuantConnect, Telegram, Render,
+Phase 1 and Phase 2 tests are offline and must not require QuantConnect, Telegram, Render,
 broker credentials, internet, or real market access.
 
 ## Secrets
@@ -25,18 +25,22 @@ Use approved secret stores when later phases require them.
 
 ## LEAN Prerequisites
 
-Later QuantConnect verification may require Docker, the LEAN CLI, `lean login`,
-`lean init`, and QuantConnect organization access. These are external user
-setup actions. Keep credentials outside the repository.
+QuantConnect verification contracts are documented in
+`docs/quantconnect_verification.md`.
 
-When prerequisites are available, the Phase 1 external compile check is:
+External LEAN verification may require Docker, the LEAN CLI, `lean login`,
+`lean init`, and QuantConnect organization access. These are user setup actions.
+Keep credentials outside the repository and outside chat.
+
+When prerequisites are available, the external compile check is:
 
 ```powershell
 lean build
 ```
 
-Run it only from a properly initialized LEAN workspace. Do not store
-QuantConnect credentials in repository files.
+Run it only from a properly initialized LEAN workspace. If prerequisites are
+missing, record the check as not run. Do not store QuantConnect credentials in
+repository files.
 
 ## Local Dashboard Preview
 

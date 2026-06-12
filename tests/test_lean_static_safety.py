@@ -15,6 +15,8 @@ FORBIDDEN_METHODS = [
     "Liquidate",
     "SetBrokerageModel",
     "AddUniverse",
+    "CloudLive",
+    "LiveMode",
 ]
 
 
