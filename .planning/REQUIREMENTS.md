@@ -24,7 +24,7 @@
 
 ### QuantConnect Architecture
 
-- [ ] **QC-01**: A minimal non-trading `QCAlgorithm` compiles without submitting stock orders.
+- [x] **QC-01**: A minimal non-trading `QCAlgorithm` compiles without submitting stock orders.
 - [ ] **QC-02**: Current official QuantConnect LEAN and Cloud APIs are verified before implementation code uses them.
 - [ ] **QC-03**: QuantConnect remains authoritative for simulated cash, portfolio equity, holdings, open positions, orders, fills, Paper Trading state, algorithm status, Paper Trading performance, and QuantConnect Backtest results.
 - [ ] **QC-04**: LEAN CLI workflows are documented for sync, cloud backtest, and result retrieval without exposing credentials.
@@ -152,7 +152,7 @@ Deferred to future releases and not part of the v1 roadmap:
 | CFG-03 | Phase 1 | Complete |
 | CFG-04 | Phase 1 | Complete |
 | CFG-05 | Phase 1 | Complete |
-| QC-01 | Phase 1 | Pending |
+| QC-01 | Phase 1 | Complete |
 | QC-02 | Phase 2 | Pending |
 | QC-03 | Phase 2 | Pending |
 | QC-04 | Phase 2 | Pending |

@@ -11,7 +11,7 @@ Dahan MarketPilot v1 is planned as a safety-first sequence. The project starts w
 - Integer phases (1, 2, 3): Planned milestone work.
 - Decimal phases (2.1, 2.2): Urgent insertions if needed later.
 
-- [ ] **Phase 1: Foundation and Safety** - Repository foundation, licensing, paper-only guard, configuration, domain models, tests, and minimal non-trading app surfaces.
+- [x] **Phase 1: Foundation and Safety** - Repository foundation, licensing, paper-only guard, configuration, domain models, tests, and minimal non-trading app surfaces. (completed 2026-06-12)
 - [ ] **Phase 2: QuantConnect Foundation and Universe** - Verify current LEAN APIs, add dynamic universe, data quality, SymbolData lifecycle, indicators, and market regime.
 - [ ] **Phase 3: Trend Pullback** - Implement and test the Trend Pullback setup with evidence, rejections, scoring components, and explanations.
 - [ ] **Phase 4: Volume Breakout** - Implement and test prior-resistance breakout logic with current-bar exclusion and volume confirmation.
@@ -52,7 +52,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 01-04: Minimal non-trading QuantConnect and Streamlit foundations with no order controls.
+- [x] 01-04: Minimal non-trading QuantConnect and Streamlit foundations with no order controls.
 
 ### Phase 2: QuantConnect Foundation and Universe
 
@@ -249,7 +249,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and Safety | 3/4 | In Progress|  |
+| 1. Foundation and Safety | 4/4 | Complete   | 2026-06-12 |
 | 2. QuantConnect Foundation and Universe | 0/4 | Not started | - |
 | 3. Trend Pullback | 0/3 | Not started | - |
 | 4. Volume Breakout | 0/3 | Not started | - |
