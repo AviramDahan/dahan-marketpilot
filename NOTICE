@@ -1,0 +1,10 @@
+Dahan MarketPilot
+Copyright (c) 2026 Dahan MarketPilot contributors
+
+Dahan MarketPilot source code is licensed under the MIT License unless a file
+states otherwise.
+
+No third-party source code has been directly copied into this repository yet.
+Dependencies, examples, snippets, or substantial logic reused later must be
+recorded in THIRD_PARTY_NOTICES.md before or in the same commit that introduces
+the reuse.

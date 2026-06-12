@@ -15,6 +15,10 @@ The user has approved commits starting after the initial planning setup. From th
 
 For AI handoff and synchronization rules, read `docs/AI-COLLABORATION.md` before phase work or when resuming a partially completed task.
 
+When asking the user to choose between technical options, include a "You choose" option when it is reasonable for the AI agent to decide based on project context.
+
+The project source is MIT licensed. No third-party source code has been directly copied yet. Before copying or substantially adapting third-party code, update `NOTICE`, `THIRD_PARTY_NOTICES.md`, and the relevant docs in the same change.
+
 Communication with the user must be in Hebrew. All source code, identifiers, file names, configuration keys, tests, technical documentation, commit messages, GSD planning artifacts, and project files must be written in English.
 
 Verify current official QuantConnect APIs before using them. Verify external package legitimacy before adding dependencies. Never invent QuantConnect APIs, LEAN classes, Cloud API endpoints, package behavior, or tutorial details.

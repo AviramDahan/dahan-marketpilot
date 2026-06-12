@@ -61,6 +61,20 @@ Before committing:
 
 Do not commit secrets, generated fake performance data, fake portfolio data, or unverified claims.
 
+## User Choice Style
+
+When asking the user to choose between technical options, include a `You choose`
+option when it is reasonable for the AI agent to decide based on project
+context. Use that option for low-risk implementation details where the user has
+said they may not know which option is best.
+
+## Licensing And Attribution
+
+Dahan MarketPilot source code is MIT licensed unless a file states otherwise.
+No third-party source code has been directly copied yet. Before copying or
+substantially adapting third-party code, update `NOTICE`,
+`THIRD_PARTY_NOTICES.md`, and relevant documentation in the same change.
+
 ## Safety Rules That Must Stay Visible
 
 - The product is simulated Paper Trading only.
