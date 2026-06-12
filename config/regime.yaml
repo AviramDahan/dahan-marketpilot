@@ -1,0 +1,22 @@
+regime:
+  paper_trading_only: true
+  benchmark_symbols: [SPY, QQQ]
+  required_indicators:
+    ema_periods: [20, 50, 200]
+    slope_windows: [20, 60]
+    return_windows: [20, 60]
+  thresholds:
+    risk_on:
+      min_benchmarks_above_ema200: 2
+      min_benchmarks_positive_20_day_return: 2
+      min_benchmarks_positive_60_day_return: 1
+    risk_off:
+      max_benchmarks_above_ema200: 0
+      max_benchmarks_positive_20_day_return: 0
+      max_benchmarks_positive_60_day_return: 0
+    neutral:
+      default: true
+  entry_gate_only: true
+  liquidate_on_risk_off: false
+  override_exits: false
+

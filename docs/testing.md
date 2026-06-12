@@ -34,6 +34,7 @@ Current Phase 1 suites:
 - `tests/test_universe.py`
 - `tests/test_indicators.py`
 - `tests/test_symbol_data.py`
+- `tests/test_regime.py`
 
 QuantConnect verification contracts are documented in
 `docs/quantconnect_verification.md`.
@@ -70,3 +71,7 @@ QuantConnect runtime modules.
 Phase 2 indicator and SymbolData tests verify readiness-first behavior,
 invalid-data rejection, cleanup for removed symbols, and no strategy signal or
 order behavior.
+
+Phase 2 regime tests verify SPY/QQQ RISK_ON, NEUTRAL, and RISK_OFF
+classification, transition detection, unchanged-state suppression, unready or
+missing benchmark rejection, and entry-gate-only behavior.

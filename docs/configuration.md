@@ -17,6 +17,8 @@ Planned Phase 1 configuration files:
 Phase 2 adds:
 
 - `config/universe.yaml`
+- `config/indicators.yaml`
+- `config/regime.yaml`
 
 Required safety and FX seed keys include:
 
@@ -77,3 +79,22 @@ include:
 
 Universe configuration does not authorize strategy signals, scoring, orders,
 portfolio state, broker settings, or credentials.
+
+## Indicator Configuration
+
+`config/indicators.yaml` defines EMA8/20/50/200, RSI14, MACD 12/26/9, ROC20/60,
+ATR14, average volume 20/50, average dollar volume 20/50, relative strength
+20/60, and 52-week high distance settings for offline readiness checks.
+
+## Market Regime Configuration
+
+`config/regime.yaml` defines SPY/QQQ benchmark inputs, EMA20/EMA50/EMA200
+requirements, slope windows, 20-day and 60-day returns, RISK_ON/RISK_OFF/NEUTRAL
+thresholds, and explicit safety boundaries:
+
+- `entry_gate_only: true`
+- `liquidate_on_risk_off: false`
+- `override_exits: false`
+
+Regime configuration does not add order routing, forced exits, or Telegram
+delivery.
