@@ -97,11 +97,17 @@ Plans:
   4. Unit tests cover triggers, recovery behavior, and rejection conditions.
 
 **Plans**: 3 plans
-
 Plans:
+**Wave 1**
 
 - [ ] 03-01: Trend Pullback rule contract and fixture design.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 03-02: Trend Pullback detection, rejection, and evidence generation.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 03-03: Trend Pullback scoring components, explanations, and tests.
 
 ### Phase 4: Volume Breakout
