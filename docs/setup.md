@@ -28,3 +28,25 @@ Use approved secret stores when later phases require them.
 Later QuantConnect verification may require Docker, the LEAN CLI, `lean login`,
 `lean init`, and QuantConnect organization access. These are external user
 setup actions. Keep credentials outside the repository.
+
+When prerequisites are available, the Phase 1 external compile check is:
+
+```powershell
+lean build
+```
+
+Run it only from a properly initialized LEAN workspace. Do not store
+QuantConnect credentials in repository files.
+
+## Local Dashboard Preview
+
+The Phase 1 dashboard is a local-only Streamlit shell. It does not connect to
+QuantConnect, Render, Telegram, brokers, or live market data.
+
+If Streamlit is installed in the local environment, preview it with:
+
+```powershell
+streamlit run dashboard/app.py
+```
+
+The shell must display `No live data connected`.

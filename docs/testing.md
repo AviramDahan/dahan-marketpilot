@@ -27,11 +27,27 @@ Current Phase 1 suites:
 - `tests/test_configuration.py`
 - `tests/test_models.py`
 - `tests/test_project_files.py`
+- `tests/test_lean_static_safety.py`
+- `tests/test_dashboard.py`
 
 LEAN compile verification is external and may require Docker, the LEAN CLI,
 `lean login`, `lean init`, and QuantConnect organization access. When available,
-use the documented LEAN compile command from the relevant phase summary. Do not
-store credentials in this repository.
+run:
+
+```powershell
+lean build
+```
+
+Do not store credentials in this repository.
+
+The local dashboard preview is optional and must remain local-only:
+
+```powershell
+streamlit run dashboard/app.py
+```
+
+The Phase 1 dashboard shell must display `No live data connected` and must not
+connect to QuantConnect, Render, Telegram, brokers, or live market data.
 
 Phase 1 does not test strategy signals, order lifecycle, portfolio state,
 Telegram delivery, Render deployment, QuantConnect Paper Trading, or real
