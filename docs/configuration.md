@@ -20,6 +20,10 @@ Phase 2 adds:
 - `config/indicators.yaml`
 - `config/regime.yaml`
 
+Phase 3 adds:
+
+- `config/trend_pullback.yaml`
+
 Required safety and FX seed keys include:
 
 - `paper_trading_only: true`
@@ -97,4 +101,15 @@ thresholds, and explicit safety boundaries:
 - `override_exits: false`
 
 Regime configuration does not add order routing, forced exits, or Telegram
+delivery.
+
+## Trend Pullback Configuration
+
+`config/trend_pullback.yaml` defines the Phase 3 Trend Pullback setup contract.
+It uses completed daily bars only, defaults to a 2-10 completed-bar pullback
+window, checks EMA20/EMA50 proximity, requires recovery above the prior
+completed bar high, and keeps reward/risk as a minimal proxy.
+
+The config explicitly disables intrabar validity, order creation, portfolio
+sizing, BUY/WATCH/AVOID classifications, backtest result creation, and Telegram
 delivery.

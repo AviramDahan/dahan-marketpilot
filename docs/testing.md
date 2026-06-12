@@ -35,6 +35,7 @@ Current Phase 1 suites:
 - `tests/test_indicators.py`
 - `tests/test_symbol_data.py`
 - `tests/test_regime.py`
+- `tests/test_trend_pullback_contract.py`
 
 QuantConnect verification contracts are documented in
 `docs/quantconnect_verification.md`.
@@ -75,3 +76,7 @@ order behavior.
 Phase 2 regime tests verify SPY/QQQ RISK_ON, NEUTRAL, and RISK_OFF
 classification, transition detection, unchanged-state suppression, unready or
 missing benchmark rejection, and entry-gate-only behavior.
+
+Phase 3 Trend Pullback contract tests verify setup vocabulary, completed daily
+bar timing, configuration defaults, hard rejection reason coverage, and absence
+of order, classification, Telegram, live deployment, or fake backtest behavior.
