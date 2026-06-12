@@ -20,7 +20,7 @@
 - [x] **CFG-02**: Typed configuration validates strategy, risk, notifications, dashboard, and environment settings.
 - [x] **CFG-03**: Starting capital is configured from `starting_budget_nis`, `initial_usd_ils_rate`, `starting_cash_usd`, `trading_currency`, `display_currency`, `fx_rate_timestamp`, and `fx_rate_source`.
 - [x] **CFG-04**: FX logic displays current USD and NIS values without rewriting historical USD accounting, and warns when the FX rate is stale.
-- [ ] **CFG-05**: Domain models cover signals, scores, explanations, positions, orders, fills, exits, alerts, reports, and audit events.
+- [x] **CFG-05**: Domain models cover signals, scores, explanations, positions, orders, fills, exits, alerts, reports, and audit events.
 
 ### QuantConnect Architecture
 
@@ -151,7 +151,7 @@ Deferred to future releases and not part of the v1 roadmap:
 | CFG-02 | Phase 1 | Complete |
 | CFG-03 | Phase 1 | Complete |
 | CFG-04 | Phase 1 | Complete |
-| CFG-05 | Phase 1 | Pending |
+| CFG-05 | Phase 1 | Complete |
 | QC-01 | Phase 1 | Pending |
 | QC-02 | Phase 2 | Pending |
 | QC-03 | Phase 2 | Pending |
