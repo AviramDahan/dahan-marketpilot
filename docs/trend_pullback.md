@@ -33,6 +33,16 @@ There is no BUY, WATCH, or AVOID output. There are no orders, no portfolio
 sizing, no backtest result creation, no Telegram delivery, and no live
 deployment behavior in Phase 3.
 
+## Evidence And Explanations
+
+Trend Pullback evidence includes trend structure, pullback depth, recovery
+trigger state, volume support, RSI14 and MACD support, ATR/risk, minimal
+reward/risk proxy, readiness, regime, earnings-source verification state, and
+completed daily timing.
+
+These fields are evidence components only. They are not a MarketPilot Score,
+not a confidence score, not a rank, and not a trade instruction.
+
 ## Fixture Design
 
 Tests should use deterministic completed daily bar fixtures. Fixtures should
@@ -84,3 +94,10 @@ rejections.
 Earnings risk remains a deferred verified-source gate. Full MarketPilot Score
 belongs to Phase 5. Full stop/target/order lifecycle and position sizing belong
 to Phase 6. Backtests and activation gates belong to Phase 7.
+
+## Handoff Notes
+
+Phase 5 may consume Trend Pullback evidence when implementing full scoring and
+classifications. Phase 6 may replace the minimal reward/risk proxy with full
+stop, target, sizing, and order-lifecycle behavior. Phase 7 may validate Trend
+Pullback with realistic backtests and activation gates.
