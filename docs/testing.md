@@ -36,6 +36,8 @@ Current Phase 1 suites:
 - `tests/test_symbol_data.py`
 - `tests/test_regime.py`
 - `tests/test_trend_pullback_contract.py`
+- `tests/test_trend_pullback_detection.py`
+- `tests/test_trend_pullback_rejections.py`
 
 QuantConnect verification contracts are documented in
 `docs/quantconnect_verification.md`.
@@ -80,3 +82,9 @@ missing benchmark rejection, and entry-gate-only behavior.
 Phase 3 Trend Pullback contract tests verify setup vocabulary, completed daily
 bar timing, configuration defaults, hard rejection reason coverage, and absence
 of order, classification, Telegram, live deployment, or fake backtest behavior.
+
+Phase 3 Trend Pullback detection and rejection tests verify valid EMA20/EMA50
+pullbacks, close above prior completed bar high, RISK_OFF rejection,
+data-readiness rejection, EMA50 break rejection, pullback-window rejection,
+ATR/reward-risk rejection, weak recovery volume, deferred earnings risk, and
+completed daily-bar timing.
