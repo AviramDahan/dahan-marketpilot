@@ -7,8 +7,8 @@
 
 ### Safety And Compliance
 
-- [ ] **SAF-01**: The system rejects any configuration where `PAPER_TRADING_ONLY` is false.
-- [ ] **SAF-02**: The system rejects real broker configuration, real-money credentials, live-money order support, leverage, margin, short selling, options, futures, cryptocurrency, Forex, and dashboard order submission.
+- [x] **SAF-01**: The system rejects any configuration where `PAPER_TRADING_ONLY` is false.
+- [x] **SAF-02**: The system rejects real broker configuration, real-money credentials, live-money order support, leverage, margin, short selling, options, futures, cryptocurrency, Forex, and dashboard order submission.
 - [x] **SAF-03**: Every dashboard page and generated report displays `SIMULATED PAPER TRADING ONLY - NOT FINANCIAL ADVICE`.
 - [x] **SAF-04**: The repository includes `LICENSE`, `NOTICE`, `THIRD_PARTY_NOTICES.md`, and `DISCLAIMER.md` before release.
 - [x] **SAF-05**: Secrets and credentials never appear in source files, logs, tests, reports, planning artifacts, or chat instructions.
@@ -17,9 +17,9 @@
 ### Configuration And Foundation
 
 - [x] **CFG-01**: The repository has a Python project foundation with test configuration, dependency files, `.env.example`, `.gitignore`, and focused documentation.
-- [ ] **CFG-02**: Typed configuration validates strategy, risk, notifications, dashboard, and environment settings.
-- [ ] **CFG-03**: Starting capital is configured from `starting_budget_nis`, `initial_usd_ils_rate`, `starting_cash_usd`, `trading_currency`, `display_currency`, `fx_rate_timestamp`, and `fx_rate_source`.
-- [ ] **CFG-04**: FX logic displays current USD and NIS values without rewriting historical USD accounting, and warns when the FX rate is stale.
+- [x] **CFG-02**: Typed configuration validates strategy, risk, notifications, dashboard, and environment settings.
+- [x] **CFG-03**: Starting capital is configured from `starting_budget_nis`, `initial_usd_ils_rate`, `starting_cash_usd`, `trading_currency`, `display_currency`, `fx_rate_timestamp`, and `fx_rate_source`.
+- [x] **CFG-04**: FX logic displays current USD and NIS values without rewriting historical USD accounting, and warns when the FX rate is stale.
 - [ ] **CFG-05**: Domain models cover signals, scores, explanations, positions, orders, fills, exits, alerts, reports, and audit events.
 
 ### QuantConnect Architecture
@@ -141,16 +141,16 @@ Deferred to future releases and not part of the v1 roadmap:
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SAF-01 | Phase 1 | Pending |
-| SAF-02 | Phase 1 | Pending |
+| SAF-01 | Phase 1 | Complete |
+| SAF-02 | Phase 1 | Complete |
 | SAF-03 | Phase 1 | Complete |
 | SAF-04 | Phase 1 | Complete |
 | SAF-05 | Phase 1 | Complete |
 | SAF-06 | Phase 1 | Complete |
 | CFG-01 | Phase 1 | Complete |
-| CFG-02 | Phase 1 | Pending |
-| CFG-03 | Phase 1 | Pending |
-| CFG-04 | Phase 1 | Pending |
+| CFG-02 | Phase 1 | Complete |
+| CFG-03 | Phase 1 | Complete |
+| CFG-04 | Phase 1 | Complete |
 | CFG-05 | Phase 1 | Pending |
 | QC-01 | Phase 1 | Pending |
 | QC-02 | Phase 2 | Pending |

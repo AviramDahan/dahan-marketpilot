@@ -44,7 +44,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 01-02: Paper-only safety guard, typed configuration, FX seed configuration, and validation rules.
+- [x] 01-02: Paper-only safety guard, typed configuration, FX seed configuration, and validation rules.
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -249,7 +249,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and Safety | 1/4 | In Progress|  |
+| 1. Foundation and Safety | 2/4 | In Progress|  |
 | 2. QuantConnect Foundation and Universe | 0/4 | Not started | - |
 | 3. Trend Pullback | 0/3 | Not started | - |
 | 4. Volume Breakout | 0/3 | Not started | - |
