@@ -40,7 +40,7 @@ Dahan MarketPilot v1 is planned as a safety-first sequence. The project starts w
 Plans:
 **Wave 1**
 
-- [ ] 01-01: Repository, licensing, attribution, disclaimer, and project instruction foundation.
+- [x] 01-01: Repository, licensing, attribution, disclaimer, and project instruction foundation.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -249,7 +249,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and Safety | 0/4 | Not started | - |
+| 1. Foundation and Safety | 1/4 | In Progress|  |
 | 2. QuantConnect Foundation and Universe | 0/4 | Not started | - |
 | 3. Trend Pullback | 0/3 | Not started | - |
 | 4. Volume Breakout | 0/3 | Not started | - |
