@@ -12,7 +12,7 @@ Dahan MarketPilot v1 is planned as a safety-first sequence. The project starts w
 - Decimal phases (2.1, 2.2): Urgent insertions if needed later.
 
 - [x] **Phase 1: Foundation and Safety** - Repository foundation, licensing, paper-only guard, configuration, domain models, tests, and minimal non-trading app surfaces. (completed 2026-06-12)
-- [ ] **Phase 2: QuantConnect Foundation and Universe** - Verify current LEAN APIs, add dynamic universe, data quality, SymbolData lifecycle, indicators, and market regime.
+- [x] **Phase 2: QuantConnect Foundation and Universe** - Verify current LEAN APIs, add dynamic universe, data quality, SymbolData lifecycle, indicators, and market regime. (completed 2026-06-13)
 - [ ] **Phase 3: Trend Pullback** - Implement and test the Trend Pullback setup with evidence, rejections, scoring components, and explanations.
 - [ ] **Phase 4: Volume Breakout** - Implement and test prior-resistance breakout logic with current-bar exclusion and volume confirmation.
 - [ ] **Phase 5: Relative Strength and Unified Scoring** - Implement Relative Strength Leader, candidate ranking, MarketPilot Score, classification, confidence, and setup comparison.
@@ -70,19 +70,19 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 02-01: Verify current LEAN APIs and establish QuantConnect integration conventions.
+- [x] 02-01: Verify current LEAN APIs and establish QuantConnect integration conventions.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 02-02: Dynamic universe selection and data-quality pipeline.
+- [x] 02-02: Dynamic universe selection and data-quality pipeline.
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 02-03: SymbolData lifecycle and required indicator readiness.
+- [x] 02-03: SymbolData lifecycle and required indicator readiness.
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 02-04: SPY/QQQ market regime and regime tests.
+- [x] 02-04: SPY/QQQ market regime and regime tests.
 
 ### Phase 3: Trend Pullback
 
@@ -259,7 +259,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation and Safety | 4/4 | Complete    | 2026-06-12 |
-| 2. QuantConnect Foundation and Universe | 0/4 | Not started | - |
+| 2. QuantConnect Foundation and Universe | 4/4 | Complete | 2026-06-13 |
 | 3. Trend Pullback | 0/3 | Not started | - |
 | 4. Volume Breakout | 0/3 | Not started | - |
 | 5. Relative Strength and Unified Scoring | 0/3 | Not started | - |
