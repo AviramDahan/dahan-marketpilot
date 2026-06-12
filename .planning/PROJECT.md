@@ -14,12 +14,15 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 
 ### Validated
 
-(None yet - project is newly initialized and no product implementation has shipped.)
+- Phase 1 established repository foundation files, MIT licensing, attribution tracking, disclaimer, setup/config/testing docs, and AI collaboration instructions.
+- Phase 1 implemented central paper-only safety validation, safe YAML loading, FX seed calculation, and deterministic offline tests.
+- Phase 1 added safe foundational models and tests that protect required project safety files.
+- Phase 1 added a minimal non-trading QuantConnect shell and read-only dashboard shell with static safety tests.
 
 ### Active
 
-- [ ] Establish a repository foundation with licensing, attribution, disclaimer, AGENTS.md, and GSD planning context.
-- [ ] Enforce simulated Paper Trading only through central safety configuration and validation.
+- [x] Establish a repository foundation with licensing, attribution, disclaimer, AGENTS.md, and GSD planning context.
+- [x] Enforce simulated Paper Trading only through central safety configuration and validation.
 - [ ] Use QuantConnect LEAN and QuantConnect Cloud as the authoritative engine for backtests and Paper Trading state.
 - [ ] Build long-only daily-resolution US-equity swing strategies with dynamic universe selection, market regime controls, transparent scoring, and no look-ahead behavior.
 - [ ] Validate strategies with realistic backtesting, chronological validation, explicit fees/slippage, activation gates, and non-fabricated artifacts.
@@ -67,13 +70,14 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Use GSD for project planning and phased execution. | The user explicitly requested official GSD Core skills and a complete planning roadmap before implementation. | Pending execution |
-| Initialize a Git repository but create no commits. | GSD new-project expects Git initialization when none exists, while the user explicitly forbids commits unless requested. | Pending execution |
-| Store the master specification at `docs/Dahan-MarketPilot-Master-Spec.md`. | The user explicitly required this path and required the full specification, not a vague summary. | Pending execution |
-| Keep QuantConnect as paper portfolio source of truth. | Prevents Render, GitHub, CSV, JSON, SQLite, Excel, or local storage from becoming hidden live state. | Pending execution |
-| Keep Render read-only. | Prevents manual order entry or state mutation outside QuantConnect. | Pending execution |
-| Treat Telegram as non-authoritative notification infrastructure. | Alerts are important, but delivery failure must not stop trading-safety logic. | Pending execution |
-| Do not implement Phase 1 during initialization. | The user requested planning only and explicitly said to stop before Phase 1. | Active |
+| Use GSD for project planning and phased execution. | The user explicitly requested official GSD Core skills and a complete planning roadmap before implementation. | Active |
+| Initialize a Git repository and use focused commits after user approval. | The user approved commits after initial planning. | Active |
+| Store the master specification at `docs/Dahan-MarketPilot-Master-Spec.md`. | The user explicitly required this path and required the full specification, not a vague summary. | Active |
+| License Dahan MarketPilot source code as MIT. | Phase 1 selected MIT and added `LICENSE`, `NOTICE`, and `THIRD_PARTY_NOTICES.md`. | Active |
+| Keep QuantConnect as paper portfolio source of truth. | Prevents Render, GitHub, CSV, JSON, SQLite, Excel, or local storage from becoming hidden live state. | Active |
+| Keep Render read-only. | Prevents manual order entry or state mutation outside QuantConnect. | Active |
+| Treat Telegram as non-authoritative notification infrastructure. | Alerts are important, but delivery failure must not stop trading-safety logic. | Active |
+| Ask technical questions with a `You choose` option when the AI can safely decide. | The user requested this preference during Phase 1 discussion. | Active |
 
 ## External Actions Required Later
 
@@ -91,7 +95,6 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 
 ## Unresolved Decisions
 
-- Final project license for Dahan MarketPilot source code.
 - Exact QuantConnect subscription and Paper Trading Live Node requirements.
 - Exact QuantConnect Cloud API endpoints and permissions after implementation-phase verification.
 - Exact data export method from QuantConnect to the read-only dashboard.
@@ -111,4 +114,4 @@ After each phase:
 4. Refresh Context and Constraints if implementation reality changes.
 
 ---
-*Last updated: 2026-06-12 after initial GSD project initialization.*
+*Last updated: 2026-06-12 after Phase 1 completion and verification.*
