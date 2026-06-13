@@ -130,7 +130,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 04-02: Volume Breakout detection, rejection, and evidence generation.
+- [x] 04-02: Volume Breakout detection, rejection, and evidence generation.
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -273,7 +273,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 1. Foundation and Safety | 4/4 | Complete    | 2026-06-12 |
 | 2. QuantConnect Foundation and Universe | 4/4 | Complete | 2026-06-13 |
 | 3. Trend Pullback | 3/3 | Complete | 2026-06-13 |
-| 4. Volume Breakout | 1/3 | In Progress|  |
+| 4. Volume Breakout | 2/3 | In Progress|  |
 | 5. Relative Strength and Unified Scoring | 0/3 | Not started | - |
 | 6. Portfolio Risk and Order Lifecycle | 0/5 | Not started | - |
 | 7. Backtesting and Validation | 0/5 | Not started | - |
