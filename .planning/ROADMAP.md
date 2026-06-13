@@ -156,9 +156,17 @@ Plans:
 
 Plans:
 
-- [ ] 05-01: Relative Strength Leader setup and tests.
-- [ ] 05-02: Unified MarketPilot scoring, classifications, and confidence.
-- [ ] 05-03: Setup comparison, explanations, and Combined Swing readiness gate.
+**Wave 1**
+
+- [ ] 05-01-PLAN.md - Relative Strength Leader setup and tests.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 05-02-PLAN.md - Unified MarketPilot scoring, classifications, and confidence.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 05-03-PLAN.md - Setup comparison, explanations, and Combined Swing readiness gate.
 
 ### Phase 6: Portfolio Risk and Order Lifecycle
 
