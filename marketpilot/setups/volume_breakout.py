@@ -96,10 +96,11 @@ def evaluate_volume_breakout(
 
     resistance_config = active_config["resistance"]
     volume_config = active_config["volume"]
+    risk_config = active_config["risk"]
     lookback_bars = int(resistance_config["lookback_bars"])
     breakout_buffer_pct = float(resistance_config["breakout_buffer_pct"])
 
-    if len(bars) < lookback_bars + 1 or any(not bar.complete for bar in bars):
+    if len(bars) < lookback_bars + 1 or any(not bar.complete for bar in bars) or any(not _valid_bar_values(bar) for bar in bars):
         reasons.append(SetupRejectionReason.INCOMPLETE_COMPLETED_BAR_DATA)
     if not setup_input.symbol_data.future_signal_ready(REQUIRED_INDICATORS):
         reasons.append(SetupRejectionReason.DATA_NOT_READY)
@@ -119,6 +120,7 @@ def evaluate_volume_breakout(
 
     evidence.append(NumericEvidence("resistance_lookback_bars", lookback_bars, lookback_bars, prior_resistance is not None))
     evidence.append(NumericEvidence("breakout_buffer_pct", breakout_buffer_pct, "config", True))
+    evidence.append(NumericEvidence("regime", setup_input.regime.regime.value, "entry_allowed", setup_input.regime.future_entries_allowed))
 
     if prior_resistance is None:
         return _build_result(setup_input, signal_time, evidence, reasons)
@@ -142,6 +144,83 @@ def evaluate_volume_breakout(
     evidence.append(NumericEvidence("volume_ratio", round(volume_ratio, 4), volume_threshold, volume_ratio >= volume_threshold))
     if volume_ratio < volume_threshold:
         reasons.append(SetupRejectionReason.VOLUME_CONFIRMATION_WEAK)
+
+    ema20 = _indicator_value(setup_input.indicators, "EMA20")
+    max_ema20_extension_pct = float(risk_config["max_ema20_extension_pct"])
+    ema20_extension_pct = ((latest.close - ema20) / ema20) * 100 if _positive(ema20) else float("inf")
+    evidence.append(
+        NumericEvidence(
+            "ema20_extension_pct",
+            round(ema20_extension_pct, 4) if isfinite(ema20_extension_pct) else "invalid",
+            max_ema20_extension_pct,
+            isfinite(ema20_extension_pct) and ema20_extension_pct <= max_ema20_extension_pct,
+        )
+    )
+    if not isfinite(ema20_extension_pct) or ema20_extension_pct > max_ema20_extension_pct:
+        reasons.append(SetupRejectionReason.EMA20_EXTENSION_EXCESSIVE)
+
+    atr_pct = float(setup_input.atr_pct) if _numeric(setup_input.atr_pct) else float("inf")
+    max_atr_pct = float(risk_config["max_atr_pct"])
+    evidence.append(
+        NumericEvidence(
+            "atr_pct",
+            round(atr_pct, 4) if isfinite(atr_pct) else "invalid",
+            max_atr_pct,
+            isfinite(atr_pct) and 0 < atr_pct <= max_atr_pct,
+        )
+    )
+    if not isfinite(atr_pct) or atr_pct <= 0 or atr_pct > max_atr_pct:
+        reasons.append(SetupRejectionReason.EXCESSIVE_ATR)
+
+    min_dollar_volume = float(volume_config["min_dollar_volume"])
+    average_dollar_volume_ok = _positive(setup_input.average_dollar_volume) and float(setup_input.average_dollar_volume) >= min_dollar_volume
+    evidence.append(
+        NumericEvidence(
+            "average_dollar_volume",
+            setup_input.average_dollar_volume,
+            min_dollar_volume,
+            average_dollar_volume_ok,
+        )
+    )
+    if not average_dollar_volume_ok:
+        reasons.append(SetupRejectionReason.INSUFFICIENT_DOLLAR_VOLUME)
+
+    projected_target = float(setup_input.projected_target) if _numeric(setup_input.projected_target) else float("nan")
+    evidence.append(
+        NumericEvidence(
+            "projected_target",
+            round(projected_target, 4) if isfinite(projected_target) else "invalid",
+            "setup_evidence",
+            isfinite(projected_target) and projected_target > latest.close,
+        )
+    )
+    epsilon_config = risk_config.get("reward_risk_epsilon", 0.01)
+    epsilon = max(float(epsilon_config), 0.01) if _positive(epsilon_config) else 0.01
+    risk_per_share_proxy = max(latest.close - prior_resistance, epsilon)
+    reward_per_share_proxy = max(projected_target - latest.close, 0.0) if isfinite(projected_target) else 0.0
+    reward_risk_proxy = reward_per_share_proxy / risk_per_share_proxy
+    min_reward_risk_proxy = float(risk_config["min_reward_risk_proxy"])
+    evidence.extend(
+        [
+            NumericEvidence("risk_per_share_proxy", round(risk_per_share_proxy, 4), "latest.close - prior_resistance", True),
+            NumericEvidence("reward_per_share_proxy", round(reward_per_share_proxy, 4), "projected_target - latest.close", reward_per_share_proxy > 0),
+            NumericEvidence("reward_risk_proxy", round(reward_risk_proxy, 4), min_reward_risk_proxy, reward_risk_proxy >= min_reward_risk_proxy),
+        ]
+    )
+    if reward_risk_proxy < min_reward_risk_proxy:
+        reasons.append(SetupRejectionReason.WEAK_REWARD_RISK)
+
+    evidence.extend(
+        [
+            NumericEvidence("earnings_source_verified", setup_input.earnings_source_verified, "deferred_gate", None),
+            NumericEvidence("earnings_risk_conflict", setup_input.earnings_risk_conflict, "verified_explicit_input", not setup_input.earnings_risk_conflict),
+            NumericEvidence("portfolio_conflict", setup_input.portfolio_conflict, "explicit_input_only", setup_input.portfolio_conflict is not True),
+        ]
+    )
+    if setup_input.earnings_source_verified and setup_input.earnings_risk_conflict:
+        reasons.append(SetupRejectionReason.EARNINGS_RISK_CONFLICT)
+    if setup_input.portfolio_conflict is True:
+        reasons.append(SetupRejectionReason.PORTFOLIO_CONFLICT)
 
     return _build_result(setup_input, signal_time, evidence, reasons)
 
@@ -197,3 +276,21 @@ def _explain(status: SetupStatus, reasons: tuple[SetupRejectionReason, ...]) -> 
 
 def _positive(value: object) -> bool:
     return isinstance(value, (int, float)) and isfinite(float(value)) and float(value) > 0
+
+
+def _numeric(value: object) -> bool:
+    return isinstance(value, (int, float)) and isfinite(float(value))
+
+
+def _indicator_value(indicators: Mapping[str, IndicatorResult], name: str) -> float | None:
+    result = indicators.get(name)
+    if result is None or result.status is not ReadinessStatus.READY or result.value is None:
+        return None
+    if not _numeric(result.value):
+        return None
+    return float(result.value)
+
+
+def _valid_bar_values(bar: CompletedDailyBar) -> bool:
+    values = (bar.open, bar.high, bar.low, bar.close, bar.volume)
+    return all(_numeric(value) for value in values) and bar.high > 0 and bar.low > 0 and bar.close > 0 and bar.volume >= 0

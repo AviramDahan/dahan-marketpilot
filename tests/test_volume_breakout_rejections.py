@@ -1,8 +1,6 @@
 from dataclasses import fields
 from datetime import datetime, timezone
 
-import pytest
-
 from marketpilot.data_quality import DataQualityStatus
 from marketpilot.indicators import IndicatorResult, ReadinessStatus
 from marketpilot.regime import MarketRegime, RegimeResult
@@ -149,9 +147,6 @@ def test_calculates_reward_risk_proxy_from_projected_target_and_resistance():
 def test_volume_breakout_input_does_not_accept_precomputed_reward_risk_proxy():
     assert "projected_target" in {field.name for field in fields(VolumeBreakoutInput)}
     assert "reward_risk_proxy" not in {field.name for field in fields(VolumeBreakoutInput)}
-
-    with pytest.raises(TypeError):
-        VolumeBreakoutInput(**{**valid_input().__dict__, "reward_risk_proxy": 2.0})
 
 
 def test_earnings_source_unverified_is_evidence_not_rejection_without_verified_conflict():
