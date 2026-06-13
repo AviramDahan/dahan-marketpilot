@@ -123,11 +123,17 @@ Plans:
   4. Unit tests prove current-bar exclusion and no same-close fill assumption.
 
 **Plans**: 3 plans
-
 Plans:
+**Wave 1**
 
 - [ ] 04-01: Breakout window and prior-resistance contract.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 04-02: Volume Breakout detection, rejection, and evidence generation.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 04-03: Volume Breakout scoring components, explanations, and tests.
 
 ### Phase 5: Relative Strength and Unified Scoring
