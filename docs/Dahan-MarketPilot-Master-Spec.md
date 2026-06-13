@@ -320,15 +320,16 @@ Expected holding period:
 
 Primary signal resolution:
 
-Daily.
+`daily_only` uses completed daily bars. MTF modes use Daily as mandatory
+context/filter and completed 4H bars as the primary setup/signal timeframe.
+Completed 1H bars may be optional confirmation only in
+`daily_filter_4h_setup_1h_optional`.
 
-Version 1 must not use intraday data to generate primary signals.
+Version 1 must not use day-trading, scalping, 5m/15m/HFT behavior, mandatory
+same-day exits, future bars, or incomplete bars.
 
-Optional hourly confirmation may be designed as a future feature but
-must remain disabled.
-
-Signals based on a completed daily bar must execute only at a later
-valid tradable price.
+Signals based on a completed bar must execute only at a later valid tradable
+price.
 
 Never create a signal from a bar and fill at the same bar's closing
 price unless it was technically possible to submit the order before
@@ -336,7 +337,7 @@ the close, which is not the default design.
 
 Default execution timing:
 
-* evaluate completed daily bars
+* evaluate completed bars
 * create signal after the bar is final
 * schedule the Paper order for the next valid session
 * record the exact assumed execution method
@@ -2467,3 +2468,71 @@ The finished product must:
 46. Never claim guaranteed profitability.
 
 ==================================================
+
+## Phase 4.1 Architecture Update: Multi-Timeframe Signal Foundation
+
+Phase 4.1 is inserted before Phase 5 to define the multi-timeframe signal
+foundation without changing completed Phase 1-4 history and without executing
+Phase 5.
+
+Supported regular strategy modes are exactly:
+
+* `daily_only`
+* `daily_filter_4h_setup`
+* `daily_filter_4h_setup_1h_optional`
+
+`daily_only` is the default, compatibility mode, and backtesting benchmark.
+Strategy mode is separate from environment modes such as `backtest`, `shadow`,
+and `paper`. Missing, empty, invalid, or unsupported strategy mode values must
+fail closed.
+
+Daily is mandatory in every mode. It owns universe eligibility, liquidity, data
+quality, broad trend, EMA structure, SPY/QQQ regime, broad relative strength,
+volatility, gap and earnings-risk context, and rejection of structurally weak
+candidates.
+
+4H is the primary setup and signal timeframe in MTF modes. It owns Trend
+Pullback setup quality, Volume Breakout setup quality, recovery or breakout
+confirmation, momentum and volume evidence, invalidation, and the primary setup
+timestamp.
+
+1H is optional confirmation only in
+`daily_filter_4h_setup_1h_optional`. It can improve confidence, readiness, and
+supporting evidence, but it can never independently create a trade and can never
+override failed Daily, invalid 4H, `RISK_OFF`, stale data, hard rejection, or
+invalid reward/risk.
+
+Signals use completed bars only. Timing contracts must support
+`completed_daily_bar`, `completed_four_hour_bar`, and `completed_one_hour_bar`
+and must preserve strategy mode, signal timeframe, timestamp, bar start/end,
+completion status, exchange timezone, regular-hours status, partial-session
+status, freshness, source resolution, and later-valid-execution requirement.
+Future bars, incomplete bars, future context, and unrealistic same-bar
+assumptions are prohibited.
+
+The recommended initial 4H policy is regular-hours, market-open anchoring in
+`America/New_York`, with extended hours excluded. A regular US equity session is
+6.5 hours and does not divide evenly into 4H, so remaining partial-session bars
+must be marked partial and must not generate signals by default. Partial bars
+may be evaluated as non-signal evidence only after deterministic tests. A 2H
+alternative may be evaluated only if 4H proves technically unsafe or too sparse;
+4H must not be silently replaced.
+
+Phase 5 must consume StrategyMode and MTF evidence, including `strategy_mode`,
+`daily_context_score`, `four_hour_setup_score`,
+`one_hour_confirmation_score`, `timeframe_alignment_status`, and
+`data_quality_confidence`. Arbitrary MTF scoring weights must not be finalized
+before backtesting and sensitivity validation.
+
+Future Backtesting must compare `daily_only`, `daily_filter_4h_setup`,
+`daily_filter_4h_setup_1h_optional`, a mandatory-1H-confirmation variant for
+backtesting only, different 4H alignment policies, and a 2H alternative if
+technically justified. Reports should compare candidate/trade counts, win rate,
+average RR/R, max drawdown, holding period, missed opportunities, false
+breakout rate, delayed-entry impact, fees/slippage, year-by-year,
+out-of-sample, and walk-forward results.
+
+Deferred future setup ideas, not part of Phase 4.1 or Phase 5:
+
+* Breakout Retest
+* Volatility Contraction / Base Breakout

@@ -101,3 +101,13 @@ Phase 5 may consume Trend Pullback evidence when implementing full scoring and
 classifications. Phase 6 may replace the minimal reward/risk proxy with full
 stop, target, sizing, and order-lifecycle behavior. Phase 7 may validate Trend
 Pullback with realistic backtests and activation gates.
+
+## Phase 4.1 Multi-Timeframe Adaptation
+
+`daily_only` preserves the existing completed daily-bar Trend Pullback behavior.
+In MTF modes, Daily provides broader healthy trend context and hard rejection of
+weak structures, 4H becomes the primary pullback/recovery setup timeframe, and
+1H may only provide optional entry-readiness confirmation.
+
+1H cannot independently create a trade and cannot override failed Daily,
+invalid 4H, `RISK_OFF`, stale data, hard rejection, or invalid reward/risk.

@@ -113,3 +113,22 @@ Current Phase 4 suites:
 Phase 4 tests must not require QuantConnect, Telegram, Render, broker
 credentials, internet access, live market data, fake backtest results, fake
 portfolio values, or profitability claims.
+
+## Phase 4.1 Multi-Timeframe Tests
+
+Phase 4.1 tests must verify exactly three strategy modes:
+`daily_only`, `daily_filter_4h_setup`, and
+`daily_filter_4h_setup_1h_optional`. Missing, empty, invalid, or unsupported
+modes fail closed, and strategy mode must remain separate from environment mode.
+
+Tests must cover completed daily, completed 4H, and completed 1H timing;
+independent Daily/4H/1H readiness; RTH-only behavior; `America/New_York` DST;
+holidays; early closes; partial-session bars; stale data; no future bars; no
+incomplete bars; and no same-bar execution assumptions.
+
+Future backtesting must compare the three regular modes, a mandatory-1H variant
+for backtesting only, different 4H alignment policies, and a 2H alternative if
+technically justified. Comparison reports should include candidate/trade counts,
+win rate, average RR/R, max drawdown, holding period, missed opportunities,
+false breakout rate, delayed-entry impact, fees/slippage, year-by-year,
+out-of-sample, and walk-forward results.

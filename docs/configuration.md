@@ -24,6 +24,18 @@ Phase 3 adds:
 
 - `config/trend_pullback.yaml`
 
+Phase 4.1 defines `config/strategy.yaml` as the central strategy-mode contract.
+Supported regular strategy modes are exactly:
+
+- `daily_only`
+- `daily_filter_4h_setup`
+- `daily_filter_4h_setup_1h_optional`
+
+`daily_only` is the default, compatibility mode, and backtesting benchmark.
+Strategy mode is not an environment mode; it must not replace or be confused
+with `backtest`, `shadow`, or `paper`. Missing, empty, invalid, or unsupported
+strategy modes must fail validation.
+
 Required safety and FX seed keys include:
 
 - `paper_trading_only: true`
@@ -113,3 +125,21 @@ completed bar high, and keeps reward/risk as a minimal proxy.
 The config explicitly disables intrabar validity, order creation, portfolio
 sizing, BUY/WATCH/AVOID classifications, backtest result creation, and Telegram
 delivery.
+
+## Multi-Timeframe Configuration
+
+Phase 4.1 plans reusable timeframe-aware configuration and models for:
+
+- `completed_daily_bar`
+- `completed_four_hour_bar`
+- `completed_one_hour_bar`
+
+Daily is mandatory in all modes. 4H becomes the primary setup/signal timeframe
+only in MTF modes. 1H is optional confirmation only in
+`daily_filter_4h_setup_1h_optional`; missing 1H alone cannot reject a valid
+Daily+4H candidate.
+
+The recommended 4H policy is regular-hours, market-open anchoring in
+`America/New_York`, with extended hours excluded. Because the US regular session
+is 6.5 hours, remaining partial-session bars must be explicitly marked partial
+and non-signal by default.

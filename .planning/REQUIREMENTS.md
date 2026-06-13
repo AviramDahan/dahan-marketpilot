@@ -57,6 +57,25 @@
 - [ ] **SET-06**: Trend Pullback, Volume Breakout, and Relative Strength Leader are implemented and validated independently before any Combined Swing strategy.
 - [ ] **SET-07**: Completed daily-bar signals execute only at a later valid tradable price by default, with the exact execution method recorded.
 
+### Strategy Modes And Multi-Timeframe Signals
+
+- [ ] **MODE-01**: The system supports exactly three regular strategy modes: `daily_only`, `daily_filter_4h_setup`, and `daily_filter_4h_setup_1h_optional`.
+- [ ] **MODE-02**: `daily_only` is the default, compatibility mode, and backtesting benchmark, and strategy mode remains separate from environment modes `backtest`, `shadow`, and `paper`.
+- [ ] **MODE-03**: Strategy-mode configuration is typed and validated, preferably through `config/strategy.yaml`; missing, empty, invalid, or unsupported mode values fail closed.
+- [ ] **TF-01**: Daily timeframe is mandatory and owns universe eligibility, liquidity, data quality, broad trend, EMA structure, SPY/QQQ regime, broad relative strength, volatility, gap/earnings context, and rejection of structurally weak candidates.
+- [ ] **TF-02**: In MTF modes, completed 4H bars are the primary setup/signal timeframe for Trend Pullback and Volume Breakout, including setup quality, recovery/breakout confirmation, momentum/volume evidence, invalidation, and primary setup timestamp.
+- [ ] **TF-03**: 1H is optional confirmation only in `daily_filter_4h_setup_1h_optional`; it can improve confidence/readiness/evidence but cannot independently create a trade or override failed Daily, invalid 4H, `RISK_OFF`, stale data, hard rejection, or invalid reward/risk.
+- [ ] **TF-04**: Signals use completed bars only and timing models support `completed_daily_bar`, `completed_four_hour_bar`, and `completed_one_hour_bar` without future bars, incomplete bars, or unrealistic same-bar assumptions.
+- [ ] **TF-05**: `SetupTiming` or its successor preserves strategy mode, signal timeframe, timestamp, bar start/end, completion status, exchange timezone, regular-hours status, partial-session status, freshness, source resolution, and later-valid-execution requirement.
+- [ ] **TF-06**: Daily, 4H, and 1H readiness are tracked independently; mandatory timeframe data fails closed, while missing optional 1H alone cannot reject a valid Daily+4H candidate.
+- [ ] **TF-07**: The system emits at most one candidate per symbol and does not create separate Daily, 4H, and 1H candidates.
+- [ ] **QC-MTF-01**: Current official QuantConnect/LEAN documentation is verified before implementation selects multi-resolution subscriptions, consolidators, calendar/custom anchoring, RTH filtering, extended-hours exclusion, holidays, early closes, DST handling, indicator warm-up, and dynamic-universe consolidator registration/cleanup.
+- [ ] **QC-MTF-02**: The 4H alignment policy is explicit. Because the US regular session is 6.5 hours, partial-session bars must be identified and forbidden from signal generation by default; partial evidence and a 2H alternative may be evaluated later, but 4H must not be silently replaced.
+- [ ] **SET-MTF-01**: Trend Pullback MTF behavior uses Daily for broader healthy trend, 4H for pullback/recovery primary setup, and optional 1H for entry-readiness confirmation.
+- [ ] **SET-MTF-02**: Volume Breakout MTF behavior uses Daily for structure, 4H for primary breakout, and optional 1H to confirm the breakout is holding and not overextended.
+- [ ] **SET-MTF-03**: Relative Strength Leader and Phase 5 scoring consume strategy mode and MTF evidence, including `strategy_mode`, `daily_context_score`, `four_hour_setup_score`, `one_hour_confirmation_score`, `timeframe_alignment_status`, and `data_quality_confidence`, without finalizing arbitrary MTF weights before validation.
+- [ ] **BT-MTF-01**: Future backtesting compares `daily_only`, `daily_filter_4h_setup`, `daily_filter_4h_setup_1h_optional`, a mandatory-1H-confirmation variant for backtesting only, different 4H alignment policies, and a 2H alternative if technically justified.
+
 ### Scoring, Explanations, And Audit
 
 - [ ] **SCO-01**: Candidate scoring includes setup quality, trend, momentum, relative strength, volume, risk/reward, market regime, sector/portfolio fit, data quality, and earnings-risk policy.
@@ -117,7 +136,8 @@
 
 Deferred to future releases and not part of the v1 roadmap:
 
-- Optional hourly confirmation, disabled by default and never used as v1 primary signal resolution.
+- Breakout Retest setup.
+- Volatility Contraction / Base Breakout setup.
 - Additional setup variants after v1 setups are independently validated.
 - More advanced breadth measures after core regime logic is stable.
 - Additional dashboard refinements after read-only v1 dashboard is operational.
@@ -178,6 +198,22 @@ Deferred to future releases and not part of the v1 roadmap:
 | SET-05 | Phase 5 | Pending |
 | SET-06 | Phase 5 | Pending |
 | SET-07 | Phase 3 | Pending |
+| MODE-01 | Phase 4.1 | Pending |
+| MODE-02 | Phase 4.1 | Pending |
+| MODE-03 | Phase 4.1 | Pending |
+| TF-01 | Phase 4.1 | Pending |
+| TF-02 | Phase 4.1 | Pending |
+| TF-03 | Phase 4.1 | Pending |
+| TF-04 | Phase 4.1 | Pending |
+| TF-05 | Phase 4.1 | Pending |
+| TF-06 | Phase 4.1 | Pending |
+| TF-07 | Phase 4.1 | Pending |
+| QC-MTF-01 | Phase 4.1 | Pending |
+| QC-MTF-02 | Phase 4.1 | Pending |
+| SET-MTF-01 | Phase 4.1 | Pending |
+| SET-MTF-02 | Phase 4.1 | Pending |
+| SET-MTF-03 | Phase 4.1, Phase 5 | Pending |
+| BT-MTF-01 | Phase 4.1, Phase 7 | Pending |
 | SCO-01 | Phase 5 | Pending |
 | SCO-02 | Phase 5 | Pending |
 | SCO-03 | Phase 5 | Pending |
@@ -219,10 +255,10 @@ Deferred to future releases and not part of the v1 roadmap:
 
 **Coverage:**
 
-- v1 requirements: 75 total
-- Mapped to phases: 75
+- v1 requirements: 91 total
+- Mapped to phases: 91
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-06-12*
-*Last updated: 2026-06-12 after initial roadmap creation*
+*Last updated: 2026-06-14 after Phase 4.1 multi-timeframe insertion*

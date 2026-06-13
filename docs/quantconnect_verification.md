@@ -22,6 +22,15 @@ missing.
 - Indicator Key Concepts: https://www.quantconnect.com/docs/v2/writing-algorithms/indicators/key-concepts
 - Supported Indicators: https://www.quantconnect.com/docs/v2/writing-algorithms/indicators/supported-indicators
 - Updating Indicators With Consolidators: https://www.quantconnect.com/docs/v2/writing-algorithms/consolidating-data/updating-indicators
+- Consolidating Data: https://www.quantconnect.com/docs/v2/writing-algorithms/consolidating-data/getting-started
+- Time Period Consolidators: https://www.quantconnect.com/docs/v2/writing-algorithms/consolidating-data/consolidator-types/time-period-consolidators
+- Calendar Consolidators: https://www.quantconnect.com/docs/v2/writing-algorithms/consolidating-data/consolidator-types/calendar-consolidators
+- US Equity Market Hours: https://www.quantconnect.com/docs/v2/writing-algorithms/securities/asset-classes/us-equity/market-hours
+- Time Modeling Periods: https://www.quantconnect.com/docs/v2/writing-algorithms/key-concepts/time-modeling/periods
+- Scheduled Events: https://www.quantconnect.com/docs/v2/writing-algorithms/scheduled-events
+- Warm-Up Periods: https://www.quantconnect.com/docs/v2/writing-algorithms/historical-data/warm-up-periods
+- Manual Indicators: https://www.quantconnect.com/docs/v2/writing-algorithms/indicators/manual-indicators
+- Research Dataset Key Concepts: https://www.quantconnect.com/docs/v2/research-environment/datasets/key-concepts
 
 ## Allowed Phase 2 API Surface
 
@@ -82,3 +91,17 @@ Every Phase 2 artifact that mentions QuantConnect behavior must distinguish:
 - External checks that were not run.
 - User-managed setup requirements.
 
+## Phase 4.1 Multi-Timeframe Verification Rule
+
+Before implementation uses QuantConnect multi-resolution behavior, verify the
+exact current API names and semantics for source subscription resolution,
+`TradeBar` consolidators, calendar/custom anchoring, `America/New_York`
+exchange time, DST, regular-hours filtering, extended-hours exclusion, holidays,
+early closes, warm-up, indicator readiness, and dynamic-universe consolidator
+registration and cleanup.
+
+The recommended initial 4H alignment is market-open anchored and RTH-only. A
+regular US equity session is 6.5 hours, so a remaining partial-session bar must
+be marked partial and must not generate signals by default. A 2H alternative may
+be evaluated only if 4H is technically unsafe or too sparse; it must not replace
+4H silently.

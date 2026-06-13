@@ -3,34 +3,34 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Phase 5 planned; ready to execute
-last_updated: "2026-06-13T23:17:04.678Z"
-last_activity: 2026-06-14 - Phase 5 planned and verified; ready to execute 05-01.
+stopped_at: Phase 4.1 planned; ready to execute 04.1-01
+last_updated: "2026-06-14T02:45:00.000Z"
+last_activity: 2026-06-14 - Phase 4.1 inserted and planned before Phase 5; ready to execute 04.1-01.
 progress:
-  total_phases: 10
+  total_phases: 11
   completed_phases: 4
-  total_plans: 15
+  total_plans: 19
   completed_plans: 15
-  percent: 40
+  percent: 36
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-12)
+See: .planning/PROJECT.md (updated 2026-06-14)
 
 **Core value:** The system must provide an auditable paper-only swing-trading workflow where every signal, backtest, paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
-**Current focus:** Phase 5: Relative Strength and Unified Scoring
+**Current focus:** Phase 4.1: Multi-Timeframe Signal Foundation
 
 ## Current Position
 
-Phase: 5 of 10 (relative strength and unified scoring)
-Plan: 3 of 3 planned; next plan 05-01
+Phase: 4.1 of 11 (multi-timeframe signal foundation)
+Plan: 4 of 4 planned; next plan 04.1-01
 Status: Ready to execute
-Last activity: 2026-06-14 - Phase 5 planned and verified; ready to execute 05-01.
+Last activity: 2026-06-14 - Phase 4.1 inserted and planned before Phase 5; ready to execute 04.1-01.
 
-Progress: [####------] 40%
+Progress: [####-------] 36%
 
 ## Performance Metrics
 
@@ -82,6 +82,9 @@ Recent decisions affecting current work:
 - [Phase 04]: Phase 4 Plan 04: Volume Breakout stale data uses SymbolData.future_signal_ready(..., stale=...) and rejects as DATA_NOT_READY with symbol_data_stale evidence.
 - Phase 4: Volume Breakout uses completed daily bars, current-bar-excluded prior resistance, volume confirmation, stale-data rejection, and setup evidence only.
 - Phase 5 planning: Relative Strength Leader, MarketPilot Score, classification/confidence, one-candidate-per-symbol ranking, and Combined Swing readiness gate are planned across 3 waves with full requirements and decision coverage.
+- Phase 4.1 planning: StrategyMode and MTF signal foundations are inserted before Phase 5. Supported modes are exactly `daily_only`, `daily_filter_4h_setup`, and `daily_filter_4h_setup_1h_optional`; `daily_only` remains default and benchmark.
+- Phase 4.1 planning: Recommended 4H policy is market-open anchored, RTH-only, `America/New_York`, with partial-session bars marked non-signal by default.
+- Phase 4.1 planning: 1H is optional confirmation only and cannot independently create trades or override failed Daily, invalid 4H, `RISK_OFF`, stale data, hard rejection, or invalid reward/risk.
 
 ### Pending Todos
 
@@ -91,7 +94,7 @@ None yet.
 
 - Later phases require user-managed QuantConnect account/subscription/API credentials, Telegram bot/chat ID, GitHub Secrets, and Render configuration.
 - Exact QuantConnect API endpoints, Object Store behavior, notification APIs, Render deployment details, and Streamlit APIs must be re-verified during the relevant implementation phases.
-- Phase 5 must consume Phase 2-4 readiness, setup evidence, and completed-bar timing contracts without adding live trading or fake performance artifacts.
+- Phase 4.1 must complete before Phase 5 execution. Phase 5 must consume StrategyMode, MTF evidence, and completed-bar timing contracts without adding live trading or fake performance artifacts.
 - Phase 5 execution should record the local Python version because the current shell has Python 3.10 while project metadata requires Python >=3.11 for strict/release validation.
 
 ## Deferred Items
@@ -100,10 +103,11 @@ Items acknowledged and carried forward from previous milestone close:
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| *(none)* | | | |
+| Future setup idea | Breakout Retest | Deferred | Phase 4.1 planning |
+| Future setup idea | Volatility Contraction / Base Breakout | Deferred | Phase 4.1 planning |
 
 ## Session Continuity
 
-Last session: 2026-06-13T23:17:04.678Z
-Stopped at: Phase 5 planned; ready to execute
-Resume file: .planning/phases/05-relative-strength-and-unified-scoring/05-01-PLAN.md
+Last session: 2026-06-14T02:45:00.000Z
+Stopped at: Phase 4.1 planned; ready to execute
+Resume file: .planning/phases/04.1-multi-timeframe-signal-foundation/04.1-01-PLAN.md

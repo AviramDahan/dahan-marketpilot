@@ -13,6 +13,12 @@ Phase 4 Volume Breakout setup evidence. It may create Relative Strength Leader
 contracts, scoring configuration, score component models, candidate ranking,
 classification, confidence, setup comparison, tests, and documentation.
 
+After the Phase 4.1 insertion, this phase must depend on the multi-timeframe
+foundation. It should consume StrategyMode, daily context evidence, 4H setup
+evidence, optional 1H confirmation evidence, timeframe alignment status, and
+data-quality confidence. It must not invent final MTF scoring weights before
+backtesting and sensitivity validation.
+
 This phase must not create orders, position sizing, portfolio state mutation,
 stops, targets, fills, Paper Trading deployment, Telegram delivery, backtest
 results, live-trading behavior, or fake performance artifacts. Combined Swing
@@ -90,6 +96,17 @@ must remain disabled behind an explicit readiness gate.
   classification, confidence, evidence, hard rejections, timing, and
   explanation. It must not include entry, stop, target, quantity, order intent,
   or broker/Paper behavior.
+- **D-17:** Phase 5 consumes Phase 4.1 StrategyMode and timeframe-aware timing
+  contracts. It must preserve `daily_only` compatibility and record the active
+  `strategy_mode` in scoring/ranking evidence.
+- **D-18:** Phase 5 evidence concepts include `daily_context_score`,
+  `four_hour_setup_score`, `one_hour_confirmation_score`,
+  `timeframe_alignment_status`, and `data_quality_confidence`.
+- **D-19:** In MTF modes, Daily remains a mandatory gate, 4H is the primary
+  setup/signal timeframe, and 1H is supporting confirmation only. Missing 1H
+  alone must not reject a valid Daily+4H candidate.
+- **D-20:** MTF component weights are not locked in Phase 5 planning. Backtesting
+  and sensitivity analysis must validate any later MTF weighting scheme.
 
 ### The Agent's Discretion
 
@@ -118,14 +135,21 @@ and output audit candidates only, not trade/order objects.
   live-money behavior.
 - `.planning/REQUIREMENTS.md` - Phase 5 requirement IDs `SET-05`, `SET-06`,
   `SCO-01`, `SCO-02`, and `SCO-03`; carried requirements include `IND-02`,
-  `IND-05`, `REG-03`, `SET-07`, and safety requirements.
-- `.planning/ROADMAP.md` - Phase 5 goal, dependency on Phase 4, success
+  `IND-05`, `REG-03`, `SET-07`, `SET-MTF-03`, and safety requirements.
+- `.planning/ROADMAP.md` - Phase 5 goal, dependency on Phase 4.1, success
   criteria, and plan breakdown.
 - `.planning/STATE.md` - Current project state, Phase 5 focus, and Phase 2-4
   readiness/evidence contracts.
+- `.planning/phases/04.1-multi-timeframe-signal-foundation/04.1-CONTEXT.md` -
+  StrategyMode, timeframe responsibilities, 4H alignment recommendation, and
+  Phase 5 handoff constraints.
+- `.planning/phases/04.1-multi-timeframe-signal-foundation/04.1-VALIDATION.md` -
+  Required tests for completed-bar models, generalized timing, readiness, and
+  forbidden behavior.
 - `docs/Dahan-MarketPilot-Master-Spec.md` - Master strategy specification,
   including Relative Strength Leader requirements, MarketPilot Score weights,
-  classification boundaries, confidence, and Combined Swing prerequisites.
+  classification boundaries, confidence, Combined Swing prerequisites, and MTF
+  strategy-mode constraints.
 
 ### Prior Phase Contracts To Reuse
 
@@ -237,13 +261,17 @@ and output audit candidates only, not trade/order objects.
 - Full portfolio constraints, position sizing, stops, targets, orders, fills,
   exits, duplicate-order prevention, and portfolio conflict calculation remain
   deferred to Phase 6.
-- Independent backtests, out-of-sample results, activation gates, and Combined
-  Swing validation remain deferred to Phase 7.
+- Independent backtests, out-of-sample results, activation gates, MTF strategy
+  mode comparisons, 4H alignment comparisons, optional mandatory-1H experiment,
+  2H alternative evaluation, and Combined Swing validation remain deferred to
+  Phase 7.
 - Telegram candidate and classification alerts remain deferred to notification
   phases.
 - Paper Trading deployment and any approved Paper behavior remain deferred to
   Phase 8.
 - Dashboard presentation of ranked candidates remains deferred to Phase 9.
+- Breakout Retest and Volatility Contraction / Base Breakout are future setup
+  ideas only and are not part of Phase 4.1 or Phase 5.
 
 </deferred>
 

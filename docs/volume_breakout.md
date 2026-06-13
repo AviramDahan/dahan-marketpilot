@@ -116,3 +116,13 @@ Phase 5 may consume Volume Breakout evidence when implementing full scoring and
 classifications. Phase 6 may replace the setup-level reward/risk proxy and
 explicit portfolio-conflict placeholder with full portfolio risk and order
 lifecycle behavior.
+
+## Phase 4.1 Multi-Timeframe Adaptation
+
+`daily_only` preserves the existing completed daily-bar Volume Breakout
+behavior. In MTF modes, Daily provides structure and hard rejection context, 4H
+becomes the primary breakout timeframe, and 1H may only support confirmation
+that the breakout is holding and not overextended.
+
+1H cannot independently create a trade and cannot override failed Daily,
+invalid 4H, `RISK_OFF`, stale data, hard rejection, or invalid reward/risk.

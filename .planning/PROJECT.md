@@ -24,7 +24,7 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 - [x] Establish a repository foundation with licensing, attribution, disclaimer, AGENTS.md, and GSD planning context.
 - [x] Enforce simulated Paper Trading only through central safety configuration and validation.
 - [ ] Use QuantConnect LEAN and QuantConnect Cloud as the authoritative engine for backtests and Paper Trading state.
-- [ ] Build long-only daily-resolution US-equity swing strategies with dynamic universe selection, market regime controls, transparent scoring, and no look-ahead behavior.
+- [ ] Build long-only US-equity swing strategies with dynamic universe selection, market regime controls, transparent scoring, no look-ahead behavior, and controlled strategy modes for daily-only and Daily/4H/optional-1H evidence.
 - [ ] Validate strategies with realistic backtesting, chronological validation, explicit fees/slippage, activation gates, and non-fabricated artifacts.
 - [ ] Send Telegram alerts for configured signals, paper orders, fills, stops, targets, regime changes, daily summaries, and system incidents without letting notification failures compromise trading safety.
 - [ ] Provide a password-protected, mobile-friendly, read-only Render Streamlit dashboard that displays QuantConnect-sourced paper state in USD and NIS.
@@ -50,15 +50,17 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 - Render is a read-only dashboard and must not maintain an independent simulated portfolio.
 - Telegram is a notification channel and must not be required for trading-safety logic to continue.
 - The starting simulated budget is 100,000 NIS, converted to USD at a configurable launch FX rate. Later FX changes may affect NIS display but must not rewrite historical USD accounting.
-- Expected holding period is approximately 3-30 trading days, with primary signals generated only from completed daily bars.
+- Expected holding period is approximately 3-30 trading days. `daily_only` preserves completed daily-bar signals, while MTF modes may use completed 4H primary setup bars with optional completed 1H confirmation.
+- Supported regular strategy modes are exactly `daily_only`, `daily_filter_4h_setup`, and `daily_filter_4h_setup_1h_optional`. Strategy mode is separate from environment modes such as `backtest`, `shadow`, and `paper`.
 - GSD is the planning and execution system for this repository. Phase work must read `.planning/PROJECT.md`, `.planning/REQUIREMENTS.md`, `.planning/ROADMAP.md`, and `.planning/STATE.md`.
 
 ## Constraints
 
 - **Language**: Project files, code, tests, identifiers, configuration, and GSD artifacts are English. User-facing chat communication is Hebrew.
 - **Safety**: `PAPER_TRADING_ONLY = True` must be central, validated, and not silently overridden.
-- **Trading scope**: v1 is US-listed common equities, long-only, daily primary signal resolution, simulated Paper Trading only.
-- **Execution timing**: Signals from completed daily bars must execute only at a later valid tradable price unless a phase proves a different execution assumption is technically valid.
+- **Trading scope**: v1 is US-listed common equities, long-only, swing-trading only, simulated Paper Trading only. No day trading, scalping, 5m/15m/HFT behavior, or mandatory same-day exits are allowed.
+- **Strategy modes**: `daily_only` is the default, compatibility mode, and benchmark. `daily_filter_4h_setup` uses Daily as a mandatory filter and completed 4H bars as primary setup signals. `daily_filter_4h_setup_1h_optional` adds optional 1H confirmation only.
+- **Execution timing**: Signals from completed bars must execute only at a later valid tradable price unless a phase proves a different execution assumption is technically valid. Future bars, incomplete bars, future context, and unrealistic same-bar assumptions are prohibited.
 - **Data authority**: QuantConnect is authoritative for paper portfolio state and backtest results.
 - **Dashboard**: Render Streamlit dashboard is read-only and password-protected.
 - **Credentials**: No credentials or secrets may be written to repository files or chat.
@@ -78,6 +80,10 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 | Keep Render read-only. | Prevents manual order entry or state mutation outside QuantConnect. | Active |
 | Treat Telegram as non-authoritative notification infrastructure. | Alerts are important, but delivery failure must not stop trading-safety logic. | Active |
 | Ask technical questions with a `You choose` option when the AI can safely decide. | The user requested this preference during Phase 1 discussion. | Active |
+| Insert Phase 4.1 before Phase 5 for multi-timeframe signal foundations. | Strategy modes and timeframe responsibilities must be explicit before scoring/ranking consumes setup evidence. | Active |
+| Keep `daily_only` as default and benchmark. | Preserves completed Phase 1-4 behavior and provides a clean comparison baseline. | Active |
+| Treat 4H as primary setup timeframe in MTF modes and 1H as optional confirmation only. | Maintains swing-trading intent while avoiding independent intraday trade creation. | Active |
+| Use market-open anchored, RTH-only 4H bars as the recommended initial policy. | US equity sessions are 6.5 hours; partial-session bars must be explicit and non-signal by default. | Active |
 
 ## External Actions Required Later
 
@@ -103,6 +109,14 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 - Earnings-risk data source and policy.
 - Sector/industry classification source and availability in QuantConnect.
 - Render authentication approach beyond password protection.
+- Final 4H alignment safety after implementation tests and backtesting.
+- Whether a 2H alternative is justified if 4H alignment proves unsafe or too sparse.
+- MTF score weights and thresholds; these must wait for backtesting and sensitivity validation.
+
+## Deferred Future Setup Ideas
+
+- Breakout Retest.
+- Volatility Contraction / Base Breakout.
 
 ## Evolution
 
@@ -114,4 +128,4 @@ After each phase:
 4. Refresh Context and Constraints if implementation reality changes.
 
 ---
-*Last updated: 2026-06-12 after Phase 1 completion and verification.*
+*Last updated: 2026-06-14 after Phase 4.1 multi-timeframe insertion.*

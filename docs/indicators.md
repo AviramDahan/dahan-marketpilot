@@ -38,3 +38,14 @@ not executed against the LEAN runtime in Phase 2.
 
 Strategy setup labels, scores, entry decisions, exits, orders, Paper deployment,
 Telegram alerts, and live deployment remain deferred.
+
+## Multi-Timeframe Readiness
+
+Phase 4.1 extends readiness from daily-only checks to independent Daily, 4H, and
+1H readiness contracts. Mandatory timeframe data fails closed. Daily is always
+mandatory; 4H is mandatory in MTF modes; 1H is optional confirmation only in
+`daily_filter_4h_setup_1h_optional`.
+
+Indicators must be ready for the timeframe that consumes them. Missing, stale,
+NaN, infinite, future, incomplete, or partial-session signal data must not
+become neutral or positive evidence.

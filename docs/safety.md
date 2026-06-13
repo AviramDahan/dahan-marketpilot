@@ -41,3 +41,20 @@ rejected setup results, numeric evidence, explanations, and rejection reasons,
 but it must not contain orders, sizing, portfolio state, backtest results,
 Telegram delivery, live or Paper deployment, credentials, fake performance, or
 profitability claims.
+
+## Multi-Timeframe Safety
+
+Phase 4.1 does not authorize production orders, Paper Trading, Telegram
+delivery, real Backtests, broker adapters, portfolio mutation, stops, targets,
+or fake performance artifacts.
+
+Strategy modes are signal-evidence modes only:
+
+- `daily_only`
+- `daily_filter_4h_setup`
+- `daily_filter_4h_setup_1h_optional`
+
+They are separate from environment modes such as `backtest`, `shadow`, and
+`paper`. 1H confirmation is optional support only and cannot independently
+create a trade or override failed Daily, invalid 4H, `RISK_OFF`, stale data,
+hard rejection, or invalid reward/risk.
