@@ -95,3 +95,21 @@ Phase 3 Trend Pullback explanation and safety tests verify numeric evidence,
 readable rejection explanations, absence of total score/confidence/ranking
 fields, and absence of order, classification, Telegram, credential, live
 deployment, or fake backtest behavior.
+
+Phase 4 Volume Breakout tests are deterministic and offline. They verify
+current-bar-excluded prior resistance, completed-close breakout confirmation,
+volume confirmation, SET-04 hard gates, evaluator-calculated reward/risk proxy,
+evidence completeness, readable explanations, setup-only output, and forbidden
+behavior absence.
+
+Current Phase 4 suites:
+
+- `tests/test_volume_breakout_contract.py`
+- `tests/test_volume_breakout_detection.py`
+- `tests/test_volume_breakout_rejections.py`
+- `tests/test_volume_breakout_explanations.py`
+- `tests/test_volume_breakout_safety.py`
+
+Phase 4 tests must not require QuantConnect, Telegram, Render, broker
+credentials, internet access, live market data, fake backtest results, fake
+portfolio values, or profitability claims.

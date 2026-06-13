@@ -35,3 +35,9 @@ for QuantConnect, GitHub Actions, Telegram, Render, and dashboard secrets.
 
 Every user-facing dashboard page and generated report must display the exact
 disclaimer phrase above.
+
+Volume Breakout remains setup evidence only in Phase 4. It may emit valid or
+rejected setup results, numeric evidence, explanations, and rejection reasons,
+but it must not contain orders, sizing, portfolio state, backtest results,
+Telegram delivery, live or Paper deployment, credentials, fake performance, or
+profitability claims.
