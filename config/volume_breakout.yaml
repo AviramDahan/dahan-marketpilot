@@ -1,0 +1,28 @@
+volume_breakout:
+  paper_trading_only: true
+  timing_mode: completed_daily_bar
+  resistance:
+    lookback_bars: 20
+    breakout_buffer_pct: 0.25
+    require_close_above_buffered_resistance: true
+  volume:
+    average_volume_period: 20
+    min_volume_ratio: 1.5
+    min_dollar_volume: 20000000
+  risk:
+    max_atr_pct: 8.0
+    max_ema20_extension_pct: 10.0
+    min_reward_risk_proxy: 1.5
+    reward_risk_epsilon: 0.01
+  deferred_gates:
+    earnings_risk_source_verified: false
+    portfolio_conflict_check_available: false
+  disabled_behaviors:
+    intrabar_validity: false
+    create_orders: false
+    portfolio_sizing: false
+    buy_watch_avoid_classifications: false
+    backtest_result_creation: false
+    telegram_delivery: false
+    paper_deployment: false
+    live_deployment: false

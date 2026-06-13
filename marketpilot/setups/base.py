@@ -26,6 +26,13 @@ class SetupRejectionReason(str, Enum):
     RECOVERY_NOT_CONFIRMED = "recovery_not_confirmed"
     RECOVERY_VOLUME_WEAK = "recovery_volume_weak"
     EARNINGS_SOURCE_UNVERIFIED = "earnings_source_unverified"
+    INVALID_PRIOR_RESISTANCE = "invalid_prior_resistance"
+    BREAKOUT_NOT_CONFIRMED = "breakout_not_confirmed"
+    VOLUME_CONFIRMATION_WEAK = "volume_confirmation_weak"
+    EMA20_EXTENSION_EXCESSIVE = "ema20_extension_excessive"
+    INSUFFICIENT_DOLLAR_VOLUME = "insufficient_dollar_volume"
+    EARNINGS_RISK_CONFLICT = "earnings_risk_conflict"
+    PORTFOLIO_CONFLICT = "portfolio_conflict"
 
 
 @dataclass(frozen=True)
@@ -57,4 +64,3 @@ class SetupResult:
     @property
     def valid(self) -> bool:
         return self.status is SetupStatus.VALID
-
