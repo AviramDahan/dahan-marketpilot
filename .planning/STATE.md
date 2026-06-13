@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready for next phase
-stopped_at: Phase 5 context gathered
-last_updated: "2026-06-13T18:26:50.266Z"
-last_activity: 2026-06-13 - Phase 5 context gathered; ready for Phase 5 planning.
+status: Ready to execute
+stopped_at: Phase 5 planned; ready to execute
+last_updated: "2026-06-13T23:17:04.678Z"
+last_activity: 2026-06-14 - Phase 5 planned and verified; ready to execute 05-01.
 progress:
   total_phases: 10
   completed_phases: 4
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-06-12)
 ## Current Position
 
 Phase: 5 of 10 (relative strength and unified scoring)
-Plan: Not started
-Status: Ready for next phase
-Last activity: 2026-06-13 - Phase 5 context gathered; ready for Phase 5 planning.
+Plan: 3 of 3 planned; next plan 05-01
+Status: Ready to execute
+Last activity: 2026-06-14 - Phase 5 planned and verified; ready to execute 05-01.
 
 Progress: [####------] 40%
 
@@ -81,6 +81,7 @@ Recent decisions affecting current work:
 - [Phase 04]: Phase 4 Plan 03: Early rejected Volume Breakout results include core evidence for resistance lookback, breakout buffer, and regime. Audit output should not disappear on early fail-closed paths.
 - [Phase 04]: Phase 4 Plan 04: Volume Breakout stale data uses SymbolData.future_signal_ready(..., stale=...) and rejects as DATA_NOT_READY with symbol_data_stale evidence.
 - Phase 4: Volume Breakout uses completed daily bars, current-bar-excluded prior resistance, volume confirmation, stale-data rejection, and setup evidence only.
+- Phase 5 planning: Relative Strength Leader, MarketPilot Score, classification/confidence, one-candidate-per-symbol ranking, and Combined Swing readiness gate are planned across 3 waves with full requirements and decision coverage.
 
 ### Pending Todos
 
@@ -91,6 +92,7 @@ None yet.
 - Later phases require user-managed QuantConnect account/subscription/API credentials, Telegram bot/chat ID, GitHub Secrets, and Render configuration.
 - Exact QuantConnect API endpoints, Object Store behavior, notification APIs, Render deployment details, and Streamlit APIs must be re-verified during the relevant implementation phases.
 - Phase 5 must consume Phase 2-4 readiness, setup evidence, and completed-bar timing contracts without adding live trading or fake performance artifacts.
+- Phase 5 execution should record the local Python version because the current shell has Python 3.10 while project metadata requires Python >=3.11 for strict/release validation.
 
 ## Deferred Items
 
@@ -102,6 +104,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-13T18:26:50.258Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-relative-strength-and-unified-scoring/05-CONTEXT.md
+Last session: 2026-06-13T23:17:04.678Z
+Stopped at: Phase 5 planned; ready to execute
+Resume file: .planning/phases/05-relative-strength-and-unified-scoring/05-01-PLAN.md
