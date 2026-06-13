@@ -111,3 +111,7 @@ weak structures, 4H becomes the primary pullback/recovery setup timeframe, and
 
 1H cannot independently create a trade and cannot override failed Daily,
 invalid 4H, `RISK_OFF`, stale data, hard rejection, or invalid reward/risk.
+
+The evaluator records `strategy_mode`, `signal_timeframe`, and optional 1H
+confirmation availability as setup evidence. In `daily_only`, existing
+completed daily-bar behavior remains the default.

@@ -17,7 +17,7 @@ Dahan MarketPilot v1 is planned as a safety-first sequence. The project starts w
 - [x] **Phase 2: QuantConnect Foundation and Universe** - Verify current LEAN APIs, add dynamic universe, data quality, SymbolData lifecycle, indicators, and market regime. (completed 2026-06-13)
 - [x] **Phase 3: Trend Pullback** - Implement and test the Trend Pullback setup with evidence, rejections, scoring components, and explanations. (completed 2026-06-13)
 - [x] **Phase 4: Volume Breakout** - Implement and test prior-resistance breakout logic with current-bar exclusion and volume confirmation. (completed 2026-06-13)
-- [ ] **Phase 4.1: Multi-Timeframe Signal Foundation** - Add StrategyMode, completed-bar/timeframe contracts, 4H alignment policy, per-timeframe readiness, MTF setup adaptation, deterministic tests, and documentation sync.
+- [x] **Phase 4.1: Multi-Timeframe Signal Foundation** - Add StrategyMode, completed-bar/timeframe contracts, 4H alignment policy, per-timeframe readiness, MTF setup adaptation, deterministic tests, and documentation sync. (completed 2026-06-14)
 - [ ] **Phase 5: Relative Strength and Unified Scoring** - Implement Relative Strength Leader, candidate ranking, MarketPilot Score, classification, confidence, and setup comparison while consuming StrategyMode and MTF evidence from Phase 4.1.
 - [ ] **Phase 6: Portfolio Risk and Order Lifecycle** - Add portfolio constraints, sizing, order state, stops, targets, exits, restart state, and notification-domain events.
 - [ ] **Phase 7: Backtesting and Validation** - Add realistic backtesting, no-look-ahead validation, chronological validation, activation gates, and reports.
@@ -147,7 +147,7 @@ Plans:
 
 **Goal**: Add the typed strategy-mode and completed-bar foundation needed for Daily/4H/optional 1H signal evidence before unified scoring starts.
 **Depends on**: Phase 4
-**Requirements**: MODE-01, MODE-02, TF-01, TF-02, TF-03, TF-04, QC-MTF-01, QC-MTF-02, SET-MTF-01, SET-MTF-02, SET-MTF-03, BT-MTF-01
+**Requirements**: MODE-01, MODE-02, MODE-03, TF-01, TF-02, TF-03, TF-04, TF-05, TF-06, TF-07, QC-MTF-01, QC-MTF-02, SET-MTF-01, SET-MTF-02, SET-MTF-03, BT-MTF-01
 **Success Criteria** (what must be TRUE):
 
   1. The system supports exactly `daily_only`, `daily_filter_4h_setup`, and `daily_filter_4h_setup_1h_optional`, with `daily_only` as the default compatibility and benchmark mode.
@@ -163,19 +163,19 @@ Plans:
 
 **Wave 1**
 
-- [ ] 04.1-01-PLAN.md - QuantConnect MTF verification and StrategyMode contract.
+- [x] 04.1-01-PLAN.md - QuantConnect MTF verification and StrategyMode contract.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 04.1-02-PLAN.md - Completed-bar models, generalized SetupTiming, and per-timeframe readiness.
+- [x] 04.1-02-PLAN.md - Completed-bar models, generalized SetupTiming, and per-timeframe readiness.
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 04.1-03-PLAN.md - Trend Pullback and Volume Breakout MTF adaptation with daily_only compatibility.
+- [x] 04.1-03-PLAN.md - Trend Pullback and Volume Breakout MTF adaptation with daily_only compatibility.
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 04.1-04-PLAN.md - Documentation, validation, future backtesting comparison requirements, and Phase 5 handoff.
+- [x] 04.1-04-PLAN.md - Documentation, validation, future backtesting comparison requirements, and Phase 5 handoff.
 
 ### Phase 5: Relative Strength and Unified Scoring
 
@@ -324,8 +324,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 
 | 2. QuantConnect Foundation and Universe | 4/4 | Complete | 2026-06-13 |
 | 3. Trend Pullback | 3/3 | Complete | 2026-06-13 |
 | 4. Volume Breakout | 4/4 | Complete   | 2026-06-13 |
-| 4.1. Multi-Timeframe Signal Foundation | 0/4 | Planned; next | - |
-| 5. Relative Strength and Unified Scoring | 0/3 | Not started | - |
+| 4.1. Multi-Timeframe Signal Foundation | 4/4 | Complete | 2026-06-14 |
+| 5. Relative Strength and Unified Scoring | 0/3 | Planned; next | - |
 | 6. Portfolio Risk and Order Lifecycle | 0/5 | Not started | - |
 | 7. Backtesting and Validation | 0/5 | Not started | - |
 | 8. QuantConnect Paper Trading and Telegram | 0/4 | Not started | - |

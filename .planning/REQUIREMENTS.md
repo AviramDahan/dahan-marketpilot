@@ -198,20 +198,20 @@ Deferred to future releases and not part of the v1 roadmap:
 | SET-05 | Phase 5 | Pending |
 | SET-06 | Phase 5 | Pending |
 | SET-07 | Phase 3 | Pending |
-| MODE-01 | Phase 4.1 | Pending |
-| MODE-02 | Phase 4.1 | Pending |
-| MODE-03 | Phase 4.1 | Pending |
-| TF-01 | Phase 4.1 | Pending |
-| TF-02 | Phase 4.1 | Pending |
-| TF-03 | Phase 4.1 | Pending |
-| TF-04 | Phase 4.1 | Pending |
-| TF-05 | Phase 4.1 | Pending |
-| TF-06 | Phase 4.1 | Pending |
-| TF-07 | Phase 4.1 | Pending |
-| QC-MTF-01 | Phase 4.1 | Pending |
-| QC-MTF-02 | Phase 4.1 | Pending |
-| SET-MTF-01 | Phase 4.1 | Pending |
-| SET-MTF-02 | Phase 4.1 | Pending |
+| MODE-01 | Phase 4.1 | Complete |
+| MODE-02 | Phase 4.1 | Complete |
+| MODE-03 | Phase 4.1 | Complete |
+| TF-01 | Phase 4.1 | Complete |
+| TF-02 | Phase 4.1 | Complete |
+| TF-03 | Phase 4.1 | Complete |
+| TF-04 | Phase 4.1 | Complete |
+| TF-05 | Phase 4.1 | Complete |
+| TF-06 | Phase 4.1 | Complete |
+| TF-07 | Phase 4.1 | Complete |
+| QC-MTF-01 | Phase 4.1 | Complete |
+| QC-MTF-02 | Phase 4.1 | Complete |
+| SET-MTF-01 | Phase 4.1 | Complete |
+| SET-MTF-02 | Phase 4.1 | Complete |
 | SET-MTF-03 | Phase 4.1, Phase 5 | Pending |
 | BT-MTF-01 | Phase 4.1, Phase 7 | Pending |
 | SCO-01 | Phase 5 | Pending |

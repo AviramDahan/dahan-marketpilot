@@ -24,7 +24,8 @@ Phase 3 adds:
 
 - `config/trend_pullback.yaml`
 
-Phase 4.1 defines `config/strategy.yaml` as the central strategy-mode contract.
+Phase 4.1 defines and implements `config/strategy.yaml` as the central
+strategy-mode contract.
 Supported regular strategy modes are exactly:
 
 - `daily_only`
@@ -143,3 +144,10 @@ The recommended 4H policy is regular-hours, market-open anchoring in
 `America/New_York`, with extended hours excluded. Because the US regular session
 is 6.5 hours, remaining partial-session bars must be explicitly marked partial
 and non-signal by default.
+
+Implementation files:
+
+- `marketpilot/configuration.py` exposes `load_strategy_config()`.
+- `marketpilot/timeframes.py` defines `StrategyMode`, `BarTimeframe`,
+  `CompletedBar`, `BarSessionMetadata`, and `TimeframeReadiness`.
+- `tests/test_strategy_config.py` covers fail-closed strategy-mode loading.

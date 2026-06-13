@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
+from marketpilot.timeframes import BarCompletionStatus, BarTimeframe, StrategyMode
+
 
 class SetupStatus(str, Enum):
     VALID = "valid"
@@ -41,6 +43,17 @@ class SetupTiming:
     timing_mode: str = "completed_daily_bar"
     uses_completed_daily_bar: bool = True
     intrabar_valid: bool = False
+    strategy_mode: StrategyMode = StrategyMode.DAILY_ONLY
+    signal_timeframe: BarTimeframe = BarTimeframe.DAILY
+    bar_start: datetime | None = None
+    bar_end: datetime | None = None
+    completion_status: BarCompletionStatus = BarCompletionStatus.COMPLETE
+    exchange_timezone: str = "America/New_York"
+    regular_hours: bool = True
+    partial_session: bool = False
+    freshness: str = "fresh"
+    source_resolution: str = "daily"
+    later_valid_execution_required: bool = True
 
 
 @dataclass(frozen=True)

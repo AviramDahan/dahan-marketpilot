@@ -132,3 +132,9 @@ technically justified. Comparison reports should include candidate/trade counts,
 win rate, average RR/R, max drawdown, holding period, missed opportunities,
 false breakout rate, delayed-entry impact, fees/slippage, year-by-year,
 out-of-sample, and walk-forward results.
+
+Current Phase 4.1 suites:
+
+- `tests/test_strategy_config.py`
+- `tests/test_timeframes.py`
+- `tests/test_setup_mtf_adaptation.py`

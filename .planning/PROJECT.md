@@ -18,6 +18,7 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 - Phase 1 implemented central paper-only safety validation, safe YAML loading, FX seed calculation, and deterministic offline tests.
 - Phase 1 added safe foundational models and tests that protect required project safety files.
 - Phase 1 added a minimal non-trading QuantConnect shell and read-only dashboard shell with static safety tests.
+- Phase 4.1 implemented the multi-timeframe signal foundation: central StrategyMode config, timeframe-aware completed-bar contracts, generalized setup timing metadata, MTF setup evidence, deterministic tests, and synchronized documentation.
 
 ### Active
 
@@ -128,4 +129,4 @@ After each phase:
 4. Refresh Context and Constraints if implementation reality changes.
 
 ---
-*Last updated: 2026-06-14 after Phase 4.1 multi-timeframe insertion.*
+*Last updated: 2026-06-14 after Phase 4.1 execution and verification.*

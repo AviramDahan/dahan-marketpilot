@@ -49,3 +49,7 @@ mandatory; 4H is mandatory in MTF modes; 1H is optional confirmation only in
 Indicators must be ready for the timeframe that consumes them. Missing, stale,
 NaN, infinite, future, incomplete, or partial-session signal data must not
 become neutral or positive evidence.
+
+`marketpilot/timeframes.py` provides shared readiness metadata so later setup
+and scoring layers can distinguish mandatory Daily/4H failures from optional
+1H absence.

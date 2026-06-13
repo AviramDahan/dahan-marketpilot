@@ -15,6 +15,7 @@ from marketpilot.indicators import ReadinessStatus
 from marketpilot.regime import MarketRegime, RegimeResult
 from marketpilot.setups.base import NumericEvidence, SetupRejectionReason, SetupResult, SetupStatus, SetupTiming
 from marketpilot.symbol_data import SymbolData
+from marketpilot.timeframes import BarTimeframe, StrategyMode, timeframe_allowed_for_strategy_mode
 
 
 SETUP_NAME = "trend_pullback"
@@ -42,6 +43,9 @@ class TrendPullbackInput:
     atr_pct: float
     reward_risk_proxy: float
     earnings_source_verified: bool = False
+    strategy_mode: StrategyMode = StrategyMode.DAILY_ONLY
+    signal_timeframe: BarTimeframe = BarTimeframe.DAILY
+    one_hour_confirmation_available: bool | None = None
 
 
 REQUIRED_INDICATORS = ("EMA20", "EMA50", "EMA200", "RSI14", "MACD", "ATR14")
@@ -77,9 +81,13 @@ def evaluate_trend_pullback(
         reasons.append(SetupRejectionReason.DATA_NOT_READY)
     if setup_input.regime.regime is MarketRegime.RISK_OFF or not setup_input.regime.future_entries_allowed:
         reasons.append(SetupRejectionReason.RISK_OFF)
+    if not timeframe_allowed_for_strategy_mode(setup_input.strategy_mode, setup_input.signal_timeframe):
+        reasons.append(SetupRejectionReason.DATA_NOT_READY)
 
     indicator_reasons = _validate_indicators(setup_input.indicators)
     reasons.extend(indicator_reasons)
+
+    evidence.extend(_timeframe_evidence(setup_input))
 
     if not bars or reasons:
         return _build_result(setup_input, signal_time, evidence, reasons)
@@ -192,7 +200,15 @@ def _build_result(
         setup_name=SETUP_NAME,
         symbol=setup_input.symbol_data.symbol.strip().upper(),
         status=status,
-        timing=SetupTiming(signal_time=signal_time),
+        timing=SetupTiming(
+            signal_time=signal_time,
+            timing_mode=setup_input.signal_timeframe.timing_mode,
+            uses_completed_daily_bar=setup_input.signal_timeframe is BarTimeframe.DAILY,
+            strategy_mode=setup_input.strategy_mode,
+            signal_timeframe=setup_input.signal_timeframe,
+            bar_end=signal_time,
+            source_resolution=setup_input.signal_timeframe.value,
+        ),
         evidence=tuple(evidence),
         rejection_reasons=unique_reasons,
         explanation=_explain(status, unique_reasons),
@@ -203,6 +219,19 @@ def _explain(status: SetupStatus, reasons: tuple[SetupRejectionReason, ...]) -> 
     if status is SetupStatus.VALID:
         return ("Trend Pullback is valid on completed daily-bar evidence.",)
     return tuple(f"Rejected: {reason.value}." for reason in reasons)
+
+
+def _timeframe_evidence(setup_input: TrendPullbackInput) -> list[NumericEvidence]:
+    return [
+        NumericEvidence("strategy_mode", setup_input.strategy_mode.value, "config", True),
+        NumericEvidence("signal_timeframe", setup_input.signal_timeframe.value, "setup_signal", True),
+        NumericEvidence(
+            "one_hour_confirmation_available",
+            setup_input.one_hour_confirmation_available,
+            "optional_confirmation_only",
+            None,
+        ),
+    ]
 
 
 def _count_pullback_bars(bars: tuple[CompletedDailyBar, ...]) -> int:

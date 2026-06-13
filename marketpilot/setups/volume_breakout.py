@@ -16,6 +16,7 @@ from marketpilot.regime import MarketRegime
 from marketpilot.regime import RegimeResult
 from marketpilot.setups.base import NumericEvidence, SetupRejectionReason, SetupResult, SetupStatus, SetupTiming
 from marketpilot.symbol_data import SymbolData
+from marketpilot.timeframes import BarTimeframe, StrategyMode, timeframe_allowed_for_strategy_mode
 
 
 SETUP_NAME = "volume_breakout"
@@ -47,6 +48,9 @@ class VolumeBreakoutInput:
     earnings_source_verified: bool = False
     earnings_risk_conflict: bool = False
     portfolio_conflict: bool | None = None
+    strategy_mode: StrategyMode = StrategyMode.DAILY_ONLY
+    signal_timeframe: BarTimeframe = BarTimeframe.DAILY
+    one_hour_confirmation_available: bool | None = None
 
 
 REQUIRED_INDICATORS = ("EMA20", "ATR14")
@@ -116,8 +120,11 @@ def evaluate_volume_breakout(
         reasons.append(SetupRejectionReason.DATA_NOT_READY)
     if setup_input.regime.regime is MarketRegime.RISK_OFF or not setup_input.regime.future_entries_allowed:
         reasons.append(SetupRejectionReason.RISK_OFF)
+    if not timeframe_allowed_for_strategy_mode(setup_input.strategy_mode, setup_input.signal_timeframe):
+        reasons.append(SetupRejectionReason.DATA_NOT_READY)
     reasons.extend(_validate_indicators(setup_input.indicators))
 
+    evidence.extend(_timeframe_evidence(setup_input))
     evidence.append(NumericEvidence("resistance_lookback_bars", lookback_bars, lookback_bars, len(bars) >= lookback_bars + 1))
     evidence.append(NumericEvidence("breakout_buffer_pct", breakout_buffer_pct, "config", True))
     evidence.append(NumericEvidence("regime", setup_input.regime.regime.value, "entry_allowed", setup_input.regime.future_entries_allowed))
@@ -271,7 +278,15 @@ def _build_result(
         setup_name=SETUP_NAME,
         symbol=setup_input.symbol_data.symbol.strip().upper(),
         status=status,
-        timing=SetupTiming(signal_time=signal_time),
+        timing=SetupTiming(
+            signal_time=signal_time,
+            timing_mode=setup_input.signal_timeframe.timing_mode,
+            uses_completed_daily_bar=setup_input.signal_timeframe is BarTimeframe.DAILY,
+            strategy_mode=setup_input.strategy_mode,
+            signal_timeframe=setup_input.signal_timeframe,
+            bar_end=signal_time,
+            source_resolution=setup_input.signal_timeframe.value,
+        ),
         evidence=tuple(evidence),
         rejection_reasons=unique_reasons,
         explanation=_explain(status, unique_reasons),
@@ -282,6 +297,19 @@ def _explain(status: SetupStatus, reasons: tuple[SetupRejectionReason, ...]) -> 
     if status is SetupStatus.VALID:
         return ("Volume Breakout is valid on completed daily-bar breakout evidence.",)
     return tuple(f"Rejected: {reason.value}." for reason in reasons)
+
+
+def _timeframe_evidence(setup_input: VolumeBreakoutInput) -> list[NumericEvidence]:
+    return [
+        NumericEvidence("strategy_mode", setup_input.strategy_mode.value, "config", True),
+        NumericEvidence("signal_timeframe", setup_input.signal_timeframe.value, "setup_signal", True),
+        NumericEvidence(
+            "one_hour_confirmation_available",
+            setup_input.one_hour_confirmation_available,
+            "optional_confirmation_only",
+            None,
+        ),
+    ]
 
 
 def _positive(value: object) -> bool:
