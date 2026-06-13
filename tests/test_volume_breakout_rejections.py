@@ -115,6 +115,14 @@ def test_rejects_unready_data_missing_indicators_invalid_values_and_incomplete_b
     )
 
 
+def test_rejects_stale_symbol_data_readiness():
+    result = assert_rejected(valid_input(symbol_data_stale=True), SetupRejectionReason.DATA_NOT_READY)
+
+    stale_evidence = evidence_item(result, "symbol_data_stale")
+    assert stale_evidence.value is True
+    assert stale_evidence.passed is False
+
+
 def test_rejects_excessive_atr_ema20_extension_and_insufficient_dollar_volume():
     setup_input = valid_input()
 
