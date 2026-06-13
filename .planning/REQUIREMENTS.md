@@ -51,7 +51,7 @@
 - [ ] **IND-05**: Missing, invalid, infinite, stale, or NaN data rejects signals and never becomes a default positive score.
 - [ ] **SET-01**: Trend Pullback identifies strong stocks in established uptrends that pull back toward EMA20 or EMA50 and begin to recover.
 - [ ] **SET-02**: Trend Pullback rejects broken trend structure, excessive ATR, excessive stop distance, overextension, incomplete data, earnings-risk conflicts, weak reward/risk, and failed portfolio constraints.
-- [ ] **SET-03**: Volume Breakout calculates prior resistance from the previous completed bars only, excluding the current bar.
+- [x] **SET-03**: Volume Breakout calculates prior resistance from the previous completed bars only, excluding the current bar.
 - [ ] **SET-04**: Volume Breakout requires volume confirmation, acceptable ATR, acceptable EMA20 extension, sufficient dollar volume, valid reward/risk, and non-RISK_OFF regime.
 - [ ] **SET-05**: Relative Strength Leader measures outperformance versus SPY and QQQ while enforcing healthy structure, liquidity, ATR, 52-week high proximity, and overextension limits.
 - [ ] **SET-06**: Trend Pullback, Volume Breakout, and Relative Strength Leader are implemented and validated independently before any Combined Swing strategy.
@@ -173,7 +173,7 @@ Deferred to future releases and not part of the v1 roadmap:
 | IND-05 | Phase 2 | Pending |
 | SET-01 | Phase 3 | Pending |
 | SET-02 | Phase 3 | Pending |
-| SET-03 | Phase 4 | Pending |
+| SET-03 | Phase 4 | Complete |
 | SET-04 | Phase 4 | Pending |
 | SET-05 | Phase 5 | Pending |
 | SET-06 | Phase 5 | Pending |
