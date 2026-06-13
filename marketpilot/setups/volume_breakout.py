@@ -108,6 +108,10 @@ def evaluate_volume_breakout(
         reasons.append(SetupRejectionReason.RISK_OFF)
     reasons.extend(_validate_indicators(setup_input.indicators))
 
+    evidence.append(NumericEvidence("resistance_lookback_bars", lookback_bars, lookback_bars, len(bars) >= lookback_bars + 1))
+    evidence.append(NumericEvidence("breakout_buffer_pct", breakout_buffer_pct, "config", True))
+    evidence.append(NumericEvidence("regime", setup_input.regime.regime.value, "entry_allowed", setup_input.regime.future_entries_allowed))
+
     if not bars:
         return _build_result(setup_input, signal_time, evidence, reasons)
 
@@ -117,10 +121,6 @@ def evaluate_volume_breakout(
         prior_resistance = calculate_prior_resistance(bars, lookback_bars)
     except ValueError:
         reasons.append(SetupRejectionReason.INVALID_PRIOR_RESISTANCE)
-
-    evidence.append(NumericEvidence("resistance_lookback_bars", lookback_bars, lookback_bars, prior_resistance is not None))
-    evidence.append(NumericEvidence("breakout_buffer_pct", breakout_buffer_pct, "config", True))
-    evidence.append(NumericEvidence("regime", setup_input.regime.regime.value, "entry_allowed", setup_input.regime.future_entries_allowed))
 
     if prior_resistance is None:
         return _build_result(setup_input, signal_time, evidence, reasons)
@@ -270,7 +270,7 @@ def _build_result(
 
 def _explain(status: SetupStatus, reasons: tuple[SetupRejectionReason, ...]) -> tuple[str, ...]:
     if status is SetupStatus.VALID:
-        return ("Volume Breakout is valid on completed daily-bar evidence.",)
+        return ("Volume Breakout is valid on completed daily-bar breakout evidence.",)
     return tuple(f"Rejected: {reason.value}." for reason in reasons)
 
 
