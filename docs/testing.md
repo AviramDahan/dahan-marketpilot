@@ -98,9 +98,9 @@ deployment, or fake backtest behavior.
 
 Phase 4 Volume Breakout tests are deterministic and offline. They verify
 current-bar-excluded prior resistance, completed-close breakout confirmation,
-volume confirmation, SET-04 hard gates, evaluator-calculated reward/risk proxy,
-evidence completeness, readable explanations, setup-only output, and forbidden
-behavior absence.
+volume confirmation, SET-04 hard gates, stale SymbolData readiness rejection,
+evaluator-calculated reward/risk proxy, evidence completeness, readable
+explanations, setup-only output, and forbidden behavior absence.
 
 Current Phase 4 suites:
 

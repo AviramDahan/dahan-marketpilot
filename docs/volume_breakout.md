@@ -42,8 +42,8 @@ Volume Breakout evidence includes prior resistance, resistance lookback length,
 breakout buffer, buffered resistance, breakout close, average volume, volume
 ratio, EMA20 extension percentage, ATR percentage, average dollar volume,
 projected setup evidence, reward/risk proxy components, market regime,
-earnings-source status, earnings-conflict status, and explicit portfolio
-conflict input.
+symbol data staleness, earnings-source status, earnings-conflict status, and
+explicit portfolio conflict input.
 
 These fields are evidence components only. They are not a MarketPilot Score,
 not a confidence score, not a rank, not a classification, and not a trade
@@ -68,12 +68,14 @@ Tests use deterministic completed daily bar fixtures. Fixtures cover:
 - weak evaluator-calculated reward/risk proxy rejection
 - deferred earnings source evidence and explicit earnings conflict rejection
 - explicit portfolio conflict placeholder rejection
+- stale SymbolData readiness rejection
 
 ## Detection Rules
 
 A valid Volume Breakout requires:
 
 - accepted data quality and ready required indicators
+- non-stale SymbolData readiness
 - market regime that allows future entries, with RISK_OFF rejected
 - completed daily bars only
 - prior resistance from previous completed bars only
@@ -87,8 +89,8 @@ A valid Volume Breakout requires:
 ## Rejection Rules
 
 Volume Breakout SET-04 hard gates reject invalid prior resistance, missing or
-incomplete completed-bar history, unready data, RISK_OFF or blocked future
-entries, unconfirmed completed-close breakout, weak volume confirmation,
+incomplete completed-bar history, unready or stale data, RISK_OFF or blocked
+future entries, unconfirmed completed-close breakout, weak volume confirmation,
 excessive EMA20 extension, excessive ATR, insufficient average dollar volume,
 weak reward/risk proxy, verified explicit earnings conflict, and explicit
 portfolio conflict.

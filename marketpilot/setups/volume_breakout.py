@@ -43,6 +43,7 @@ class VolumeBreakoutInput:
     average_dollar_volume: float
     atr_pct: float
     projected_target: float
+    symbol_data_stale: bool = False
     earnings_source_verified: bool = False
     earnings_risk_conflict: bool = False
     portfolio_conflict: bool | None = None
@@ -102,7 +103,16 @@ def evaluate_volume_breakout(
 
     if len(bars) < lookback_bars + 1 or any(not bar.complete for bar in bars) or any(not _valid_bar_values(bar) for bar in bars):
         reasons.append(SetupRejectionReason.INCOMPLETE_COMPLETED_BAR_DATA)
-    if not setup_input.symbol_data.future_signal_ready(REQUIRED_INDICATORS):
+    symbol_data_ready = setup_input.symbol_data.future_signal_ready(REQUIRED_INDICATORS, stale=setup_input.symbol_data_stale)
+    evidence.append(
+        NumericEvidence(
+            "symbol_data_stale",
+            setup_input.symbol_data_stale,
+            False,
+            not setup_input.symbol_data_stale,
+        )
+    )
+    if not symbol_data_ready:
         reasons.append(SetupRejectionReason.DATA_NOT_READY)
     if setup_input.regime.regime is MarketRegime.RISK_OFF or not setup_input.regime.future_entries_allowed:
         reasons.append(SetupRejectionReason.RISK_OFF)
