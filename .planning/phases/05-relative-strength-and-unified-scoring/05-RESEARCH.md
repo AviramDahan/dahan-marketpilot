@@ -416,21 +416,19 @@ ranked = sorted(
 | # | Claim | Section | Risk if Wrong |
 |---|-------|---------|---------------|
 | A1 | Do not add Pydantic/pandas/numpy for this phase. | Standard Stack | If the planner needs batch analytics later, a dependency decision may be required. |
-| A2 | RSL default `max_52_week_high_distance_pct` can be set conservatively during planning because the existing config does not define an exact threshold. | Architecture Patterns | If user expects a specific threshold, tests may encode the wrong default. |
+| A2 | RSL default `max_52_week_high_distance_pct` is resolved to a configurable 15.0% maximum distance from the 52-week high for Phase 5 planning. | Architecture Patterns | If later validation shows this is too strict or too loose, tune the config value without changing the setup contract. |
 | A3 | Tests should assert no `entry`, `stop`, `target`, `quantity`, or order fields in `RankedCandidate`. | Common Pitfalls | If later phases require report placeholders, the test should permit explicit `not_evaluated` evidence but still forbid order intent. |
 | A4 | Add `marketpilot/ranking.py` separate from `marketpilot/scoring.py`. | Recommended Project Structure | If the planner prefers one small module, behavior is unaffected but file layout differs. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **What exact default should RSL use for 52-week-high proximity?**
    - What we know: RSL must enforce 52-week-high proximity and `distance_from_high()` exists. [VERIFIED: `.planning/REQUIREMENTS.md`, `marketpilot/indicators.py`]
-   - What's unclear: the master spec says "reasonably close" but does not define a numeric threshold. [VERIFIED: master spec]
-   - Recommendation: planner should choose a conservative configurable default and cover it in tests; mark the threshold as a tunable research assumption. [ASSUMED]
+   - Resolution: use a configurable `max_52_week_high_distance_pct` default of `15.0`. This treats candidates within 15% of their 52-week high as close enough for Phase 5 RSL evaluation, rejects larger distances as weak leadership, and keeps the threshold tunable in `config/relative_strength.yaml`. [RESOLVED: Phase 5 planning policy]
 
 2. **Should Phase 5 upgrade the local Python environment?**
    - What we know: `pyproject.toml` requires Python >=3.11, but only Python 3.10 is installed locally. [VERIFIED: shell]
-   - What's unclear: whether the executor will have Python 3.11 available in another environment. [VERIFIED: shell]
-   - Recommendation: planner should add an environment checkpoint before implementation or explicitly run with the project-approved interpreter. [ASSUMED]
+   - Resolution: Phase 5 plans must include `python --version` as an environment checkpoint and record the mismatch in summaries when the local shell uses Python 3.10. Deterministic pytest checks may still run locally if they pass, but strict release validation and any environment claiming project metadata compliance must use Python 3.11+. [RESOLVED: Phase 5 planning policy]
 
 ## Environment Availability
 
