@@ -151,3 +151,16 @@ Implementation files:
 - `marketpilot/timeframes.py` defines `StrategyMode`, `BarTimeframe`,
   `CompletedBar`, `BarSessionMetadata`, and `TimeframeReadiness`.
 - `tests/test_strategy_config.py` covers fail-closed strategy-mode loading.
+
+Phase 5 adds:
+
+- `config/relative_strength.yaml`
+- `config/scoring.yaml`
+
+`config/relative_strength.yaml` defines the setup-only Relative Strength Leader
+contract with SPY hard gates, QQQ evidence-only measurement, structure,
+liquidity, ATR, EMA20 extension, and 52-week-high distance thresholds.
+
+`config/scoring.yaml` defines audit-only MarketPilot Score weights, candidate
+classification thresholds, explicit not-evaluated later gates, and disabled
+Combined Swing readiness settings.

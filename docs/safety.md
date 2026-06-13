@@ -58,3 +58,10 @@ They are separate from environment modes such as `backtest`, `shadow`, and
 `paper`. 1H confirmation is optional support only and cannot independently
 create a trade or override failed Daily, invalid 4H, `RISK_OFF`, stale data,
 hard rejection, or invalid reward/risk.
+
+## Scoring And Ranking Safety
+
+Phase 5 scoring and ranking are audit-only. Classification labels are evidence
+labels, not trade instructions. Ranked candidates contain no entry, stop,
+target, quantity, order, broker, Paper Trading, Telegram delivery, credential,
+fake backtest, portfolio mutation, or profitability behavior.

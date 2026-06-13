@@ -138,3 +138,13 @@ Current Phase 4.1 suites:
 - `tests/test_strategy_config.py`
 - `tests/test_timeframes.py`
 - `tests/test_setup_mtf_adaptation.py`
+
+Current Phase 5 suites:
+
+- `tests/test_relative_strength_contract.py`
+- `tests/test_relative_strength_detection.py`
+- `tests/test_relative_strength_rejections.py`
+- `tests/test_relative_strength_explanations.py`
+- `tests/test_relative_strength_safety.py`
+- `tests/test_scoring.py`
+- `tests/test_ranking.py`

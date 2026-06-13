@@ -7,6 +7,10 @@ from marketpilot.setups.base import (
     SetupStatus,
     SetupTiming,
 )
+from marketpilot.setups.relative_strength import (
+    RelativeStrengthInput,
+    evaluate_relative_strength_leader,
+)
 
 __all__ = [
     "NumericEvidence",
@@ -14,5 +18,6 @@ __all__ = [
     "SetupResult",
     "SetupStatus",
     "SetupTiming",
+    "RelativeStrengthInput",
+    "evaluate_relative_strength_leader",
 ]
-

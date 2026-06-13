@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Phase 4.1 complete; Phase 5 planned and ready to execute 05-01
-last_updated: "2026-06-14T03:20:00.000Z"
-last_activity: 2026-06-14 - Phase 4.1 executed, verified, and completed; ready to execute Phase 5 plan 05-01.
+stopped_at: Phase 5 complete; Phase 6 not yet discussed/planned
+last_updated: "2026-06-14T03:55:00.000Z"
+last_activity: 2026-06-14 - Phase 5 executed, verified, and completed; Phase 6 is next.
 progress:
   total_phases: 11
-  completed_phases: 5
-  total_plans: 19
-  completed_plans: 19
-  percent: 45
+  completed_phases: 6
+  total_plans: 22
+  completed_plans: 22
+  percent: 55
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-14)
 
 **Core value:** The system must provide an auditable paper-only swing-trading workflow where every signal, backtest, paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
-**Current focus:** Phase 5: Relative Strength and Unified Scoring
+**Current focus:** Phase 6: Portfolio Risk and Order Lifecycle
 
 ## Current Position
 
-Phase: 5 of 11 (relative strength and unified scoring)
-Plan: 3 of 3 planned; next plan 05-01
-Status: Ready to execute
-Last activity: 2026-06-14 - Phase 4.1 executed, verified, and completed; ready to execute Phase 5 plan 05-01.
+Phase: 6 of 11 (portfolio risk and order lifecycle)
+Plan: not yet discussed/planned
+Status: Ready to discuss
+Last activity: 2026-06-14 - Phase 5 executed, verified, and completed; Phase 6 is next.
 
-Progress: [#####------] 45%
+Progress: [######-----] 55%
 
 ## Performance Metrics
 
@@ -49,11 +49,12 @@ Progress: [#####------] 45%
 | 03 | 3 | - | - |
 | 04 | 4/4 | 22 min | 6 min |
 | 04.1 | 4/4 | - | - |
+| 05 | 3/3 | - | - |
 
 **Recent Trend:**
 
-- Last 5 plans: 04-04, 04.1-01, 04.1-02, 04.1-03, 04.1-04
-- Trend: Phase 4.1 MTF foundation executed and verified successfully
+- Last 5 plans: 04.1-03, 04.1-04, 05-01, 05-02, 05-03
+- Trend: Phase 5 scoring and ranking executed and verified successfully
 
 *Updated after each plan completion*
 | Phase 04 P01 | 6 min | 2 tasks | 4 files |
@@ -64,6 +65,9 @@ Progress: [#####------] 45%
 | Phase 04.1 P02 | - | Timeframe contracts | 3 files |
 | Phase 04.1 P03 | - | Setup MTF adaptation | 4 files |
 | Phase 04.1 P04 | - | Docs and verification | 10 files |
+| Phase 05 P01 | - | RSL setup | 8 files |
+| Phase 05 P02 | - | Scoring | 4 files |
+| Phase 05 P03 | - | Ranking | 5 files |
 
 ## Accumulated Context
 
@@ -91,6 +95,7 @@ Recent decisions affecting current work:
 - Phase 4.1 planning: Recommended 4H policy is market-open anchored, RTH-only, `America/New_York`, with partial-session bars marked non-signal by default.
 - Phase 4.1 planning: 1H is optional confirmation only and cannot independently create trades or override failed Daily, invalid 4H, `RISK_OFF`, stale data, hard rejection, or invalid reward/risk.
 - Phase 4.1 execution: `marketpilot/timeframes.py`, `load_strategy_config()`, extended `SetupTiming`, and MTF setup evidence are implemented with 135 passing tests.
+- Phase 5 execution: Relative Strength Leader, MarketPilot Score, audit classifications, confidence, one-candidate-per-symbol ranking, and disabled Combined Swing readiness gate are implemented with 164 passing tests.
 
 ### Pending Todos
 
@@ -100,7 +105,7 @@ None yet.
 
 - Later phases require user-managed QuantConnect account/subscription/API credentials, Telegram bot/chat ID, GitHub Secrets, and Render configuration.
 - Exact QuantConnect API endpoints, Object Store behavior, notification APIs, Render deployment details, and Streamlit APIs must be re-verified during the relevant implementation phases.
-- Phase 5 must consume StrategyMode, MTF evidence, and completed-bar timing contracts without adding live trading or fake performance artifacts.
+- Phase 6 must consume ranked audit candidates without treating classifications as order instructions. Portfolio constraints, sizing, stops, targets, and lifecycle state must remain paper-only and source-of-truth aligned with QuantConnect.
 - Phase 5 execution should record the local Python version because the current shell has Python 3.10 while project metadata requires Python >=3.11 for strict/release validation.
 
 ## Deferred Items
@@ -114,6 +119,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-14T03:20:00.000Z
-Stopped at: Phase 4.1 complete; Phase 5 ready to execute
-Resume file: .planning/phases/05-relative-strength-and-unified-scoring/05-01-PLAN.md
+Last session: 2026-06-14T03:55:00.000Z
+Stopped at: Phase 5 complete; Phase 6 not yet discussed/planned
+Resume file: .planning/ROADMAP.md

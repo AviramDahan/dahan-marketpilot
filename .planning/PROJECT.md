@@ -19,6 +19,7 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 - Phase 1 added safe foundational models and tests that protect required project safety files.
 - Phase 1 added a minimal non-trading QuantConnect shell and read-only dashboard shell with static safety tests.
 - Phase 4.1 implemented the multi-timeframe signal foundation: central StrategyMode config, timeframe-aware completed-bar contracts, generalized setup timing metadata, MTF setup evidence, deterministic tests, and synchronized documentation.
+- Phase 5 implemented Relative Strength Leader, MarketPilot Score, audit classifications, confidence, setup ranking, one-candidate-per-symbol behavior, and disabled Combined Swing readiness.
 
 ### Active
 
@@ -129,4 +130,4 @@ After each phase:
 4. Refresh Context and Constraints if implementation reality changes.
 
 ---
-*Last updated: 2026-06-14 after Phase 4.1 execution and verification.*
+*Last updated: 2026-06-14 after Phase 5 execution and verification.*

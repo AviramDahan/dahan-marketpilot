@@ -195,8 +195,8 @@ Deferred to future releases and not part of the v1 roadmap:
 | SET-02 | Phase 3 | Pending |
 | SET-03 | Phase 4 | Complete |
 | SET-04 | Phase 4 | Complete |
-| SET-05 | Phase 5 | Pending |
-| SET-06 | Phase 5 | Pending |
+| SET-05 | Phase 5 | Complete |
+| SET-06 | Phase 5 | Complete |
 | SET-07 | Phase 3 | Pending |
 | MODE-01 | Phase 4.1 | Complete |
 | MODE-02 | Phase 4.1 | Complete |
@@ -212,11 +212,11 @@ Deferred to future releases and not part of the v1 roadmap:
 | QC-MTF-02 | Phase 4.1 | Complete |
 | SET-MTF-01 | Phase 4.1 | Complete |
 | SET-MTF-02 | Phase 4.1 | Complete |
-| SET-MTF-03 | Phase 4.1, Phase 5 | Pending |
+| SET-MTF-03 | Phase 4.1, Phase 5 | Complete |
 | BT-MTF-01 | Phase 4.1, Phase 7 | Pending |
-| SCO-01 | Phase 5 | Pending |
-| SCO-02 | Phase 5 | Pending |
-| SCO-03 | Phase 5 | Pending |
+| SCO-01 | Phase 5 | Complete |
+| SCO-02 | Phase 5 | Complete |
+| SCO-03 | Phase 5 | Complete |
 | SCO-04 | Phase 6 | Pending |
 | RISK-01 | Phase 6 | Pending |
 | RISK-02 | Phase 6 | Pending |

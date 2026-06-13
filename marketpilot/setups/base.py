@@ -35,6 +35,8 @@ class SetupRejectionReason(str, Enum):
     INSUFFICIENT_DOLLAR_VOLUME = "insufficient_dollar_volume"
     EARNINGS_RISK_CONFLICT = "earnings_risk_conflict"
     PORTFOLIO_CONFLICT = "portfolio_conflict"
+    WEAK_SPY_RELATIVE_STRENGTH = "weak_spy_relative_strength"
+    EXCESSIVE_52_WEEK_HIGH_DISTANCE = "excessive_52_week_high_distance"
 
 
 @dataclass(frozen=True)

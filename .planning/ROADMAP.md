@@ -18,7 +18,7 @@ Dahan MarketPilot v1 is planned as a safety-first sequence. The project starts w
 - [x] **Phase 3: Trend Pullback** - Implement and test the Trend Pullback setup with evidence, rejections, scoring components, and explanations. (completed 2026-06-13)
 - [x] **Phase 4: Volume Breakout** - Implement and test prior-resistance breakout logic with current-bar exclusion and volume confirmation. (completed 2026-06-13)
 - [x] **Phase 4.1: Multi-Timeframe Signal Foundation** - Add StrategyMode, completed-bar/timeframe contracts, 4H alignment policy, per-timeframe readiness, MTF setup adaptation, deterministic tests, and documentation sync. (completed 2026-06-14)
-- [ ] **Phase 5: Relative Strength and Unified Scoring** - Implement Relative Strength Leader, candidate ranking, MarketPilot Score, classification, confidence, and setup comparison while consuming StrategyMode and MTF evidence from Phase 4.1.
+- [x] **Phase 5: Relative Strength and Unified Scoring** - Implement Relative Strength Leader, candidate ranking, MarketPilot Score, classification, confidence, and setup comparison while consuming StrategyMode and MTF evidence from Phase 4.1. (completed 2026-06-14)
 - [ ] **Phase 6: Portfolio Risk and Order Lifecycle** - Add portfolio constraints, sizing, order state, stops, targets, exits, restart state, and notification-domain events.
 - [ ] **Phase 7: Backtesting and Validation** - Add realistic backtesting, no-look-ahead validation, chronological validation, activation gates, and reports.
 - [ ] **Phase 8: QuantConnect Paper Trading and Telegram** - Add gated paper modes, QuantConnect Paper Trading deployment design, reconciliation, recovery, and Telegram delivery.
@@ -196,15 +196,15 @@ Plans:
 
 **Wave 1**
 
-- [ ] 05-01-PLAN.md - Relative Strength Leader setup and tests.
+- [x] 05-01-PLAN.md - Relative Strength Leader setup and tests.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 05-02-PLAN.md - Unified MarketPilot scoring, classifications, and confidence.
+- [x] 05-02-PLAN.md - Unified MarketPilot scoring, classifications, and confidence.
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 05-03-PLAN.md - Setup comparison, explanations, and Combined Swing readiness gate.
+- [x] 05-03-PLAN.md - Setup comparison, explanations, and Combined Swing readiness gate.
 
 ### Phase 6: Portfolio Risk and Order Lifecycle
 
@@ -325,8 +325,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 
 | 3. Trend Pullback | 3/3 | Complete | 2026-06-13 |
 | 4. Volume Breakout | 4/4 | Complete   | 2026-06-13 |
 | 4.1. Multi-Timeframe Signal Foundation | 4/4 | Complete | 2026-06-14 |
-| 5. Relative Strength and Unified Scoring | 0/3 | Planned; next | - |
-| 6. Portfolio Risk and Order Lifecycle | 0/5 | Not started | - |
+| 5. Relative Strength and Unified Scoring | 3/3 | Complete | 2026-06-14 |
+| 6. Portfolio Risk and Order Lifecycle | 0/5 | Not started; next | - |
 | 7. Backtesting and Validation | 0/5 | Not started | - |
 | 8. QuantConnect Paper Trading and Telegram | 0/4 | Not started | - |
 | 9. Render Dashboard | 0/4 | Not started | - |
