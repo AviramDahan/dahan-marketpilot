@@ -96,7 +96,7 @@ Plans:
   3. Signal timing uses completed daily bars and records later valid execution assumptions.
   4. Unit tests cover triggers, recovery behavior, and rejection conditions.
 
-**Plans**: 3 plans
+**Plans**: 4 plans
 Plans:
 **Wave 1**
 
@@ -135,6 +135,10 @@ Plans:
 **Wave 3** *(blocked on Wave 2 completion)*
 
 - [x] 04-03: Volume Breakout scoring components, explanations, and tests.
+
+**Wave 4** *(gap closure after verification)*
+
+- [x] 04-04: Stale-data gap closure for Volume Breakout readiness.
 
 ### Phase 5: Relative Strength and Unified Scoring
 
@@ -273,7 +277,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 1. Foundation and Safety | 4/4 | Complete    | 2026-06-12 |
 | 2. QuantConnect Foundation and Universe | 4/4 | Complete | 2026-06-13 |
 | 3. Trend Pullback | 3/3 | Complete | 2026-06-13 |
-| 4. Volume Breakout | 3/3 | Complete   | 2026-06-13 |
+| 4. Volume Breakout | 4/4 | Complete   | 2026-06-13 |
 | 5. Relative Strength and Unified Scoring | 0/3 | Not started | - |
 | 6. Portfolio Risk and Order Lifecycle | 0/5 | Not started | - |
 | 7. Backtesting and Validation | 0/5 | Not started | - |
