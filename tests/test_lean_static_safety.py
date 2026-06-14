@@ -8,15 +8,24 @@ LEAN_MAIN = ROOT / "lean" / "main.py"
 
 FORBIDDEN_METHODS = [
     "MarketOrder",
+    "market_order",
     "LimitOrder",
+    "limit_order",
     "StopMarketOrder",
+    "stop_market_order",
     "StopLimitOrder",
+    "stop_limit_order",
     "SetHoldings",
+    "set_holdings",
     "Liquidate",
+    "liquidate",
     "SetBrokerageModel",
+    "set_brokerage_model",
     "AddUniverse",
+    "add_universe",
     "CloudLive",
     "LiveMode",
+    "live_mode",
 ]
 
 
@@ -29,7 +38,7 @@ def test_lean_shell_defines_qcalgorithm_subclass():
 
 def test_lean_shell_subscribes_only_to_spy_and_qqq_benchmarks():
     text = LEAN_MAIN.read_text(encoding="utf-8")
-    symbols = re.findall(r'AddEquity\("([A-Z]+)"', text)
+    symbols = re.findall(r'add_equity\("([A-Z]+)"', text)
 
     assert symbols == ["SPY", "QQQ"]
 

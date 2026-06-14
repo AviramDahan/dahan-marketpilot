@@ -26,6 +26,8 @@ secrets.toml
 lean/credentials.json
 lean/data/
 lean/storage/
+lean.json
+data/
 
 # Generated reports and artifacts
 reports/generated/

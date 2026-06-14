@@ -1,5 +1,7 @@
 {
-  "algorithm-language": "Python",
-  "parameters": {},
-  "description": "Dahan MarketPilot Phase 1 benchmark-only compile shell with safe metadata only."
+    "algorithm-language": "Python",
+    "parameters": {},
+    "description": "Dahan MarketPilot Phase 1 benchmark-only compile shell with safe metadata only.",
+    "cloud-id": 32900381,
+    "organization-id": "ed947707222a7b9aeb5de9d0974e5994"
 }
