@@ -298,7 +298,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 08-02: Order reconciliation, restart recovery, and protective-order recovery.
+- [x] 08-02: Order reconciliation, restart recovery, and protective-order recovery.
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -365,6 +365,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 
 | 5. Relative Strength and Unified Scoring | 3/3 | Complete | 2026-06-14 |
 | 6. Portfolio Risk and Order Lifecycle | 5/5 | Complete    | 2026-06-14 |
 | 7. Backtesting and Validation | 5/5 | Complete    | 2026-06-14 |
-| 8. QuantConnect Paper Trading and Telegram | 1/4 | In Progress|  |
+| 8. QuantConnect Paper Trading and Telegram | 2/4 | In Progress|  |
 | 9. Render Dashboard | 0/4 | Not started | - |
 | 10. CI/CD, Security and Release | 0/4 | Not started | - |
