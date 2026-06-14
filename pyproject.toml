@@ -11,6 +11,7 @@ requires-python = ">=3.11"
 license = { text = "MIT" }
 dependencies = [
   "PyYAML>=6.0.2",
+  "streamlit>=1.51,<2",
 ]
 
 [project.optional-dependencies]
@@ -19,7 +20,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["marketpilot*"]
+include = ["marketpilot*", "dashboard*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

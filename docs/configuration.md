@@ -237,3 +237,20 @@ data is rendered before login.
 The allowed dashboard actions are view, refresh, login, and logout. Navigation
 is Overview-first for mobile use, followed by Positions, Trades, Signals,
 Backtests, Strategies, Risk, Notifications, Activity, and System Status.
+
+Render dashboard deployment uses `render.yaml` and starts Streamlit with:
+
+```text
+streamlit run dashboard/app.py --server.address=0.0.0.0 --server.port=$PORT
+```
+
+Render secret-bearing variables are named in the Blueprint with `sync: false`
+and must be filled in Render or another approved external secret store:
+
+- `DASHBOARD_PASSWORD`
+- `QUANTCONNECT_USER_ID`
+- `QUANTCONNECT_API_TOKEN`
+- `QUANTCONNECT_PROJECT_ID`
+- `QUANTCONNECT_LIVE_DEPLOY_ID`
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`

@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: dahan-marketpilot-dashboard
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run dashboard/app.py --server.address=0.0.0.0 --server.port=$PORT
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: MARKETPILOT_ENV
+        value: paper
+      - key: MARKETPILOT_CONFIG_DIR
+        value: config
+      - key: DASHBOARD_PASSWORD
+        sync: false
+      - key: QUANTCONNECT_USER_ID
+        sync: false
+      - key: QUANTCONNECT_API_TOKEN
+        sync: false
+      - key: QUANTCONNECT_PROJECT_ID
+        sync: false
+      - key: QUANTCONNECT_LIVE_DEPLOY_ID
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
