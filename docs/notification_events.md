@@ -52,6 +52,18 @@ credentials, copied token or chat target values, fake performance, or
 profitability guarantees. The domain event layer stores sanitized payloads and
 the Telegram adapter formats concise plain text from those fields.
 
+Regime transition alerts are generated only when the previous and current
+regime states differ. Unchanged repeated states produce no new
+`regime_change` event. Transition payloads include previous state, current
+state, timestamp, correlation ID, and reason labels so deduplication can still
+use `event_type|correlation_id`.
+
+Daily summaries are end-of-day notification artifacts, not portfolio authority.
+They include the active Paper mode, new signal count, entry count, exit count,
+open position count, rejected action count, and system warnings. They explicitly
+label QuantConnect as the authoritative portfolio source and do not invent
+portfolio values.
+
 Telegram delivery is a Phase 8 transport adapter over these domain events. It
 uses the same stable delivery key as local deduplication:
 

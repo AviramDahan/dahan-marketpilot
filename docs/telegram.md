@@ -46,6 +46,21 @@ network failure, local rate limiting, and duplicate suppression are delivery
 outcomes only. They must be recorded as typed results and must never stop
 trading logic or protective recovery.
 
+Alert coverage includes BUY candidate, WATCH, Paper BUY, Paper SELL,
+submitted-order, partial-fill, full-fill, stop, target, partial-close,
+full-close, rejected-order, canceled-order, regime-change, system, error,
+start/restart, and daily-summary events. Regime alerts are transition-only:
+if the previous and current regime states are the same, no alert is created.
+
+Daily summary messages are scheduled end-of-day artifacts. They include active
+Paper mode, new signals, entries, exits, open positions, rejected actions, and
+system warnings. They never replace QuantConnect as the source of truth and
+must not invent cash, equity, holding, order, fill, or performance values.
+
+Historical backtests remain real-Telegram-disabled by default. Phase 7
+backtest preview notifications remain fake-collector-only artifacts unless a
+future operator-controlled preview path is explicitly designed.
+
 Delivery statuses are deterministic and safe for logs or reports:
 
 - `disabled`

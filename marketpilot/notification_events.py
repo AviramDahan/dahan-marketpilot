@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from enum import Enum
 from typing import Mapping
 
@@ -177,6 +177,65 @@ def event_for_alert_family(
     return NotificationDomainEvent.create(event_type, correlation_id, payload, severity=resolved_severity, timestamp=timestamp)
 
 
+def event_for_regime_transition(
+    *,
+    previous_regime: object,
+    current_regime: object,
+    correlation_id: str,
+    timestamp: datetime | None = None,
+    reasons: tuple[str, ...] = (),
+) -> NotificationDomainEvent | None:
+    previous_value = _enum_or_string_value(previous_regime)
+    current_value = _enum_or_string_value(current_regime)
+    if previous_value == current_value:
+        return None
+    return event_for_alert_family(
+        "regime_change",
+        correlation_id,
+        {
+            "previous_regime": previous_value,
+            "current_regime": current_value,
+            "regime_state": current_value,
+            "reasons": reasons,
+        },
+        severity="warning",
+        timestamp=timestamp,
+    )
+
+
+def event_for_daily_summary(
+    *,
+    correlation_id: str,
+    summary_date: date,
+    active_paper_mode: str,
+    new_signals: int,
+    entries: int,
+    exits: int,
+    open_positions: int,
+    rejected_actions: int,
+    system_warnings: tuple[str, ...] = (),
+    timestamp: datetime | None = None,
+    payload: Mapping[str, object] | None = None,
+) -> NotificationDomainEvent:
+    summary_payload = {
+        "artifact": "end_of_day_summary",
+        "source": "scheduled_end_of_day",
+        "summary_date": summary_date.isoformat(),
+        "active_paper_mode": active_paper_mode,
+        "new_signals": new_signals,
+        "entries": entries,
+        "exits": exits,
+        "open_positions": open_positions,
+        "rejected_actions": rejected_actions,
+        "system_warnings": system_warnings,
+        "authoritative_portfolio_source": "quantconnect",
+        "invented_portfolio_values": False,
+    }
+    if payload:
+        summary_payload.update(payload)
+    return event_for_alert_family("daily_summary", correlation_id, summary_payload, timestamp=timestamp)
+
+
 def event_for_system_incident(
     correlation_id: str,
     payload: Mapping[str, object],
@@ -211,6 +270,13 @@ def _default_alert_severity(family: str) -> str:
     if family in _WARNING_ALERT_FAMILIES:
         return "warning"
     return "info"
+
+
+def _enum_or_string_value(value: object) -> str:
+    enum_value = getattr(value, "value", None)
+    if enum_value is not None:
+        return str(enum_value)
+    return str(value)
 
 
 def _sanitize_payload(payload: Mapping[str, object]) -> dict[str, object]:
