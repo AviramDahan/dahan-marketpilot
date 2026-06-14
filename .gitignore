@@ -32,6 +32,7 @@ data/
 # Generated reports and artifacts
 reports/generated/
 *.log
+.planning/research/.cache/
 
 # OS and editor
 .DS_Store
