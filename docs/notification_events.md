@@ -22,7 +22,17 @@ for deterministic tests only. Deduplication and rate limiting affect
 notification emission only; they never control risk, order, or exit safety
 logic.
 
-Real Telegram delivery remains deferred to Phase 8.
+Telegram delivery is a Phase 8 transport adapter over these domain events. It
+uses the same stable delivery key as local deduplication:
+
+```text
+event_type|correlation_id
+```
+
+Duplicate suppression and local rate limiting can suppress or delay outbound
+Telegram delivery, but they cannot approve Paper modes, create orders, change
+order lifecycle states, clear reconciliation mismatches, unblock new entries,
+or change protective recovery decisions.
 
 Backtest preview events are historical previews for deterministic inspection.
 They are emitted through the fake collector only, are sanitized like all other

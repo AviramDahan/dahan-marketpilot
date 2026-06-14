@@ -133,3 +133,18 @@ If QuantConnect shows a filled Paper position without required stop, target, or
 protective state, protective recovery blocks new entries and preserves exit
 obligations until explicit recovery is completed. Notification or Telegram
 delivery failure must not change that decision or unblock entries.
+
+## Telegram Safety
+
+Telegram is an outbound delivery adapter over `NotificationDomainEvent`.
+Delivery can be disabled, missing secrets, duplicate-suppressed, locally
+rate-limited, rejected by Telegram, fail on network errors, or succeed. Those
+outcomes are typed notification results only. They must never approve Paper
+modes, submit orders, modify order lifecycle states, clear reconciliation
+mismatches, erase exit obligations, or unblock protective recovery.
+
+Telegram messages are plain text by default, concise, sanitized, and include
+the simulated-paper warning where relevant. They must not include credentials,
+secret values, copied token or chat target values, or profitability guarantees.
+Historical backtests remain real-Telegram-disabled and use fake collector
+previews only unless a future explicit preview path is designed.

@@ -67,7 +67,7 @@ class NotificationDeduplicator:
     seen_keys: set[str] = field(default_factory=set)
 
     def should_emit(self, event: NotificationDomainEvent) -> bool:
-        key = f"{event.event_type}|{event.correlation_id}"
+        key = notification_delivery_key(event)
         if key in self.seen_keys:
             return False
         self.seen_keys.add(key)
@@ -144,6 +144,10 @@ def event_for_backtest_preview(correlation_id: str, payload: Mapping[str, object
         **payload,
     }
     return NotificationDomainEvent.create(NotificationEventType.BACKTEST_PREVIEW, correlation_id, preview_payload)
+
+
+def notification_delivery_key(event: NotificationDomainEvent) -> str:
+    return f"{event.event_type}|{event.correlation_id}"
 
 
 def _sanitize_payload(payload: Mapping[str, object]) -> dict[str, object]:
