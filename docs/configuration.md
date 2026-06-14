@@ -178,3 +178,13 @@ entries per Paper trading day, 15% maximum allocation per position, and minimum
 `config/exits.yaml` defines modeled exit obligations: structural stops, ATR
 sanity cap, minimum 2R target, modeled partial exits, trailing stop disabled by
 default, and maximum holding period.
+
+Phase 7 adds:
+
+- `config/backtesting.yaml`
+
+`config/backtesting.yaml` defines backtesting authority and execution
+assumptions. QuantConnect Cloud/LEAN is the official source for real backtest
+results, while the local harness validates no-look-ahead and timing contracts.
+The config keeps Paper submission, real broker behavior, external delivery,
+synthetic results, and synthetic portfolio authority disabled.

@@ -17,6 +17,7 @@ class NotificationEventType(str, Enum):
     PARTIAL_CLOSE = "partial_close"
     FULL_CLOSE = "full_close"
     RECOVERY_MISMATCH = "recovery_mismatch"
+    BACKTEST_PREVIEW = "backtest_preview"
 
 
 @dataclass(frozen=True)
@@ -119,6 +120,17 @@ def event_for_full_close(correlation_id: str, payload: Mapping[str, object]) -> 
 
 def event_for_recovery_mismatch(correlation_id: str, payload: Mapping[str, object]) -> NotificationDomainEvent:
     return NotificationDomainEvent.create(NotificationEventType.RECOVERY_MISMATCH, correlation_id, payload, severity="warning")
+
+
+def event_for_backtest_preview(correlation_id: str, payload: Mapping[str, object]) -> NotificationDomainEvent:
+    preview_payload = {
+        "preview": True,
+        "historical": True,
+        "transport": "fake_collector_only",
+        "controls_safety_logic": False,
+        **payload,
+    }
+    return NotificationDomainEvent.create(NotificationEventType.BACKTEST_PREVIEW, correlation_id, preview_payload)
 
 
 def _sanitize_payload(payload: Mapping[str, object]) -> dict[str, object]:

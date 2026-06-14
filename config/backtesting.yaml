@@ -1,0 +1,15 @@
+paper_trading_only: true
+official_authority: quantconnect_cloud_lean
+local_harness_enabled: true
+fee_per_order_usd: 1.0
+slippage_bps: 5.0
+fill_model: conservative_next_bar
+fill_timing: next_valid_open
+partial_fills: conservative_partial_or_unfilled
+disabled_behaviors:
+  paper_trading: false
+  submit_orders: false
+  telegram_delivery: false
+  real_broker: false
+  fake_results: false
+  fake_portfolio: false

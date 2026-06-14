@@ -1,5 +1,6 @@
 from marketpilot.notification_events import (
     NotificationEventType,
+    event_for_backtest_preview,
     event_for_full_close,
     event_for_lifecycle_transition,
     event_for_order_intent,
@@ -29,6 +30,7 @@ def test_all_phase_6_event_factories_exist():
         event_for_partial_close,
         event_for_full_close,
         event_for_recovery_mismatch,
+        event_for_backtest_preview,
     )
 
     assert {factory("id", {}).event_type for factory in factories} == {event.value for event in NotificationEventType}

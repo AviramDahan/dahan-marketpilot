@@ -20,7 +20,7 @@ Dahan MarketPilot v1 is planned as a safety-first sequence. The project starts w
 - [x] **Phase 4.1: Multi-Timeframe Signal Foundation** - Add StrategyMode, completed-bar/timeframe contracts, 4H alignment policy, per-timeframe readiness, MTF setup adaptation, deterministic tests, and documentation sync. (completed 2026-06-14)
 - [x] **Phase 5: Relative Strength and Unified Scoring** - Implement Relative Strength Leader, candidate ranking, MarketPilot Score, classification, confidence, and setup comparison while consuming StrategyMode and MTF evidence from Phase 4.1. (completed 2026-06-14)
 - [x] **Phase 6: Portfolio Risk and Order Lifecycle** - Add portfolio constraints, sizing, order state, stops, targets, exits, restart state, and notification-domain events. (completed 2026-06-14)
-- [ ] **Phase 7: Backtesting and Validation** - Add realistic backtesting, no-look-ahead validation, chronological validation, activation gates, and reports.
+- [x] **Phase 7: Backtesting and Validation** - Add realistic backtesting, no-look-ahead validation, chronological validation, activation gates, and reports. (completed 2026-06-14)
 - [ ] **Phase 8: QuantConnect Paper Trading and Telegram** - Add gated paper modes, QuantConnect Paper Trading deployment design, reconciliation, recovery, and Telegram delivery.
 - [ ] **Phase 9: Render Dashboard** - Add read-only mobile Streamlit dashboard backed by QuantConnect-sourced data, caching, auth, stale-data handling, and system health.
 - [ ] **Phase 10: CI/CD, Security and Release** - Add workflows, weekly validation, dashboard health, security review, operations docs, recovery docs, final audit, and release preparation.
@@ -260,23 +260,23 @@ Plans:
 
 **Wave 1**
 
-- [ ] 07-01-PLAN.md - Backtest execution assumptions, fees, slippage, fill models, and no-look-ahead tests.
+- [x] 07-01-PLAN.md - Backtest execution assumptions, fees, slippage, fill models, and no-look-ahead tests.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 07-02-PLAN.md - Full-period, year-by-year, In-Sample, and Out-of-Sample reporting.
+- [x] 07-02-PLAN.md - Full-period, year-by-year, In-Sample, and Out-of-Sample reporting.
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 07-03-PLAN.md - Walk-Forward or equivalent chronological validation and sensitivity analysis.
+- [x] 07-03-PLAN.md - Walk-Forward or equivalent chronological validation and sensitivity analysis.
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 07-04-PLAN.md - Benchmark comparison, activation gates, and strategy approval state.
+- [x] 07-04-PLAN.md - Benchmark comparison, activation gates, and strategy approval state.
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 07-05-PLAN.md - Backtest report generation and notification preview mode.
+- [x] 07-05-PLAN.md - Backtest report generation and notification preview mode.
 
 ### Phase 8: QuantConnect Paper Trading and Telegram
 
@@ -355,7 +355,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 
 | 4.1. Multi-Timeframe Signal Foundation | 4/4 | Complete | 2026-06-14 |
 | 5. Relative Strength and Unified Scoring | 3/3 | Complete | 2026-06-14 |
 | 6. Portfolio Risk and Order Lifecycle | 5/5 | Complete    | 2026-06-14 |
-| 7. Backtesting and Validation | 0/5 | Planned; next execute | - |
+| 7. Backtesting and Validation | 5/5 | Complete    | 2026-06-14 |
 | 8. QuantConnect Paper Trading and Telegram | 0/4 | Not started | - |
 | 9. Render Dashboard | 0/4 | Not started | - |
 | 10. CI/CD, Security and Release | 0/4 | Not started | - |

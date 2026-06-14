@@ -88,3 +88,20 @@ authoritative and local state is marked mismatched.
 Notification-domain events are transport-neutral and cannot control risk,
 order, or exit safety. Real Telegram delivery remains deferred to Phase 8, and
 delivery failures must never block protective logic.
+
+## Backtesting And Validation Safety
+
+Phase 7 does not approve Paper Trading. QuantConnect Cloud/LEAN remains the
+authority for real backtest results. Local harnesses can test timing and
+contract behavior only.
+
+Backtest artifacts must be labeled as real QuantConnect output, fixture,
+schema, example, or not-run. Only documented real QuantConnect output may carry
+performance metrics. Missing QuantConnect access must be represented as
+`not_run` with prerequisites or commands, not substituted with invented
+results.
+
+Activation gates block Paper eligibility by default unless real documented
+validation passes every required gate. Preview backtest notifications are
+historical, transport-neutral domain events for the fake collector only and
+cannot control safety logic.

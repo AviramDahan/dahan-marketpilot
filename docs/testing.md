@@ -187,3 +187,11 @@ fake portfolio authority.
 Notification-domain tests cover typed event contracts, payload sanitization,
 fake collector behavior, delivery-failure isolation, deduplication, rate
 limiting, and absence of real Telegram/network delivery.
+
+Phase 7 backtesting and validation tests are deterministic and offline. They
+cover config safety, QuantConnect not-run records, no-look-ahead checks,
+current-bar exclusion, signal/fill separation, same-bar ambiguity, stale data,
+strategy-mode timing alignment, report source labels, unavailable validation
+windows, chronological validation, sensitivity analysis, SPY/QQQ benchmark
+comparison, activation gates, report generation, preview notifications, and
+artifact safety.

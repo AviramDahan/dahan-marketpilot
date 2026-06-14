@@ -95,14 +95,14 @@
 
 ### Backtesting And Validation
 
-- [ ] **BT-01**: Backtests use the same strategy rules as Paper Trading.
-- [ ] **BT-02**: Backtests include explicit fee, slippage, fill, and execution-timing assumptions.
-- [ ] **BT-03**: Tests verify no-look-ahead behavior, current-bar exclusion, signal/fill timing, and same-bar ambiguity handling.
-- [ ] **BT-04**: Reports include full-period, year-by-year, In-Sample, Out-of-Sample, Walk-Forward or equivalent chronological validation, sensitivity analysis, benchmark comparison, and activation-gate outcomes.
-- [ ] **BT-05**: Strategy activation gates block unapproved strategies from Paper orders.
-- [ ] **BT-06**: Historical reports never claim guaranteed profitability or future certainty.
-- [ ] **BT-07**: Backtest notifications are disabled during normal historical Backtests unless preview mode is explicitly enabled.
-- [ ] **BT-08**: The repository never contains fake Backtest results or fake portfolio data.
+- [x] **BT-01**: Backtests use the same strategy rules as Paper Trading.
+- [x] **BT-02**: Backtests include explicit fee, slippage, fill, and execution-timing assumptions.
+- [x] **BT-03**: Tests verify no-look-ahead behavior, current-bar exclusion, signal/fill timing, and same-bar ambiguity handling.
+- [x] **BT-04**: Reports include full-period, year-by-year, In-Sample, Out-of-Sample, Walk-Forward or equivalent chronological validation, sensitivity analysis, benchmark comparison, and activation-gate outcomes.
+- [x] **BT-05**: Strategy activation gates block unapproved strategies from Paper orders.
+- [x] **BT-06**: Historical reports never claim guaranteed profitability or future certainty.
+- [x] **BT-07**: Backtest notifications are disabled during normal historical Backtests unless preview mode is explicitly enabled.
+- [x] **BT-08**: The repository never contains fake Backtest results or fake portfolio data.
 
 ### Paper Trading And Telegram
 
@@ -225,14 +225,14 @@ Deferred to future releases and not part of the v1 roadmap:
 | RISK-05 | Phase 6 | Complete |
 | RISK-06 | Phase 6 | Complete |
 | RISK-07 | Phase 6 | Complete |
-| BT-01 | Phase 7 | Pending |
-| BT-02 | Phase 7 | Pending |
-| BT-03 | Phase 7 | Pending |
-| BT-04 | Phase 7 | Pending |
-| BT-05 | Phase 7 | Pending |
-| BT-06 | Phase 7 | Pending |
-| BT-07 | Phase 7 | Pending |
-| BT-08 | Phase 7 | Pending |
+| BT-01 | Phase 7 | Complete |
+| BT-02 | Phase 7 | Complete |
+| BT-03 | Phase 7 | Complete |
+| BT-04 | Phase 7 | Complete |
+| BT-05 | Phase 7 | Complete |
+| BT-06 | Phase 7 | Complete |
+| BT-07 | Phase 7 | Complete |
+| BT-08 | Phase 7 | Complete |
 | TEL-01 | Phase 8 | Pending |
 | TEL-02 | Phase 8 | Pending |
 | TEL-03 | Phase 8 | Pending |
