@@ -18,6 +18,7 @@ class NotificationEventType(str, Enum):
     FULL_CLOSE = "full_close"
     RECOVERY_MISMATCH = "recovery_mismatch"
     BACKTEST_PREVIEW = "backtest_preview"
+    SYSTEM = "system"
 
 
 @dataclass(frozen=True)
@@ -120,6 +121,15 @@ def event_for_full_close(correlation_id: str, payload: Mapping[str, object]) -> 
 
 def event_for_recovery_mismatch(correlation_id: str, payload: Mapping[str, object]) -> NotificationDomainEvent:
     return NotificationDomainEvent.create(NotificationEventType.RECOVERY_MISMATCH, correlation_id, payload, severity="warning")
+
+
+def event_for_system_incident(
+    correlation_id: str,
+    payload: Mapping[str, object],
+    *,
+    severity: str = "high",
+) -> NotificationDomainEvent:
+    return NotificationDomainEvent.create(NotificationEventType.SYSTEM, correlation_id, payload, severity=severity)
 
 
 def event_for_backtest_preview(correlation_id: str, payload: Mapping[str, object]) -> NotificationDomainEvent:

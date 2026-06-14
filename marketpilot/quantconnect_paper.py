@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
+from decimal import Decimal
 from enum import Enum
 
 
@@ -13,6 +15,95 @@ class QuantConnectPaperStatusCode(str, Enum):
     NOT_CONFIGURED = "not_configured"
     NOT_RUN = "not_run"
     CONFIGURED_OPERATOR_ACTION_REQUIRED = "configured_operator_action_required"
+
+
+class QuantConnectDeploymentStatus(str, Enum):
+    NOT_CONFIGURED = "not_configured"
+    NOT_RUN = "not_run"
+    RUNNING = "running"
+    STOPPED = "stopped"
+    ERROR = "error"
+
+
+class QuantConnectAlgorithmStatus(str, Enum):
+    NOT_CONFIGURED = "not_configured"
+    NOT_RUN = "not_run"
+    RUNNING = "running"
+    STOPPED = "stopped"
+    RUNTIME_ERROR = "runtime_error"
+
+
+@dataclass(frozen=True)
+class QuantConnectHolding:
+    symbol: str
+    quantity: int
+    average_price: Decimal
+    market_price: Decimal
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "symbol", self.symbol.strip().upper())
+
+
+@dataclass(frozen=True)
+class QuantConnectPaperOrder:
+    quantconnect_order_id: str
+    symbol: str
+    status: str
+    quantity: int
+    submitted_at: datetime
+    idempotency_key: str | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "quantconnect_order_id", self.quantconnect_order_id.strip())
+        object.__setattr__(self, "symbol", self.symbol.strip().upper())
+        object.__setattr__(self, "status", self.status.strip().lower())
+        if not self.quantconnect_order_id:
+            raise ValueError("quantconnect_order_id is required after QuantConnect submission.")
+
+
+@dataclass(frozen=True)
+class QuantConnectPaperFill:
+    quantconnect_order_id: str
+    symbol: str
+    quantity: int
+    fill_price: Decimal
+    filled_at: datetime
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "quantconnect_order_id", self.quantconnect_order_id.strip())
+        object.__setattr__(self, "symbol", self.symbol.strip().upper())
+        if not self.quantconnect_order_id:
+            raise ValueError("quantconnect_order_id is required for QuantConnect fills.")
+
+
+@dataclass(frozen=True)
+class QuantConnectPaperPerformance:
+    total_orders: int
+    total_fills: int
+    unrealized_profit: Decimal
+
+
+@dataclass(frozen=True)
+class QuantConnectPaperSnapshot:
+    fixture_label: str
+    captured_at: datetime
+    cash: Decimal
+    portfolio_equity: Decimal
+    holdings: tuple[QuantConnectHolding, ...]
+    orders: tuple[QuantConnectPaperOrder, ...]
+    fills: tuple[QuantConnectPaperFill, ...]
+    deployment_status: QuantConnectDeploymentStatus
+    algorithm_status: QuantConnectAlgorithmStatus
+    performance: QuantConnectPaperPerformance
+    authoritative_source: str = "quantconnect"
+
+    def __post_init__(self) -> None:
+        if self.authoritative_source != "quantconnect":
+            raise ValueError("QuantConnect Paper snapshots must use quantconnect as authoritative_source.")
+        if not self.fixture_label.strip():
+            raise ValueError("fixture_label is required; use deterministic-test-fixture for offline tests.")
+        if self.fixture_label == "deterministic-test-fixture" and self.captured_at.tzinfo is None:
+            raise ValueError("deterministic test fixtures must include timezone-aware captured_at timestamps.")
 
 
 @dataclass(frozen=True)

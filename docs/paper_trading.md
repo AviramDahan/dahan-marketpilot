@@ -70,3 +70,21 @@ QuantConnect remains authoritative for simulated cash, portfolio equity,
 holdings, open positions, orders, fills, Paper Trading state, algorithm status,
 and Paper Trading performance. Local records are audit and recovery context
 only.
+
+## Reconciliation
+
+QuantConnect Paper snapshots are the only authoritative input for simulated
+cash, portfolio equity, holdings, orders, fills, deployment status, algorithm
+status, and Paper performance. Deterministic tests may use fixture snapshots
+only when the fixture label is explicit.
+
+Local order intents, lifecycle events, and audit records are mirror context.
+They can help identify duplicate intent generation and explain restart history,
+but they never overwrite QuantConnect order IDs, fill prices, fill quantities,
+portfolio cash, or holdings after submission.
+
+When reconciliation finds a mismatch between QuantConnect and the local mirror,
+the decision blocks new entries, preserves exit obligations, emits a high
+severity system-domain event with a correlation ID, and requires explicit
+operator recovery. Reconciliation does not call QuantConnect, Telegram, Render,
+or a broker; it is a pure comparison over already-provided snapshots.
