@@ -1,10 +1,14 @@
 from datetime import datetime, timezone
+from io import BytesIO
+from unittest.mock import patch
+from urllib.error import HTTPError
 
 from marketpilot.notification_events import NotificationDomainEvent, NotificationRateLimiter
 from marketpilot.telegram import (
     TelegramConfig,
     TelegramDeliveryService,
     TelegramDeliveryStatus,
+    _post_json,
 )
 
 
@@ -116,3 +120,22 @@ def test_network_exception_maps_to_failed_result_without_raising():
 
     assert result.status is TelegramDeliveryStatus.FAILED
     assert result.detail == "socket timed out"
+
+
+def test_http_error_body_is_returned_as_telegram_rejection_payload():
+    error = HTTPError(
+        url="https://api.telegram.org/bot[redacted]/sendMessage",
+        code=400,
+        msg="Bad Request",
+        hdrs=None,
+        fp=BytesIO(b'{"ok":false,"error_code":400,"description":"Bad Request: chat not found"}'),
+    )
+
+    with patch("marketpilot.telegram.urllib.request.urlopen", side_effect=error):
+        response = _post_json(
+            url="https://api.telegram.org/botfake/sendMessage",
+            payload={"chat_id": "bad", "text": "hello"},
+            timeout_seconds=1,
+        )
+
+    assert response == {"ok": False, "error_code": 400, "description": "Bad Request: chat not found"}

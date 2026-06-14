@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import json
+import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 from enum import Enum
@@ -344,8 +345,18 @@ def _post_json(*, url: str, payload: Mapping[str, object], timeout_seconds: int)
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
-        return json.loads(response.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        try:
+            parsed = json.loads(body)
+        except json.JSONDecodeError:
+            parsed = {"ok": False, "error_code": exc.code, "description": exc.reason or body}
+        if isinstance(parsed, Mapping):
+            return parsed
+        return {"ok": False, "error_code": exc.code, "description": str(parsed)}
 
 
 def _label(key: str) -> str:
