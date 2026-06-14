@@ -45,3 +45,20 @@ Missing token, missing chat target, disabled delivery, API rejection,
 network failure, local rate limiting, and duplicate suppression are delivery
 outcomes only. They must be recorded as typed results and must never stop
 trading logic or protective recovery.
+
+Delivery statuses are deterministic and safe for logs or reports:
+
+- `disabled`
+- `missing_token`
+- `missing_chat_id`
+- `duplicate_suppressed`
+- `rate_limited`
+- `rejected`
+- `failed`
+- `delivered`
+
+`ok: true` responses from Telegram map to `delivered`. `ok: false` responses
+with `error_code`, `description`, or `parameters.retry_after` map to
+`rejected` or `rate_limited`. Network exceptions map to `failed`. Result
+objects include event type and correlation ID, but never raw token or chat
+values.
