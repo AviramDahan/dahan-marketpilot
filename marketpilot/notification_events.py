@@ -20,6 +20,40 @@ class NotificationEventType(str, Enum):
     BACKTEST_PREVIEW = "backtest_preview"
 
 
+_REQUIRED_TELEGRAM_ALERT_FAMILIES: dict[str, str] = {
+    "buy_candidate": "buy_candidate",
+    "watch": "watch",
+    "paper_buy": "paper_buy",
+    "paper_sell": "paper_sell",
+    "submitted_order": "submitted_order",
+    "partial_fill": "partial_fill",
+    "full_fill": "full_fill",
+    "stop": "stop",
+    "target": "target",
+    "partial_close": "partial_close",
+    "full_close": "full_close",
+    "rejected_order": "rejected_order",
+    "canceled_order": "canceled_order",
+    "regime_change": "regime_change",
+    "system": "system",
+    "error": "error",
+    "start_restart": "start_restart",
+    "daily_summary": "daily_summary",
+}
+
+_WARNING_ALERT_FAMILIES = {
+    "watch",
+    "stop",
+    "target",
+    "rejected_order",
+    "canceled_order",
+    "regime_change",
+    "system",
+}
+
+_HIGH_SEVERITY_ALERT_FAMILIES = {"error"}
+
+
 @dataclass(frozen=True)
 class NotificationDomainEvent:
     event_type: str
@@ -122,6 +156,27 @@ def event_for_recovery_mismatch(correlation_id: str, payload: Mapping[str, objec
     return NotificationDomainEvent.create(NotificationEventType.RECOVERY_MISMATCH, correlation_id, payload, severity="warning")
 
 
+def required_telegram_alert_families() -> Mapping[str, str]:
+    """Return stable Phase 8 alert family names mapped to event type values."""
+
+    return dict(_REQUIRED_TELEGRAM_ALERT_FAMILIES)
+
+
+def event_for_alert_family(
+    family: str,
+    correlation_id: str,
+    payload: Mapping[str, object],
+    *,
+    severity: str | None = None,
+    timestamp: datetime | None = None,
+) -> NotificationDomainEvent:
+    event_type = _REQUIRED_TELEGRAM_ALERT_FAMILIES.get(family)
+    if event_type is None:
+        raise ValueError(f"unsupported telegram alert family: {family}")
+    resolved_severity = severity or _default_alert_severity(family)
+    return NotificationDomainEvent.create(event_type, correlation_id, payload, severity=resolved_severity, timestamp=timestamp)
+
+
 def event_for_system_incident(
     correlation_id: str,
     payload: Mapping[str, object],
@@ -148,6 +203,14 @@ def event_for_backtest_preview(correlation_id: str, payload: Mapping[str, object
 
 def notification_delivery_key(event: NotificationDomainEvent) -> str:
     return f"{event.event_type}|{event.correlation_id}"
+
+
+def _default_alert_severity(family: str) -> str:
+    if family in _HIGH_SEVERITY_ALERT_FAMILIES:
+        return "high"
+    if family in _WARNING_ALERT_FAMILIES:
+        return "warning"
+    return "info"
 
 
 def _sanitize_payload(payload: Mapping[str, object]) -> dict[str, object]:

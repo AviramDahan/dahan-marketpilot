@@ -5,6 +5,29 @@ are not Telegram strings and do not send network requests.
 
 Supported event types:
 
+Phase 8 Telegram alert families:
+
+- `buy_candidate`
+- `watch`
+- `paper_buy`
+- `paper_sell`
+- `submitted_order`
+- `partial_fill`
+- `full_fill`
+- `stop`
+- `target`
+- `partial_close`
+- `full_close`
+- `rejected_order`
+- `canceled_order`
+- `regime_change`
+- `system`
+- `error`
+- `start_restart`
+- `daily_summary`
+
+Phase 6 compatibility event types:
+
 - `risk_rejection`
 - `sizing_decision`
 - `order_intent`
@@ -21,6 +44,13 @@ Payloads are sanitized before they are stored in events. The fake collector is
 for deterministic tests only. Deduplication and rate limiting affect
 notification emission only; they never control risk, order, or exit safety
 logic.
+
+Required Telegram alert payloads may include symbol, setup, classification,
+score, Paper mode, activation state, order/fill state, stop/target context,
+regime state, system health, and reason fields. They must not include secrets,
+credentials, copied token or chat target values, fake performance, or
+profitability guarantees. The domain event layer stores sanitized payloads and
+the Telegram adapter formats concise plain text from those fields.
 
 Telegram delivery is a Phase 8 transport adapter over these domain events. It
 uses the same stable delivery key as local deduplication:
