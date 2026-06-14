@@ -64,6 +64,21 @@ positions count, recent signal/activity counts, and system warnings. Dedicated
 page modules for the remaining page entries are implemented by later Phase 9
 plans and must render safe `not_available` states until then.
 
+## Portfolio And Trading Pages
+
+Positions renders QuantConnect-authoritative holdings/open-position state from
+typed dashboard DTOs with authority and freshness labels. Missing source data
+is shown as `not_configured`, `not_available`, `stale`, or `error`.
+
+Trades renders observational trade, fill, and activity records from typed DTOs.
+It labels QuantConnect authority and never provides controls that mutate Paper
+Trading state.
+
+Signals renders evidence/classification rows as observational status only.
+Backtests renders real/not_run/fixture/unavailable report labels without fake
+performance, portfolio fabrication, or profitability claims. Strategies renders
+activation, Paper mode, and readiness as status only.
+
 ## Approved QuantConnect Read Paths
 
 The approved production QuantConnect Cloud API read paths are:

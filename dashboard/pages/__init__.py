@@ -52,6 +52,31 @@ def render_page(slug: str, snapshot: DashboardSnapshot) -> PageView:
             status=DashboardSectionStatus.AVAILABLE,
             lines=overview.lines,
         )
+    if normalized == "positions":
+        from dashboard.pages.positions import build_positions
+
+        view = build_positions(snapshot)
+        return PageView(title="Positions", status=view.status, lines=view.lines)
+    if normalized == "trades":
+        from dashboard.pages.trades import build_trades
+
+        view = build_trades(snapshot)
+        return PageView(title="Trades", status=view.status, lines=view.lines)
+    if normalized == "signals":
+        from dashboard.pages.signals import build_signals
+
+        view = build_signals(snapshot)
+        return PageView(title="Signals", status=view.status, lines=view.lines)
+    if normalized == "backtests":
+        from dashboard.pages.backtests import build_backtests
+
+        view = build_backtests(snapshot)
+        return PageView(title="Backtests", status=view.status, lines=view.lines)
+    if normalized == "strategies":
+        from dashboard.pages.strategies import build_strategies
+
+        view = build_strategies(snapshot)
+        return PageView(title="Strategies", status=view.status, lines=view.lines)
 
     title = _title_for_slug(normalized)
     return PageView(

@@ -56,11 +56,26 @@ def _available_snapshot() -> DashboardSnapshot:
         ),
         positions=DashboardCollectionSection(
             status=DashboardSectionStatus.AVAILABLE,
-            items=({"symbol": "MSFT", "state": "open"},),
+            items=({"symbol": "MSFT", "state": "open", "quantity": 10},),
         ),
         signals=DashboardCollectionSection(
             status=DashboardSectionStatus.AVAILABLE,
             items=({"symbol": "AAPL", "classification": "watch"}, {"symbol": "NVDA"}),
+        ),
+        trades=DashboardCollectionSection(
+            status=DashboardSectionStatus.AVAILABLE,
+            items=(
+                {"symbol": "MSFT", "record_type": "submitted", "quantity": 10},
+                {"symbol": "MSFT", "record_type": "fill", "quantity": 10},
+            ),
+        ),
+        backtests=DashboardCollectionSection(
+            status=DashboardSectionStatus.NOT_AVAILABLE,
+            reasons=("not_run",),
+        ),
+        strategies=DashboardCollectionSection(
+            status=DashboardSectionStatus.AVAILABLE,
+            items=({"name": "daily_only", "paper_mode": "limited_paper", "readiness": "ready"},),
         ),
         activity=DashboardCollectionSection(
             status=DashboardSectionStatus.AVAILABLE,
@@ -125,15 +140,10 @@ def test_overview_keeps_degraded_states_visible():
     assert "QuantConnect unavailable" in stale_text
 
 
-def test_future_pages_render_safe_not_available_until_implemented():
+def test_later_phase_pages_render_safe_not_available_until_implemented():
     snapshot = _available_snapshot()
 
     for slug in (
-        "positions",
-        "trades",
-        "signals",
-        "backtests",
-        "strategies",
         "risk",
         "notifications",
         "activity",
@@ -150,3 +160,56 @@ def test_registry_and_overview_do_not_define_mutation_actions():
 
     assert action_names == {"view", "refresh"}
     assert forbidden.isdisjoint(action_names)
+
+
+def test_positions_and_trades_pages_render_authoritative_rows():
+    snapshot = _available_snapshot()
+
+    positions = render_page("positions", snapshot)
+    positions_text = "\n".join(positions.lines)
+    assert positions.status is DashboardSectionStatus.AVAILABLE
+    assert "Authority: authoritative" in positions_text
+    assert "Freshness: fresh" in positions_text
+    assert "MSFT" in positions_text
+    assert "Quantity: 10" in positions_text
+
+    trades = render_page("trades", snapshot)
+    trades_text = "\n".join(trades.lines)
+    assert trades.status is DashboardSectionStatus.AVAILABLE
+    assert "QuantConnect authority" in trades_text
+    assert "submitted" in trades_text
+    assert "fill" in trades_text
+
+
+def test_positions_and_trades_pages_show_degraded_states():
+    snapshot = DashboardDataClient.not_configured(missing=("QUANTCONNECT_API_TOKEN",))
+
+    assert "not_configured" in "\n".join(render_page("positions", snapshot).lines)
+    assert "QUANTCONNECT_API_TOKEN" in "\n".join(render_page("trades", snapshot).lines)
+
+
+def test_signals_backtests_and_strategies_pages_render_safe_status():
+    snapshot = _available_snapshot()
+
+    signals = "\n".join(render_page("signals", snapshot).lines)
+    assert "AAPL" in signals
+    assert "watch" in signals
+    assert "Evidence is observational" in signals
+
+    backtests = "\n".join(render_page("backtests", snapshot).lines)
+    assert "not_run" in backtests
+    assert "No performance claim is made" in backtests
+    assert "guaranteed" not in backtests.lower()
+
+    strategies = "\n".join(render_page("strategies", snapshot).lines)
+    assert "daily_only" in strategies
+    assert "limited_paper" in strategies
+    assert "Status display only" in strategies
+
+
+def test_signal_backtest_strategy_degraded_states_are_visible():
+    snapshot = DashboardDataClient.missing_object_store_export("dashboard/signals.json")
+
+    assert "not_available" in "\n".join(render_page("signals", snapshot).lines)
+    assert "not_available" in "\n".join(render_page("backtests", snapshot).lines)
+    assert "not_available" in "\n".join(render_page("strategies", snapshot).lines)
