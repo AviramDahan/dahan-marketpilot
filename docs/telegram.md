@@ -76,4 +76,6 @@ Delivery statuses are deterministic and safe for logs or reports:
 with `error_code`, `description`, or `parameters.retry_after` map to
 `rejected` or `rate_limited`. Network exceptions map to `failed`. Result
 objects include event type and correlation ID, but never raw token or chat
-values.
+values. Result objects also expose `controls_safety_logic: false` and
+`delivery_required_for_safety: false` so logs and future dashboard views keep
+the non-authoritative delivery boundary visible.

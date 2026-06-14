@@ -86,6 +86,8 @@ class TelegramDeliveryResult:
     event_type: str
     correlation_id: str
     detail: str = ""
+    controls_safety_logic: bool = False
+    delivery_required_for_safety: bool = False
     error_code: int | None = None
     retry_after_seconds: int | None = None
     telegram_message_id: str | None = None
@@ -100,6 +102,8 @@ class TelegramDeliveryResult:
             "event_type": self.event_type,
             "correlation_id": self.correlation_id,
             "detail": self.detail,
+            "controls_safety_logic": self.controls_safety_logic,
+            "delivery_required_for_safety": self.delivery_required_for_safety,
             "error_code": self.error_code,
             "retry_after_seconds": self.retry_after_seconds,
             "telegram_message_id": self.telegram_message_id,

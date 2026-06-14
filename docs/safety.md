@@ -142,6 +142,8 @@ rate-limited, rejected by Telegram, fail on network errors, or succeed. Those
 outcomes are typed notification results only. They must never approve Paper
 modes, submit orders, modify order lifecycle states, clear reconciliation
 mismatches, erase exit obligations, or unblock protective recovery.
+Delivery result records explicitly mark `controls_safety_logic: false` and
+`delivery_required_for_safety: false`.
 
 Telegram messages are plain text by default, concise, sanitized, and include
 the simulated-paper warning where relevant. They must not include credentials,
