@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to discuss
-stopped_at: Phase 6 complete; Phase 7 not yet discussed/planned
-last_updated: "2026-06-14T06:24:02.303Z"
-last_activity: 2026-06-14 - Phase 6 executed, verified, and completed; Phase 7 is next.
+status: Ready to plan
+stopped_at: Phase 7 context gathered; ready to plan
+last_updated: "2026-06-14T06:35:00.000Z"
+last_activity: 2026-06-14 - Phase 7 discussed with agent-selected conservative defaults; ready to plan.
 progress:
   total_phases: 11
   completed_phases: 7
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-06-14)
 
 Phase: 7 of 11 (backtesting and validation)
 Plan: Not started
-Status: Ready to discuss
-Last activity: 2026-06-14 - Phase 6 executed, verified, and completed; Phase 7 is next.
+Status: Ready to plan
+Last activity: 2026-06-14 - Phase 7 discussed with agent-selected conservative defaults; ready to plan.
 
 Progress: [#######----] 64%
 
@@ -109,6 +109,11 @@ Recent decisions affecting current work:
 - Phase 6 discussion: Notification-domain events are typed, sanitized, transport-independent, and delivery failure must never block safety logic.
 - Phase 6 planning: Five executable plans now cover risk sizing, order lifecycle/idempotency, exits, persistence/recovery, and notification-domain events.
 - Phase 6 execution: Portfolio risk, sizing, lifecycle, exits, JSONL audit journal, restart recovery placeholders, and notification-domain events are implemented with 215 passing tests.
+- Phase 7 discussion: QuantConnect Cloud/LEAN is official backtest authority, with deterministic local harnesses for no-look-ahead and timing validation.
+- Phase 7 discussion: Backtest and future Paper Trading must reuse shared strategy-rule modules; adapters must not duplicate strategy logic.
+- Phase 7 discussion: Real backtest artifacts require documented real runs; otherwise only schemas, parsers, fixtures, and examples are allowed with no performance claims.
+- Phase 7 discussion: Missing QuantConnect access is recorded as not_run while offline deterministic validation continues.
+- Phase 7 discussion: Activation gates default to not approved for Paper until validation passes, and notification preview uses fake transport only.
 
 ### Pending Todos
 
@@ -133,5 +138,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-06-14T06:24:02.303Z
-Stopped at: Phase 6 complete; Phase 7 not yet discussed/planned
-Resume file: .planning/ROADMAP.md
+Stopped at: Phase 7 context gathered; ready to plan
+Resume file: .planning/phases/07-backtesting-and-validation/07-CONTEXT.md
