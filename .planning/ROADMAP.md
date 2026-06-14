@@ -365,6 +365,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 
 | 5. Relative Strength and Unified Scoring | 3/3 | Complete | 2026-06-14 |
 | 6. Portfolio Risk and Order Lifecycle | 5/5 | Complete    | 2026-06-14 |
 | 7. Backtesting and Validation | 5/5 | Complete    | 2026-06-14 |
-| 8. QuantConnect Paper Trading and Telegram | 4/4 | Complete   | 2026-06-14 |
+| 8. QuantConnect Paper Trading and Telegram | 4/4 | Complete    | 2026-06-14 |
 | 9. Render Dashboard | 0/4 | Not started | - |
 | 10. CI/CD, Security and Release | 0/4 | Not started | - |

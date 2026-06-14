@@ -1,23 +1,23 @@
 ---
 phase: 08-quantconnect-paper-trading-and-telegram
 verified: 2026-06-14T16:54:28Z
-status: human_needed
+status: passed
 score: 30/30 must-haves verified
 overrides_applied: 0
-human_verification:
+human_verification_completed:
   - test: "Operator verifies QuantConnect Cloud Paper Trading prerequisite flow outside the repository."
-    expected: "QuantConnect account, organization access, Paper Trading Live Node, project ID, API credentials, and data-provider setup are configured only in approved external stores; repository code continues to report missing setup as not_configured/not_run and never stores secrets or fake deployment state."
-    why_human: "Real QuantConnect setup requires external account access and credentials that automated tests must not require."
+    result: "passed"
+    evidence: "Lean CLI is logged in; cloud project lean exists as QuantConnect project 32900381; cloud smoke backtest passed; live status is Running with brokerage PaperBrokerage and live id L-223eafd89aaac127343bb441bf96e423."
   - test: "Operator verifies real Telegram bot delivery outside automated tests."
-    expected: "With bot token and chat target stored outside repository files, a safe test alert reaches Telegram with the paper-only warning; delivery success or failure remains observational and does not affect Paper gates, reconciliation, recovery, order lifecycle, or protective exits."
-    why_human: "Real Telegram delivery requires external bot credentials, chat target, network access, and a human-visible chat client."
+    result: "passed"
+    evidence: "Operator-run smoke test returned delivered with Telegram message id 6; the visible Telegram message included the paper-only warning."
 ---
 
 # Phase 8: QuantConnect Paper Trading and Telegram Verification Report
 
 **Phase Goal:** QuantConnect Paper Trading and Telegram integration, with paper-only activation gates, QuantConnect-authoritative reconciliation/recovery, safe Telegram delivery, alert coverage, and documentation synchronized.
 **Verified:** 2026-06-14T16:54:28Z
-**Status:** human_needed
+**Status:** passed
 **Re-verification:** No - initial verification
 
 ## Goal Achievement
