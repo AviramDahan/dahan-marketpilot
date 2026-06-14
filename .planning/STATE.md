@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to plan
-stopped_at: Phase 7 context gathered; ready to plan
-last_updated: "2026-06-14T06:35:00.000Z"
-last_activity: 2026-06-14 - Phase 7 discussed with agent-selected conservative defaults; ready to plan.
+status: Ready to execute
+stopped_at: Phase 7 planned; ready to execute
+last_updated: "2026-06-14T06:45:00.000Z"
+last_activity: 2026-06-14 - Phase 7 planned across five executable waves; ready to execute.
 progress:
   total_phases: 11
   completed_phases: 7
-  total_plans: 27
+  total_plans: 32
   completed_plans: 27
   percent: 64
 ---
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-06-14)
 
 Phase: 7 of 11 (backtesting and validation)
 Plan: Not started
-Status: Ready to plan
-Last activity: 2026-06-14 - Phase 7 discussed with agent-selected conservative defaults; ready to plan.
+Status: Ready to execute
+Last activity: 2026-06-14 - Phase 7 planned across five executable waves; ready to execute.
 
 Progress: [#######----] 64%
 
@@ -114,6 +114,7 @@ Recent decisions affecting current work:
 - Phase 7 discussion: Real backtest artifacts require documented real runs; otherwise only schemas, parsers, fixtures, and examples are allowed with no performance claims.
 - Phase 7 discussion: Missing QuantConnect access is recorded as not_run while offline deterministic validation continues.
 - Phase 7 discussion: Activation gates default to not approved for Paper until validation passes, and notification preview uses fake transport only.
+- Phase 7 planning: Five executable plans now cover backtest execution assumptions, report windows, chronological validation, benchmark/activation gates, and notification preview artifacts.
 
 ### Pending Todos
 
@@ -138,5 +139,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-06-14T06:24:02.303Z
-Stopped at: Phase 7 context gathered; ready to plan
-Resume file: .planning/phases/07-backtesting-and-validation/07-CONTEXT.md
+Stopped at: Phase 7 planned; ready to execute
+Resume file: .planning/phases/07-backtesting-and-validation/07-01-PLAN.md

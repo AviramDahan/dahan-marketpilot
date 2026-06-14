@@ -258,11 +258,25 @@ Plans:
 
 Plans:
 
-- [ ] 07-01: Backtest execution assumptions, fees, slippage, fill models, and no-look-ahead tests.
-- [ ] 07-02: Full-period, year-by-year, In-Sample, and Out-of-Sample reporting.
-- [ ] 07-03: Walk-Forward or equivalent chronological validation and sensitivity analysis.
-- [ ] 07-04: Benchmark comparison, activation gates, and strategy approval state.
-- [ ] 07-05: Backtest report generation and notification preview mode.
+**Wave 1**
+
+- [ ] 07-01-PLAN.md - Backtest execution assumptions, fees, slippage, fill models, and no-look-ahead tests.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 07-02-PLAN.md - Full-period, year-by-year, In-Sample, and Out-of-Sample reporting.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 07-03-PLAN.md - Walk-Forward or equivalent chronological validation and sensitivity analysis.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 07-04-PLAN.md - Benchmark comparison, activation gates, and strategy approval state.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 07-05-PLAN.md - Backtest report generation and notification preview mode.
 
 ### Phase 8: QuantConnect Paper Trading and Telegram
 
@@ -341,7 +355,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 
 | 4.1. Multi-Timeframe Signal Foundation | 4/4 | Complete | 2026-06-14 |
 | 5. Relative Strength and Unified Scoring | 3/3 | Complete | 2026-06-14 |
 | 6. Portfolio Risk and Order Lifecycle | 5/5 | Complete    | 2026-06-14 |
-| 7. Backtesting and Validation | 0/5 | Not started | - |
+| 7. Backtesting and Validation | 0/5 | Planned; next execute | - |
 | 8. QuantConnect Paper Trading and Telegram | 0/4 | Not started | - |
 | 9. Render Dashboard | 0/4 | Not started | - |
 | 10. CI/CD, Security and Release | 0/4 | Not started | - |
