@@ -128,3 +128,8 @@ state is unavailable, local audit history is context only, new entries are
 blocked, and explicit recovery is required before Paper entries resume. Local
 JSONL records must not be promoted into authoritative Paper cash, holdings,
 orders, fills, deployment status, algorithm status, or performance.
+
+If QuantConnect shows a filled Paper position without required stop, target, or
+protective state, protective recovery blocks new entries and preserves exit
+obligations until explicit recovery is completed. Notification or Telegram
+delivery failure must not change that decision or unblock entries.
