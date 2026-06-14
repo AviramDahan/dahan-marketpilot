@@ -188,3 +188,24 @@ assumptions. QuantConnect Cloud/LEAN is the official source for real backtest
 results, while the local harness validates no-look-ahead and timing contracts.
 The config keeps Paper submission, real broker behavior, external delivery,
 synthetic results, and synthetic portfolio authority disabled.
+
+Phase 8 adds:
+
+- `config/paper_trading.yaml`
+
+`config/paper_trading.yaml` defines Paper mode gating only. It defaults to
+`inactive`, keeps `paper_trading_only: true`, rejects real-money paths and real
+broker adapters, and keeps deployment execution disabled by default.
+
+Supported Paper modes are:
+
+- `inactive`
+- `shadow`
+- `limited_paper`
+- `full_paper`
+
+`validation_passed` is not enough to enter Paper Trading. Shadow mode permits
+signal and Telegram previews only. Limited Paper uses 0.5% per-trade risk, at
+most 3 open Paper positions, and at most 1 new Paper entry per trading day.
+Full Paper uses the Phase 6 risk configuration. Limited and Full Paper still
+require Phase 6 allocation, sector, reward/risk, stop, and target checks.

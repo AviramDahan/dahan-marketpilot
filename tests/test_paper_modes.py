@@ -9,6 +9,7 @@ from marketpilot.paper_modes import (
     load_paper_mode_config,
 )
 from marketpilot.validation import ActivationApprovalState, evaluate_activation_gates
+from marketpilot.validation import ValidationGateDecision
 
 
 def _gate_decision(state: ActivationApprovalState):
@@ -105,10 +106,10 @@ def test_limited_paper_caps_are_stricter_than_phase_6_and_preserve_checks():
     [
         (BacktestRunStatus.NOT_RUN, "real_quantconnect_results"),
         (BacktestRunStatus.FIXTURE, "real_quantconnect_results"),
-        (BacktestRunStatus.UNAVAILABLE, "real_quantconnect_results"),
+        (BacktestRunStatus.EXAMPLE, "real_quantconnect_results"),
     ],
 )
-def test_stale_unavailable_fixture_or_not_run_evidence_fails_closed(run_status, expected_reason):
+def test_fixture_example_or_not_run_evidence_fails_closed(run_status, expected_reason):
     decision = evaluate_paper_mode(
         validation_decision=evaluate_activation_gates(
             run_status=run_status,
@@ -126,3 +127,18 @@ def test_stale_unavailable_fixture_or_not_run_evidence_fails_closed(run_status, 
     assert decision.mode is PaperTradingMode.INACTIVE
     assert decision.paper_order_eligible is False
     assert expected_reason in decision.reasons
+
+
+@pytest.mark.parametrize("failed_gate", ["validation_evidence_stale", "validation_evidence_unavailable"])
+def test_stale_or_unavailable_gate_evidence_fails_closed(failed_gate):
+    decision = evaluate_paper_mode(
+        validation_decision=ValidationGateDecision(
+            ActivationApprovalState.APPROVED_FOR_FULL_PAPER,
+            passed_gates=("real_quantconnect_results",),
+            failed_gates=(failed_gate,),
+        )
+    )
+
+    assert decision.mode is PaperTradingMode.INACTIVE
+    assert decision.paper_order_eligible is False
+    assert failed_gate in decision.reasons
