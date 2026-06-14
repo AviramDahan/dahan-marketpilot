@@ -108,9 +108,9 @@
 
 - [x] **TEL-01**: Shadow Mode, Limited Paper Mode, and Full Approved Paper Mode are gated by validation state.
 - [x] **TEL-02**: Paper Trading deployment, order reconciliation, restart recovery, and protective-order recovery are designed around QuantConnect as source of truth.
-- [ ] **TEL-03**: Telegram sends configured BUY candidate, WATCH, Paper BUY, Paper SELL, submitted-order, partial-fill, full-fill, stop, target, partial-close, full-close, rejected-order, canceled-order, regime, system, error, start/restart, and daily-summary alerts.
-- [ ] **TEL-04**: Telegram duplicate suppression, rate limiting, quota handling, missing-token behavior, missing-chat-ID behavior, disabled-notification behavior, and delivery failure behavior are unit-tested.
-- [ ] **TEL-05**: Telegram secrets are stored only in approved secret stores and never in repository files.
+- [x] **TEL-03**: Telegram sends configured BUY candidate, WATCH, Paper BUY, Paper SELL, submitted-order, partial-fill, full-fill, stop, target, partial-close, full-close, rejected-order, canceled-order, regime, system, error, start/restart, and daily-summary alerts.
+- [x] **TEL-04**: Telegram duplicate suppression, rate limiting, quota handling, missing-token behavior, missing-chat-ID behavior, disabled-notification behavior, and delivery failure behavior are unit-tested.
+- [x] **TEL-05**: Telegram secrets are stored only in approved secret stores and never in repository files.
 - [x] **TEL-06**: Telegram delivery failure does not stop trading logic or protective exit logic.
 
 ### Dashboard
@@ -235,9 +235,9 @@ Deferred to future releases and not part of the v1 roadmap:
 | BT-08 | Phase 7 | Complete |
 | TEL-01 | Phase 8 | Complete |
 | TEL-02 | Phase 8 | Complete |
-| TEL-03 | Phase 8 | Pending |
-| TEL-04 | Phase 8 | Pending |
-| TEL-05 | Phase 8 | Pending |
+| TEL-03 | Phase 8 | Complete |
+| TEL-04 | Phase 8 | Complete |
+| TEL-05 | Phase 8 | Complete |
 | TEL-06 | Phase 8 | Complete |
 | DASH-01 | Phase 9 | Pending |
 | DASH-02 | Phase 9 | Pending |
