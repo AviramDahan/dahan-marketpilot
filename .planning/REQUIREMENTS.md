@@ -40,7 +40,7 @@
 - [ ] **REG-01**: Market regime uses SPY and QQQ with EMA20, EMA50, EMA200, slopes, 20-day return, 60-day return, and optional breadth measures.
 - [ ] **REG-02**: RISK_ON, NEUTRAL, and RISK_OFF thresholds are configurable, documented, unit-tested, and reported.
 - [ ] **REG-03**: RISK_OFF blocks new long entries but does not automatically liquidate every existing position solely due to regime change.
-- [ ] **REG-04**: Telegram regime transition alerts are generated when enabled and duplicate unchanged-state alerts are suppressed.
+- [x] **REG-04**: Telegram regime transition alerts are generated when enabled and duplicate unchanged-state alerts are suppressed.
 
 ### Indicators And Setups
 
@@ -185,7 +185,7 @@ Deferred to future releases and not part of the v1 roadmap:
 | REG-01 | Phase 2 | Pending |
 | REG-02 | Phase 2 | Pending |
 | REG-03 | Phase 2 | Pending |
-| REG-04 | Phase 8 | Pending |
+| REG-04 | Phase 8 | Complete |
 | IND-01 | Phase 2 | Pending |
 | IND-02 | Phase 2 | Pending |
 | IND-03 | Phase 2 | Pending |
