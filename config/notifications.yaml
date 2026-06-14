@@ -4,3 +4,4 @@ notifications:
   delivery_required_for_safety: false
   token_env_var: TELEGRAM_BOT_TOKEN
   chat_id_env_var: TELEGRAM_CHAT_ID
+  message_max_chars: 3900

@@ -192,6 +192,7 @@ synthetic results, and synthetic portfolio authority disabled.
 Phase 8 adds:
 
 - `config/paper_trading.yaml`
+- `config/notifications.yaml` Telegram delivery settings
 
 `config/paper_trading.yaml` defines Paper mode gating only. It defaults to
 `inactive`, keeps `paper_trading_only: true`, rejects real-money paths and real
@@ -209,3 +210,10 @@ signal and Telegram previews only. Limited Paper uses 0.5% per-trade risk, at
 most 3 open Paper positions, and at most 1 new Paper entry per trading day.
 Full Paper uses the Phase 6 risk configuration. Limited and Full Paper still
 require Phase 6 allocation, sector, reward/risk, stop, and target checks.
+
+`config/notifications.yaml` defines Telegram enablement and non-secret
+reference names only. It defaults to `telegram_enabled: false`, requires
+`paper_trading_only: true`, requires `delivery_required_for_safety: false`, and
+may name `token_env_var` and `chat_id_env_var`. It must never contain bot token
+or chat target values. Those values come only from approved external secret
+stores or environment variables outside repository files.
