@@ -39,7 +39,7 @@ def test_navigation_is_overview_first_and_operational():
         "Risk",
         "Notifications",
         "Activity",
-        "System",
+        "System Status",
     )
 
 
@@ -77,6 +77,12 @@ def test_dashboard_source_and_rendered_shell_do_not_expose_forbidden_controls():
             (ROOT / "dashboard" / "app.py").read_text(encoding="utf-8"),
             (ROOT / "dashboard" / "auth.py").read_text(encoding="utf-8"),
             (ROOT / "dashboard" / "config.py").read_text(encoding="utf-8"),
+            (ROOT / "dashboard" / "pages" / "__init__.py").read_text(encoding="utf-8")
+            if (ROOT / "dashboard" / "pages" / "__init__.py").exists()
+            else "",
+            (ROOT / "dashboard" / "pages" / "overview.py").read_text(encoding="utf-8")
+            if (ROOT / "dashboard" / "pages" / "overview.py").exists()
+            else "",
             (ROOT / "dashboard" / "safety_view.py").read_text(encoding="utf-8"),
             render_markdown(),
         ]

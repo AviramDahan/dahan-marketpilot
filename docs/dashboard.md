@@ -39,8 +39,30 @@ fail-visible and redacted. The only allowed actions are view, refresh, login,
 and logout.
 
 The mobile layout is Overview-first, followed by Positions, Trades, Signals,
-Backtests, Strategies, Risk, Notifications, Activity, and System. The layout is
-operational and compact so the Paper Trading state can be scanned quickly.
+Backtests, Strategies, Risk, Notifications, Activity, and System Status. The
+layout is operational and compact so the Paper Trading state can be scanned
+quickly.
+
+## Page Inventory
+
+The dashboard page registry is:
+
+- Overview
+- Positions
+- Trades
+- Signals
+- Backtests
+- Strategies
+- Risk
+- Notifications
+- Activity
+- System Status
+
+The Overview page is implemented first. It summarizes the paper-only warning,
+QuantConnect source state, Paper mode, portfolio status, stale status, open
+positions count, recent signal/activity counts, and system warnings. Dedicated
+page modules for the remaining page entries are implemented by later Phase 9
+plans and must render safe `not_available` states until then.
 
 ## Approved QuantConnect Read Paths
 

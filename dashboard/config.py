@@ -25,7 +25,7 @@ DEFAULT_NAVIGATION_SECTIONS = (
     "Risk",
     "Notifications",
     "Activity",
-    "System",
+    "System Status",
 )
 
 

@@ -236,4 +236,4 @@ data is rendered before login.
 
 The allowed dashboard actions are view, refresh, login, and logout. Navigation
 is Overview-first for mobile use, followed by Positions, Trades, Signals,
-Backtests, Strategies, Risk, Notifications, Activity, and System.
+Backtests, Strategies, Risk, Notifications, Activity, and System Status.

@@ -1,6 +1,8 @@
 """Thin Streamlit composition layer for the read-only dashboard shell."""
 
 from dashboard.auth import AuthStatus, DashboardAuth, authenticate_dashboard
+from dashboard.data import DashboardDataClient
+from dashboard.pages import PAGE_REGISTRY, render_page
 from dashboard.config import load_dashboard_config
 from dashboard.safety_view import build_dashboard_shell
 
@@ -35,11 +37,14 @@ def main() -> None:
     if not shell.data_visible:
         return
 
-    selected = st.tabs(list(shell.sections))
-    for tab, section in zip(selected, shell.sections):
+    snapshot = DashboardDataClient.not_configured(missing=("dashboard_data_source",))
+    selected = st.tabs([page.title for page in PAGE_REGISTRY])
+    for tab, page in zip(selected, PAGE_REGISTRY):
         with tab:
-            st.subheader(section)
-            st.caption("Read-only view. Refresh is manual or gentle polling.")
+            view = render_page(page.slug, snapshot)
+            st.subheader(view.title)
+            for line in view.lines:
+                st.write(line)
 
     if st.button("Refresh"):
         st.rerun()

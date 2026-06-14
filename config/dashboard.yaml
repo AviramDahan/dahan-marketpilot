@@ -22,7 +22,7 @@ dashboard:
     - Risk
     - Notifications
     - Activity
-    - System
+    - System Status
   cache_ttl_seconds: 60
   stale_warning_seconds: 600
   stale_error_seconds: 1800
