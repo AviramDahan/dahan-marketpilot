@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 
 from marketpilot.notification_events import NotificationDomainEvent
-from marketpilot.telegram import TelegramDeliveryService, load_telegram_config
+from marketpilot.telegram import TelegramConfig, TelegramDeliveryService, load_telegram_config
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,12 +35,23 @@ def main() -> int:
     _load_env_file(ROOT / ".env.local")
     config = load_telegram_config(
         ROOT / "config" / "notifications.yaml",
-        secret_source=os.environ,
+        env=os.environ,
     )
+    if os.environ.get("MARKETPILOT_TELEGRAM_SMOKE_ENABLED") == "1":
+        config = TelegramConfig(
+            paper_trading_only=config.paper_trading_only,
+            telegram_enabled=True,
+            delivery_required_for_safety=config.delivery_required_for_safety,
+            token_env_var=config.token_env_var,
+            chat_id_env_var=config.chat_id_env_var,
+            bot_token=config.bot_token,
+            chat_id=config.chat_id,
+            message_max_chars=config.message_max_chars,
+        )
 
     if not config.telegram_enabled:
         print("Telegram delivery is disabled in config/notifications.yaml.")
-        print("Set notifications.telegram_enabled: true only for this smoke test environment.")
+        print("Set MARKETPILOT_TELEGRAM_SMOKE_ENABLED=1 only for this smoke test environment.")
         return 2
 
     if config.missing_secret_names:
