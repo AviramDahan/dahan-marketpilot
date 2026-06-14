@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to execute
-stopped_at: Phase 5 complete; Phase 6 not yet discussed/planned
-last_updated: "2026-06-14T03:55:00.000Z"
-last_activity: 2026-06-14 - Phase 5 executed, verified, and completed; Phase 6 is next.
+status: Ready to plan
+stopped_at: Phase 6 context gathered; ready to plan
+last_updated: "2026-06-14T04:10:00.000Z"
+last_activity: 2026-06-14 - Phase 6 discussed with all gray areas captured; ready to plan.
 progress:
   total_phases: 11
   completed_phases: 6
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-06-14)
 ## Current Position
 
 Phase: 6 of 11 (portfolio risk and order lifecycle)
-Plan: not yet discussed/planned
-Status: Ready to discuss
-Last activity: 2026-06-14 - Phase 5 executed, verified, and completed; Phase 6 is next.
+Plan: context gathered; next command `/gsd-plan-phase 6`
+Status: Ready to plan
+Last activity: 2026-06-14 - Phase 6 discussed with all gray areas captured; ready to plan.
 
 Progress: [######-----] 55%
 
@@ -96,6 +96,11 @@ Recent decisions affecting current work:
 - Phase 4.1 planning: 1H is optional confirmation only and cannot independently create trades or override failed Daily, invalid 4H, `RISK_OFF`, stale data, hard rejection, or invalid reward/risk.
 - Phase 4.1 execution: `marketpilot/timeframes.py`, `load_strategy_config()`, extended `SetupTiming`, and MTF setup evidence are implemented with 135 passing tests.
 - Phase 5 execution: Relative Strength Leader, MarketPilot Score, audit classifications, confidence, one-candidate-per-symbol ranking, and disabled Combined Swing readiness gate are implemented with 164 passing tests.
+- Phase 6 discussion: Default risk settings are 1% per trade, 10 max open positions, 30% sector exposure, 3 max new entries per day, and 15% max allocation per position.
+- Phase 6 discussion: Position sizing uses risk amount divided by stop distance; invalid stop distance rejects fail-closed, and cash shortage can reduce quantity only when minimum reward/risk and quantity remain valid.
+- Phase 6 discussion: Phase 6 creates order intent, lifecycle, exit, persistence, and notification-domain models only; actual QuantConnect Paper order submission remains Phase 8.
+- Phase 6 discussion: QuantConnect remains authoritative on restart mismatch; local JSONL audit journal is append-only recovery and audit context.
+- Phase 6 discussion: Notification-domain events are typed, sanitized, transport-independent, and delivery failure must never block safety logic.
 
 ### Pending Todos
 
@@ -119,6 +124,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-14T03:55:00.000Z
-Stopped at: Phase 5 complete; Phase 6 not yet discussed/planned
-Resume file: .planning/ROADMAP.md
+Last session: 2026-06-14T04:10:00.000Z
+Stopped at: Phase 6 context gathered; ready to plan
+Resume file: .planning/phases/06-portfolio-risk-and-order-lifecycle/06-CONTEXT.md
