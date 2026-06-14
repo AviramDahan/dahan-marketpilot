@@ -320,14 +320,32 @@ Plans:
   3. Dashboard data is sourced from verified QuantConnect API/export paths with caching and stale-data warnings.
   4. USD/NIS displays, FX warnings, auth behavior, error presentation, and secret masking are tested.
 
-**Plans**: 4 plans
-
+**Plans**: 7 plans
 Plans:
+**Wave 1**
 
 - [ ] 09-01: Verify QuantConnect data access/export path and dashboard data contracts.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 09-02: Streamlit app shell, authentication, mobile layout, and read-only enforcement.
-- [ ] 09-03: Dashboard pages for portfolio, positions, trades, signals, backtests, strategies, risk, notifications, activity, and system status.
-- [ ] 09-04: Render deployment configuration, caching, stale-data handling, FX display, and dashboard tests.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 09-03: Dashboard page registry and Overview page foundation.
+- [ ] 09-06: Render deployment and dependency configuration with package-legitimacy checkpoint.
+
+**Wave 4** *(blocked on 09-03 completion)*
+
+- [ ] 09-04: Portfolio, trading, signal, backtest, and strategy dashboard pages.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 09-05: Risk, notifications, activity, and system status dashboard pages.
+
+**Wave 6** *(blocked on 09-01, 09-02, 09-05, and 09-06 completion)*
+
+- [ ] 09-07: Cache/stale behavior, USD/NIS FX display helpers, and final dashboard test hardening.
 
 ### Phase 10: CI/CD, Security and Release
 
@@ -366,5 +384,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 
 | 6. Portfolio Risk and Order Lifecycle | 5/5 | Complete    | 2026-06-14 |
 | 7. Backtesting and Validation | 5/5 | Complete    | 2026-06-14 |
 | 8. QuantConnect Paper Trading and Telegram | 4/4 | Complete    | 2026-06-14 |
-| 9. Render Dashboard | 0/4 | Not started | - |
+| 9. Render Dashboard | 0/7 | Not started | - |
 | 10. CI/CD, Security and Release | 0/4 | Not started | - |
