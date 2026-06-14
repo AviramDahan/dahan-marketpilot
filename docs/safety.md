@@ -105,3 +105,20 @@ Activation gates block Paper eligibility by default unless real documented
 validation passes every required gate. Preview backtest notifications are
 historical, transport-neutral domain events for the fake collector only and
 cannot control safety logic.
+
+## QuantConnect Paper Trading Safety
+
+Phase 8 Paper Trading contracts are simulated-paper only. The only allowed
+brokerage target is QuantConnect Paper Trading. Real brokerage adapters,
+real-money credentials, live-money switching, leverage, margin, short selling,
+options, futures, cryptocurrency, Forex, and local fake deployment state remain
+forbidden.
+
+Missing QuantConnect account, organization access, Paper Trading Live Node,
+project ID, API credentials, or data-provider settings must produce typed
+`not_configured` or `not_run` states. They must never be replaced by fake
+deployment IDs, fake Paper portfolios, or invented Paper results.
+
+Deployment command text is operator-run documentation only. Tests must not run
+`lean cloud live deploy`, start a Live Node, require credentials, or contact
+QuantConnect.
