@@ -291,12 +291,21 @@ Plans:
   4. Telegram failures, quotas, disabled settings, missing token, and missing chat ID are tested and do not stop trading safety logic.
 
 **Plans**: 4 plans
-
 Plans:
+**Wave 1**
 
 - [ ] 08-01: Paper Trading modes, deployment gates, and QuantConnect Live Node assumptions.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 08-02: Order reconciliation, restart recovery, and protective-order recovery.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 08-03: Telegram integration path, secrets handling, and delivery service.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 08-04: Telegram alert coverage, duplicate suppression, rate limiting, and failure tests.
 
 ### Phase 9: Render Dashboard
