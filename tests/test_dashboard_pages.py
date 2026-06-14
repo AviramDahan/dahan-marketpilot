@@ -77,12 +77,26 @@ def _available_snapshot() -> DashboardSnapshot:
             status=DashboardSectionStatus.AVAILABLE,
             items=({"name": "daily_only", "paper_mode": "limited_paper", "readiness": "ready"},),
         ),
+        risk=DashboardCollectionSection(
+            status=DashboardSectionStatus.AVAILABLE,
+            items=(
+                {"name": "sector_exposure", "state": "within_limit"},
+                {"name": "protective_recovery", "state": "warning"},
+            ),
+        ),
+        notifications=DashboardCollectionSection(
+            status=DashboardSectionStatus.AVAILABLE,
+            items=(
+                {"channel": "telegram", "status": "missing_token", "detail": "token=secret-token-value"},
+            ),
+        ),
         activity=DashboardCollectionSection(
             status=DashboardSectionStatus.AVAILABLE,
-            items=({"event": "paper_snapshot_loaded"},),
+            items=({"event": "paper_snapshot_loaded", "source_timestamp": "2026-06-14T18:00:00+00:00"},),
         ),
         system=DashboardCollectionSection(
             status=DashboardSectionStatus.AVAILABLE,
+            items=({"subsystem": "quantconnect", "severity": "info", "message": "connected"},),
             reasons=("all_clear",),
         ),
     )
@@ -140,18 +154,12 @@ def test_overview_keeps_degraded_states_visible():
     assert "QuantConnect unavailable" in stale_text
 
 
-def test_later_phase_pages_render_safe_not_available_until_implemented():
+def test_unknown_pages_render_safe_not_available():
     snapshot = _available_snapshot()
 
-    for slug in (
-        "risk",
-        "notifications",
-        "activity",
-        "system-status",
-    ):
-        view = render_page(slug, snapshot)
-        assert view.status is DashboardSectionStatus.NOT_AVAILABLE
-        assert "not_available" in "\n".join(view.lines)
+    view = render_page("unknown-page", snapshot)
+    assert view.status is DashboardSectionStatus.NOT_AVAILABLE
+    assert "not_available" in "\n".join(view.lines)
 
 
 def test_registry_and_overview_do_not_define_mutation_actions():
@@ -213,3 +221,43 @@ def test_signal_backtest_strategy_degraded_states_are_visible():
     assert "not_available" in "\n".join(render_page("signals", snapshot).lines)
     assert "not_available" in "\n".join(render_page("backtests", snapshot).lines)
     assert "not_available" in "\n".join(render_page("strategies", snapshot).lines)
+
+
+def test_risk_and_notifications_pages_render_safe_statuses():
+    snapshot = _available_snapshot()
+
+    risk = "\n".join(render_page("risk", snapshot).lines)
+    assert "sector_exposure" in risk
+    assert "protective_recovery" in risk
+    assert "Status only" in risk
+
+    notifications = "\n".join(render_page("notifications", snapshot).lines)
+    assert "telegram" in notifications
+    assert "missing_token" in notifications
+    assert "secret-token-value" not in notifications
+    assert "[redacted]" in notifications
+    assert "non-authoritative" in notifications
+
+
+def test_activity_and_system_status_pages_render_safe_diagnostics():
+    snapshot = _available_snapshot()
+
+    activity = "\n".join(render_page("activity", snapshot).lines)
+    assert "paper_snapshot_loaded" in activity
+    assert "2026-06-14T18:00:00+00:00" in activity
+    assert "Activity status: available" in activity
+
+    system = "\n".join(render_page("system-status", snapshot).lines)
+    assert "quantconnect" in system
+    assert "info" in system
+    assert "connected" in system
+    assert "System status: available" in system
+
+
+def test_risk_notification_activity_system_degraded_states_are_visible():
+    snapshot = DashboardDataClient.missing_object_store_export("dashboard/system.json")
+
+    assert "not_available" in "\n".join(render_page("risk", snapshot).lines)
+    assert "not_available" in "\n".join(render_page("notifications", snapshot).lines)
+    assert "not_available" in "\n".join(render_page("activity", snapshot).lines)
+    assert "not_available" in "\n".join(render_page("system-status", snapshot).lines)

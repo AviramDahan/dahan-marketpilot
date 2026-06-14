@@ -77,6 +77,26 @@ def render_page(slug: str, snapshot: DashboardSnapshot) -> PageView:
 
         view = build_strategies(snapshot)
         return PageView(title="Strategies", status=view.status, lines=view.lines)
+    if normalized == "risk":
+        from dashboard.pages.risk import build_risk
+
+        view = build_risk(snapshot)
+        return PageView(title="Risk", status=view.status, lines=view.lines)
+    if normalized == "notifications":
+        from dashboard.pages.notifications import build_notifications
+
+        view = build_notifications(snapshot)
+        return PageView(title="Notifications", status=view.status, lines=view.lines)
+    if normalized == "activity":
+        from dashboard.pages.activity import build_activity
+
+        view = build_activity(snapshot)
+        return PageView(title="Activity", status=view.status, lines=view.lines)
+    if normalized == "system-status":
+        from dashboard.pages.system_status import build_system_status
+
+        view = build_system_status(snapshot)
+        return PageView(title="System Status", status=view.status, lines=view.lines)
 
     title = _title_for_slug(normalized)
     return PageView(

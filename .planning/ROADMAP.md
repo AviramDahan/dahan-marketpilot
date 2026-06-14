@@ -341,7 +341,7 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 09-05: Risk, notifications, activity, and system status dashboard pages.
+- [x] 09-05: Risk, notifications, activity, and system status dashboard pages.
 
 **Wave 6** *(blocked on 09-01, 09-02, 09-05, and 09-06 completion)*
 
@@ -384,5 +384,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 
 | 6. Portfolio Risk and Order Lifecycle | 5/5 | Complete    | 2026-06-14 |
 | 7. Backtesting and Validation | 5/5 | Complete    | 2026-06-14 |
 | 8. QuantConnect Paper Trading and Telegram | 4/4 | Complete    | 2026-06-14 |
-| 9. Render Dashboard | 5/7 | In Progress|  |
+| 9. Render Dashboard | 6/7 | In Progress|  |
 | 10. CI/CD, Security and Release | 0/4 | Not started | - |

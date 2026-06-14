@@ -79,6 +79,22 @@ Backtests renders real/not_run/fixture/unavailable report labels without fake
 performance, portfolio fabrication, or profitability claims. Strategies renders
 activation, Paper mode, and readiness as status only.
 
+## Risk, Notifications, Activity, And System Pages
+
+Risk renders constraints, exposure, mismatch, exit, and protective recovery
+warnings as status only.
+
+Notifications renders Telegram or other delivery outcomes as non-authoritative
+status. Missing token, disabled delivery, missing chat target, rejected, and
+failed outcomes remain notification status only and do not control safety
+logic.
+
+Activity renders recent events/log summaries with source timestamps and visible
+empty/error states. It does not turn events into operator workflows.
+
+System Status renders QuantConnect, cache, FX, Telegram, Render, auth, and
+configuration health as redacted subsystem diagnostics.
+
 ## Approved QuantConnect Read Paths
 
 The approved production QuantConnect Cloud API read paths are:
