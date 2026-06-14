@@ -2,6 +2,28 @@ dashboard:
   paper_trading_only: true
   read_only: true
   manual_order_controls_enabled: false
+  auth_enabled: true
+  password_env_var: DASHBOARD_PASSWORD
   display_currency: NIS
   trading_currency: USD
   no_live_data_connected: true
+  allowed_actions:
+    - view
+    - refresh
+    - login
+    - logout
+  navigation_sections:
+    - Overview
+    - Positions
+    - Trades
+    - Signals
+    - Backtests
+    - Strategies
+    - Risk
+    - Notifications
+    - Activity
+    - System
+  cache_ttl_seconds: 60
+  stale_warning_seconds: 600
+  stale_error_seconds: 1800
+  gentle_poll_seconds: 120

@@ -150,3 +150,14 @@ the simulated-paper warning where relevant. They must not include credentials,
 secret values, copied token or chat target values, or profitability guarantees.
 Historical backtests remain real-Telegram-disabled and use fake collector
 previews only unless a future explicit preview path is designed.
+
+## Dashboard Safety
+
+The Render dashboard is password-protected with a single external
+`DASHBOARD_PASSWORD` environment variable. No raw dashboard password may appear
+in repository files, docs, tests, logs, reports, planning artifacts, or chat.
+No dashboard data is rendered before login, and authentication failures must be
+redacted.
+
+The dashboard action surface is limited to view, refresh, login, and logout.
+It must remain Overview-first on mobile and read-only for every page.

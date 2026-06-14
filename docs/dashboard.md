@@ -28,6 +28,20 @@ The dashboard must show `not_configured`, `not_available`, `stale`, or `error`
 when source data is missing or unclear. It must not invent holdings, portfolio
 totals, backtest results, strategy activity, notifications, or system health.
 
+## Authentication And Navigation
+
+The dashboard uses a single strong password loaded from the `DASHBOARD_PASSWORD`
+environment variable. Repository configuration may name this environment
+variable, but it must never store the raw dashboard password.
+
+No dashboard data is rendered before login. Authentication failures are
+fail-visible and redacted. The only allowed actions are view, refresh, login,
+and logout.
+
+The mobile layout is Overview-first, followed by Positions, Trades, Signals,
+Backtests, Strategies, Risk, Notifications, Activity, and System. The layout is
+operational and compact so the Paper Trading state can be scanned quickly.
+
 ## Approved QuantConnect Read Paths
 
 The approved production QuantConnect Cloud API read paths are:

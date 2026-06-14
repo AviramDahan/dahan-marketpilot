@@ -217,3 +217,23 @@ reference names only. It defaults to `telegram_enabled: false`, requires
 may name `token_env_var` and `chat_id_env_var`. It must never contain bot token
 or chat target values. Those values come only from approved external secret
 stores or environment variables outside repository files.
+
+## Dashboard Configuration
+
+`config/dashboard.yaml` defines Render dashboard invariants only. It must keep:
+
+- `paper_trading_only: true`
+- `read_only: true`
+- `manual_order_controls_enabled: false`
+- `auth_enabled: true`
+- `trading_currency: USD`
+- `display_currency: NIS`
+- `password_env_var: DASHBOARD_PASSWORD`
+
+The raw dashboard password must come only from the named environment variable,
+never from repository files, docs, tests, or planning artifacts. No dashboard
+data is rendered before login.
+
+The allowed dashboard actions are view, refresh, login, and logout. Navigation
+is Overview-first for mobile use, followed by Positions, Trades, Signals,
+Backtests, Strategies, Risk, Notifications, Activity, and System.
