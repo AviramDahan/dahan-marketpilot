@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from pathlib import Path
@@ -49,6 +50,19 @@ class PaperModeDecision:
     risk_config: RiskConfig
     reasons: tuple[str, ...]
     required_phase6_checks: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class PaperModeTransition:
+    prior_mode: PaperTradingMode
+    requested_mode: PaperTradingMode
+    resulting_mode: PaperTradingMode
+    decision_reason: str
+    timestamp: datetime
+    correlation_id: str
+    gate_evidence_summary: Mapping[str, object]
+    reasons: tuple[str, ...]
+    operator_payload: Mapping[str, object] = field(default_factory=dict)
 
 
 def load_paper_mode_config(path: str | Path = DEFAULT_CONFIG_PATH) -> PaperModeConfig:
@@ -204,6 +218,57 @@ def evaluate_paper_mode(
     )
 
 
+def record_paper_mode_transition(
+    *,
+    prior_mode: PaperTradingMode | str,
+    requested_mode: PaperTradingMode | str,
+    validation_decision: ValidationGateDecision,
+    timestamp: datetime | None = None,
+    correlation_id: str,
+    operator_payload: Mapping[str, object] | None = None,
+    config: PaperModeConfig | None = None,
+) -> PaperModeTransition:
+    prior = _mode(prior_mode)
+    requested = _mode(requested_mode)
+    if not correlation_id.strip():
+        raise ValueError("correlation_id is required for Paper mode transitions.")
+
+    decision = evaluate_paper_mode(validation_decision=validation_decision, config=config)
+    if requested is PaperTradingMode.INACTIVE:
+        resulting = PaperTradingMode.INACTIVE
+        decision_reason = "transition_approved"
+        reasons = ("operator_requested_inactive",)
+    elif requested is decision.mode:
+        resulting = requested
+        decision_reason = "transition_approved"
+        reasons = decision.reasons
+    else:
+        resulting = prior
+        decision_reason = "transition_rejected_fail_closed"
+        reasons = (
+            "requested_mode_not_allowed_by_activation_state",
+            *decision.reasons,
+        )
+
+    return PaperModeTransition(
+        prior_mode=prior,
+        requested_mode=requested,
+        resulting_mode=resulting,
+        decision_reason=decision_reason,
+        timestamp=timestamp or datetime.now(timezone.utc),
+        correlation_id=correlation_id.strip(),
+        gate_evidence_summary={
+            "activation_state": validation_decision.state.value,
+            "passed_gates": tuple(validation_decision.passed_gates),
+            "failed_gates": tuple(validation_decision.failed_gates),
+            "evaluated_mode": decision.mode.value,
+            "paper_order_eligible": decision.paper_order_eligible,
+        },
+        reasons=tuple(dict.fromkeys(reasons)),
+        operator_payload=_sanitize_payload(operator_payload or {}),
+    )
+
+
 def _required_checks(config: PaperModeConfig) -> tuple[str, ...]:
     checks = []
     if config.require_phase6_allocation_check:
@@ -217,6 +282,17 @@ def _required_checks(config: PaperModeConfig) -> tuple[str, ...]:
     if config.require_phase6_target_check:
         checks.append("phase6_target")
     return tuple(checks)
+
+
+def _sanitize_payload(payload: Mapping[str, object]) -> dict[str, object]:
+    sanitized: dict[str, object] = {}
+    for key, value in payload.items():
+        lowered = key.lower()
+        if any(marker in lowered for marker in ("secret", "token", "password", "credential", "api_key", "chat_id")):
+            sanitized[key] = "[redacted]"
+        else:
+            sanitized[key] = value
+    return sanitized
 
 
 def _mode(value: object) -> PaperTradingMode:

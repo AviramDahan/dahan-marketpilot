@@ -48,3 +48,16 @@ required in every Paper-order-eligible mode.
 Stale, unavailable, fixture-only, example-only, not-run, or Phase-7-inconsistent
 validation evidence fails closed to `inactive`; it never creates Paper order
 eligibility.
+
+## Paper Mode Transition Records
+
+Mode transitions are audit records, not deployment commands. Each transition
+records prior mode, requested mode, resulting mode, decision reason, UTC
+timestamp, correlation ID, activation-gate summary, and sanitized operator
+payload. If the requested mode is not allowed by the current activation state,
+the transition is rejected, the prior safe mode is preserved, and the reason is
+recorded as `transition_rejected_fail_closed`.
+
+Transition payloads must be safe for append-only audit storage. Secret-like keys
+such as token, password, credential, API key, or chat ID fields are redacted
+before persistence.
