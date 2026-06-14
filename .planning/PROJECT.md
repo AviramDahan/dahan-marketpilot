@@ -20,6 +20,7 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 - Phase 1 added a minimal non-trading QuantConnect shell and read-only dashboard shell with static safety tests.
 - Phase 4.1 implemented the multi-timeframe signal foundation: central StrategyMode config, timeframe-aware completed-bar contracts, generalized setup timing metadata, MTF setup evidence, deterministic tests, and synchronized documentation.
 - Phase 5 implemented Relative Strength Leader, MarketPilot Score, audit classifications, confidence, setup ranking, one-candidate-per-symbol behavior, and disabled Combined Swing readiness.
+- Phase 6 implemented portfolio risk constraints, risk-based position sizing, order lifecycle intent models, duplicate prevention, exit obligations, append-only audit journal, restart recovery placeholders, and transport-neutral notification-domain events.
 
 ### Active
 
@@ -86,6 +87,8 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 | Keep `daily_only` as default and benchmark. | Preserves completed Phase 1-4 behavior and provides a clean comparison baseline. | Active |
 | Treat 4H as primary setup timeframe in MTF modes and 1H as optional confirmation only. | Maintains swing-trading intent while avoiding independent intraday trade creation. | Active |
 | Use market-open anchored, RTH-only 4H bars as the recommended initial policy. | US equity sessions are 6.5 hours; partial-session bars must be explicit and non-signal by default. | Active |
+| Keep Phase 6 local state as audit mirror only. | QuantConnect must remain authoritative for Paper cash, holdings, orders, fills, and positions. | Active |
+| Keep notification events transport-neutral until Phase 8. | Telegram delivery failure must never control risk, order, or exit safety logic. | Active |
 
 ## External Actions Required Later
 
@@ -130,4 +133,4 @@ After each phase:
 4. Refresh Context and Constraints if implementation reality changes.
 
 ---
-*Last updated: 2026-06-14 after Phase 5 execution and verification.*
+*Last updated: 2026-06-14 after Phase 6 execution and verification.*

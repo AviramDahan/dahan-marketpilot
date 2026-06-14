@@ -81,17 +81,17 @@
 - [ ] **SCO-01**: Candidate scoring includes setup quality, trend, momentum, relative strength, volume, risk/reward, market regime, sector/portfolio fit, data quality, and earnings-risk policy.
 - [ ] **SCO-02**: Every signal and rejection includes numeric evidence, component scores, total score, classification, confidence, and hard rejection reasons.
 - [ ] **SCO-03**: Score classifications and confidence boundaries are configurable, documented, unit-tested, and included in reports.
-- [ ] **SCO-04**: The audit trail records signal inputs, scoring evidence, decisions, orders, fills, exits, alerts, configuration version, strategy version, and timestamps.
+- [x] **SCO-04**: The audit trail records signal inputs, scoring evidence, decisions, orders, fills, exits, alerts, configuration version, strategy version, and timestamps.
 
 ### Portfolio Risk And Order Lifecycle
 
-- [ ] **RISK-01**: Portfolio constraints enforce maximum position count, maximum sector exposure, maximum daily entries, cash constraints, and per-trade risk budget.
-- [ ] **RISK-02**: Position sizing respects risk by stop distance, allocation limits, cash availability, and zero/invalid quantity rejection.
-- [ ] **RISK-03**: Stops, targets, partial exits, trailing stops, maximum holding period, and duplicate-order prevention are modeled and tested.
-- [ ] **RISK-04**: Order lifecycle handles submitted, partially filled, fully filled, rejected, canceled, protective order creation, target creation, partial close, full close, and restart restoration states.
-- [ ] **RISK-05**: Split and delisting handling are designed and tested where practical.
-- [ ] **RISK-06**: Existing positions remain governed by individual exit rules even when market regime changes.
-- [ ] **RISK-07**: Notification-domain events are separate from order-safety logic and can be tested with fake transports.
+- [x] **RISK-01**: Portfolio constraints enforce maximum position count, maximum sector exposure, maximum daily entries, cash constraints, and per-trade risk budget.
+- [x] **RISK-02**: Position sizing respects risk by stop distance, allocation limits, cash availability, and zero/invalid quantity rejection.
+- [x] **RISK-03**: Stops, targets, partial exits, trailing stops, maximum holding period, and duplicate-order prevention are modeled and tested.
+- [x] **RISK-04**: Order lifecycle handles submitted, partially filled, fully filled, rejected, canceled, protective order creation, target creation, partial close, full close, and restart restoration states.
+- [x] **RISK-05**: Split and delisting handling are designed and tested where practical.
+- [x] **RISK-06**: Existing positions remain governed by individual exit rules even when market regime changes.
+- [x] **RISK-07**: Notification-domain events are separate from order-safety logic and can be tested with fake transports.
 
 ### Backtesting And Validation
 
@@ -217,14 +217,14 @@ Deferred to future releases and not part of the v1 roadmap:
 | SCO-01 | Phase 5 | Complete |
 | SCO-02 | Phase 5 | Complete |
 | SCO-03 | Phase 5 | Complete |
-| SCO-04 | Phase 6 | Pending |
-| RISK-01 | Phase 6 | Pending |
-| RISK-02 | Phase 6 | Pending |
-| RISK-03 | Phase 6 | Pending |
-| RISK-04 | Phase 6 | Pending |
-| RISK-05 | Phase 6 | Pending |
-| RISK-06 | Phase 6 | Pending |
-| RISK-07 | Phase 6 | Pending |
+| SCO-04 | Phase 6 | Complete |
+| RISK-01 | Phase 6 | Complete |
+| RISK-02 | Phase 6 | Complete |
+| RISK-03 | Phase 6 | Complete |
+| RISK-04 | Phase 6 | Complete |
+| RISK-05 | Phase 6 | Complete |
+| RISK-06 | Phase 6 | Complete |
+| RISK-07 | Phase 6 | Complete |
 | BT-01 | Phase 7 | Pending |
 | BT-02 | Phase 7 | Pending |
 | BT-03 | Phase 7 | Pending |

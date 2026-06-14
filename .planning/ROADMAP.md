@@ -19,7 +19,7 @@ Dahan MarketPilot v1 is planned as a safety-first sequence. The project starts w
 - [x] **Phase 4: Volume Breakout** - Implement and test prior-resistance breakout logic with current-bar exclusion and volume confirmation. (completed 2026-06-13)
 - [x] **Phase 4.1: Multi-Timeframe Signal Foundation** - Add StrategyMode, completed-bar/timeframe contracts, 4H alignment policy, per-timeframe readiness, MTF setup adaptation, deterministic tests, and documentation sync. (completed 2026-06-14)
 - [x] **Phase 5: Relative Strength and Unified Scoring** - Implement Relative Strength Leader, candidate ranking, MarketPilot Score, classification, confidence, and setup comparison while consuming StrategyMode and MTF evidence from Phase 4.1. (completed 2026-06-14)
-- [ ] **Phase 6: Portfolio Risk and Order Lifecycle** - Add portfolio constraints, sizing, order state, stops, targets, exits, restart state, and notification-domain events.
+- [x] **Phase 6: Portfolio Risk and Order Lifecycle** - Add portfolio constraints, sizing, order state, stops, targets, exits, restart state, and notification-domain events. (completed 2026-06-14)
 - [ ] **Phase 7: Backtesting and Validation** - Add realistic backtesting, no-look-ahead validation, chronological validation, activation gates, and reports.
 - [ ] **Phase 8: QuantConnect Paper Trading and Telegram** - Add gated paper modes, QuantConnect Paper Trading deployment design, reconciliation, recovery, and Telegram delivery.
 - [ ] **Phase 9: Render Dashboard** - Add read-only mobile Streamlit dashboard backed by QuantConnect-sourced data, caching, auth, stale-data handling, and system health.
@@ -224,23 +224,23 @@ Plans:
 
 **Wave 1**
 
-- [ ] 06-01-PLAN.md - Portfolio constraints and position sizing.
+- [x] 06-01-PLAN.md - Portfolio constraints and position sizing.
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 06-02-PLAN.md - Order state machine and duplicate-order prevention.
+- [x] 06-02-PLAN.md - Order state machine and duplicate-order prevention.
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 06-03-PLAN.md - Stops, targets, partial exits, trailing exits, and maximum holding period.
+- [x] 06-03-PLAN.md - Stops, targets, partial exits, trailing exits, and maximum holding period.
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 06-04-PLAN.md - Persistence, restart-state restoration, split/delisting handling where practical, and audit journal.
+- [x] 06-04-PLAN.md - Persistence, restart-state restoration, split/delisting handling where practical, and audit journal.
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 06-05-PLAN.md - Notification-domain events, formatters, fake transport, deduplication, and rate limiting.
+- [x] 06-05-PLAN.md - Notification-domain events, formatters, fake transport, deduplication, and rate limiting.
 
 ### Phase 7: Backtesting and Validation
 
@@ -340,7 +340,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 
 | 4. Volume Breakout | 4/4 | Complete   | 2026-06-13 |
 | 4.1. Multi-Timeframe Signal Foundation | 4/4 | Complete | 2026-06-14 |
 | 5. Relative Strength and Unified Scoring | 3/3 | Complete | 2026-06-14 |
-| 6. Portfolio Risk and Order Lifecycle | 0/5 | Planned; next execute | - |
+| 6. Portfolio Risk and Order Lifecycle | 5/5 | Complete    | 2026-06-14 |
 | 7. Backtesting and Validation | 0/5 | Not started | - |
 | 8. QuantConnect Paper Trading and Telegram | 0/4 | Not started | - |
 | 9. Render Dashboard | 0/4 | Not started | - |

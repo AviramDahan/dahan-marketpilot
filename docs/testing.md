@@ -148,3 +148,42 @@ Current Phase 5 suites:
 - `tests/test_relative_strength_safety.py`
 - `tests/test_scoring.py`
 - `tests/test_ranking.py`
+
+Current Phase 6 risk suites:
+
+- `tests/test_risk_contract.py`
+- `tests/test_position_sizing.py`
+- `tests/test_portfolio_constraints.py`
+- `tests/test_risk_safety.py`
+- `tests/test_order_lifecycle_contract.py`
+- `tests/test_order_lifecycle_transitions.py`
+- `tests/test_order_idempotency.py`
+- `tests/test_order_lifecycle_safety.py`
+- `tests/test_exit_contract.py`
+- `tests/test_stops_targets.py`
+- `tests/test_partial_trailing_holding_period.py`
+- `tests/test_exit_regime_authority.py`
+- `tests/test_exit_safety.py`
+- `tests/test_audit_journal.py`
+- `tests/test_restart_recovery.py`
+- `tests/test_split_delisting_placeholders.py`
+- `tests/test_persistence_safety.py`
+- `tests/test_notification_events.py`
+- `tests/test_notification_fake_transport.py`
+- `tests/test_notification_dedup_rate_limit.py`
+- `tests/test_notification_safety.py`
+
+These tests cover risk config safety, risk-based sizing, allocation/cash
+limits, sector exposure, position count, daily entries, and static scans proving
+no order submission or external delivery behavior exists in risk code.
+Lifecycle tests cover state contracts, valid and forbidden transitions, stable
+idempotency keys, and absence of submission behavior.
+Exit tests cover structural stops, 2R targets, partial-exit modeling, trailing
+stop disabled defaults, maximum holding period, and the rule that RISK_OFF does
+not erase existing exit obligations.
+Persistence tests cover append-only JSONL audit records, QuantConnect-wins
+restart mismatch handling, safe split/delisting placeholders, and absence of
+fake portfolio authority.
+Notification-domain tests cover typed event contracts, payload sanitization,
+fake collector behavior, delivery-failure isolation, deduplication, rate
+limiting, and absence of real Telegram/network delivery.

@@ -1,11 +1,19 @@
 risk:
   paper_trading_only: true
-  leverage_allowed: false
-  margin_allowed: false
-  short_selling_allowed: false
-  options_allowed: false
-  futures_allowed: false
-  cryptocurrency_allowed: false
-  forex_allowed: false
-  max_open_positions: 0
-  notes: "Risk rules are placeholders for safe validation only in Phase 1."
+  per_trade_risk_pct: 1.0
+  max_open_positions: 10
+  max_sector_exposure_pct: 30.0
+  max_new_entries_per_day: 3
+  max_position_allocation_pct: 15.0
+  minimum_reward_risk: 2.0
+  minimum_quantity: 1
+  disabled_behaviors:
+    submit_orders: false
+    broker_adapters: false
+    telegram_delivery: false
+    live_deployment: false
+    fake_portfolio_authority: false
+    leverage: false
+    margin: false
+    short_selling: false
+    real_money_paths: false

@@ -1,0 +1,21 @@
+exits:
+  paper_trading_only: true
+  stop_policy: setup_structural
+  atr_sanity_cap_multiple: 3.0
+  minimum_target_r_multiple: 2.0
+  partial_exits:
+    enabled: true
+    execute_orders: false
+    rules:
+      - name: partial_at_2r
+        r_multiple: 2.0
+        close_fraction: 0.5
+  trailing_stop:
+    enabled: false
+  maximum_holding_period_days: 30
+  disabled_behaviors:
+    submit_orders: false
+    cancel_orders: false
+    telegram_delivery: false
+    live_deployment: false
+    fake_portfolio_authority: false

@@ -65,3 +65,26 @@ Phase 5 scoring and ranking are audit-only. Classification labels are evidence
 labels, not trade instructions. Ranked candidates contain no entry, stop,
 target, quantity, order, broker, Paper Trading, Telegram delivery, credential,
 fake backtest, portfolio mutation, or profitability behavior.
+
+## Risk Safety
+
+Phase 6 risk decisions are still paper-only domain decisions. They may calculate
+candidate quantity and rejection reasons, but they do not submit orders, mutate
+QuantConnect state, create an authoritative local portfolio, send Telegram
+messages, or enable real-money behavior.
+
+Order lifecycle objects are also audit mirrors only. They can model intent,
+state transitions, and idempotency, but they cannot submit, cancel, replace, or
+modify real or Paper orders.
+
+Exit plans are obligations for existing positions, not execution commands.
+`RISK_OFF` blocks new long entries but must not erase existing stop, target,
+partial-close, full-close, or recovery obligations.
+
+The Phase 6 audit journal is append-only recovery context only. It must not
+become a hidden portfolio database. On restart mismatch, QuantConnect remains
+authoritative and local state is marked mismatched.
+
+Notification-domain events are transport-neutral and cannot control risk,
+order, or exit safety. Real Telegram delivery remains deferred to Phase 8, and
+delivery failures must never block protective logic.

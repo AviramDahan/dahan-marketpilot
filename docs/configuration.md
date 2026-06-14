@@ -164,3 +164,17 @@ liquidity, ATR, EMA20 extension, and 52-week-high distance thresholds.
 `config/scoring.yaml` defines audit-only MarketPilot Score weights, candidate
 classification thresholds, explicit not-evaluated later gates, and disabled
 Combined Swing readiness settings.
+
+Phase 6 adds:
+
+- `config/risk.yaml`
+- `config/exits.yaml`
+
+`config/risk.yaml` defines paper-only portfolio risk defaults: 1% per-trade
+risk, 10 maximum open positions, 30% maximum sector exposure, 3 maximum new
+entries per Paper trading day, 15% maximum allocation per position, and minimum
+2R reward/risk. Unsafe behavior flags must remain disabled.
+
+`config/exits.yaml` defines modeled exit obligations: structural stops, ATR
+sanity cap, minimum 2R target, modeled partial exits, trailing stop disabled by
+default, and maximum holding period.
