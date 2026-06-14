@@ -9,6 +9,12 @@ from typing import Iterable, Mapping
 
 import yaml
 
+from marketpilot.notification_events import (
+    FakeNotificationCollector,
+    NotificationDomainEvent,
+    event_for_protective_recovery,
+)
+from marketpilot.quantconnect_paper import QuantConnectPaperSnapshot
 from marketpilot.setups.base import NumericEvidence
 
 
@@ -57,6 +63,18 @@ class ExitPlan:
     holding_period: HoldingPeriodPolicy
     obligations_active: bool = True
     evidence: Mapping[str, object] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class ProtectiveRecoveryDecision:
+    block_new_entries: bool
+    preserve_exits: bool
+    protective_recovery_required: bool
+    missing_protection_symbols: tuple[str, ...]
+    correlation_id: str
+    notification_event: NotificationDomainEvent | None = None
+    notification_delivery_attempted: bool = False
+    notification_delivery_succeeded: bool | None = None
 
 
 def load_exit_config(path: str | Path = DEFAULT_CONFIG_PATH) -> dict:
@@ -135,6 +153,74 @@ def exit_obligations_after_regime_change(exit_plan: ExitPlan, new_regime: str) -
         obligations_active=True,
         evidence={**exit_plan.evidence, "new_regime": new_regime, "exits_remain_authoritative": True},
     )
+
+
+def evaluate_protective_recovery(
+    *,
+    snapshot: QuantConnectPaperSnapshot,
+    exit_plans: tuple[ExitPlan, ...],
+    correlation_id: str,
+    notification_collector: FakeNotificationCollector | None = None,
+) -> ProtectiveRecoveryDecision:
+    if snapshot.authoritative_source != "quantconnect":
+        raise ValueError("protective recovery requires a QuantConnect-authoritative snapshot.")
+    if not correlation_id.strip():
+        raise ValueError("correlation_id is required for protective recovery.")
+
+    active_exit_plans = {plan.symbol: plan for plan in exit_plans if plan.obligations_active}
+    missing_symbols = tuple(
+        holding.symbol
+        for holding in snapshot.holdings
+        if holding.quantity > 0 and _missing_protective_state(holding.symbol, active_exit_plans, snapshot)
+    )
+    if not missing_symbols:
+        return ProtectiveRecoveryDecision(
+            block_new_entries=False,
+            preserve_exits=True,
+            protective_recovery_required=False,
+            missing_protection_symbols=(),
+            correlation_id=correlation_id.strip(),
+        )
+
+    event = event_for_protective_recovery(
+        correlation_id,
+        {
+            "authoritative_source": "quantconnect",
+            "missing_protection_symbols": missing_symbols,
+            "block_new_entries": True,
+            "preserve_exits": True,
+            "telegram_delivery_controls_recovery": False,
+        },
+    )
+    attempted = notification_collector is not None
+    delivered = notification_collector.emit(event) if notification_collector is not None else None
+    return ProtectiveRecoveryDecision(
+        block_new_entries=True,
+        preserve_exits=True,
+        protective_recovery_required=True,
+        missing_protection_symbols=missing_symbols,
+        correlation_id=correlation_id.strip(),
+        notification_event=event,
+        notification_delivery_attempted=attempted,
+        notification_delivery_succeeded=delivered,
+    )
+
+
+def _missing_protective_state(
+    symbol: str,
+    active_exit_plans: Mapping[str, ExitPlan],
+    snapshot: QuantConnectPaperSnapshot,
+) -> bool:
+    if symbol not in active_exit_plans:
+        return True
+    active_roles = {
+        order.order_role
+        for order in snapshot.orders
+        if order.symbol == symbol and order.status not in {"filled", "canceled", "cancelled", "rejected"}
+    }
+    has_stop = "stop" in active_roles or "protective_stop" in active_roles
+    has_target = "target" in active_roles or "profit_target" in active_roles
+    return not (has_stop and has_target)
 
 
 def _stop_from_evidence(evidence: tuple[NumericEvidence, ...]) -> tuple[Decimal, str]:

@@ -14,6 +14,8 @@ Supported event types:
 - `full_close`
 - `recovery_mismatch`
 - `backtest_preview`
+- `system`
+- `protective_recovery`
 
 Payloads are sanitized before they are stored in events. The fake collector is
 for deterministic tests only. Deduplication and rate limiting affect
@@ -26,3 +28,9 @@ Backtest preview events are historical previews for deterministic inspection.
 They are emitted through the fake collector only, are sanitized like all other
 notification-domain events, and cannot control risk, activation gates, order
 lifecycle, or exit safety.
+
+Protective recovery events are high-severity domain alerts for missing
+stop/target protection on filled QuantConnect Paper positions. They may be
+collected by fake transports or later delivered by Telegram, but delivery
+success or failure never controls protective recovery, exit obligations, or
+new-entry blocking.

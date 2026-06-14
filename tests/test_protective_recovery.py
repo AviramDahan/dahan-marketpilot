@@ -9,7 +9,7 @@ from marketpilot.exits import (
     TrailingStopPolicy,
     evaluate_protective_recovery,
 )
-from marketpilot.notification_events import FakeNotificationCollector, NotificationEventType
+from marketpilot.notification_events import FakeNotificationCollector
 from marketpilot.quantconnect_paper import (
     QuantConnectAlgorithmStatus,
     QuantConnectDeploymentStatus,
@@ -80,7 +80,7 @@ def test_filled_paper_position_without_protective_state_blocks_new_entries():
     assert decision.protective_recovery_required is True
     assert decision.missing_protection_symbols == ("MSFT",)
     assert decision.notification_event is not None
-    assert decision.notification_event.event_type == NotificationEventType.PROTECTIVE_RECOVERY.value
+    assert decision.notification_event.event_type == "protective_recovery"
     assert decision.notification_event.severity == "high"
 
 
@@ -98,7 +98,7 @@ def test_protective_recovery_event_is_sanitized_and_delivery_failure_is_non_auth
     assert decision.notification_delivery_attempted is True
     assert decision.notification_delivery_succeeded is False
     assert decision.block_new_entries is True
-    assert collector.failures == [NotificationEventType.PROTECTIVE_RECOVERY.value]
+    assert collector.failures == ["protective_recovery"]
     assert "token" not in str(decision.notification_event.payload).lower()
 
 

@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from marketpilot.notification_events import NotificationEventType
 from marketpilot.order_lifecycle import (
     OrderIntent,
     OrderLifecycleEvent,
@@ -98,7 +97,7 @@ def test_reconciliation_mismatch_blocks_new_entries_preserves_exits_and_emits_hi
     assert decision.requires_explicit_recovery is True
     assert ReconciliationMismatchType.ORDER_ID in {mismatch.mismatch_type for mismatch in decision.mismatches}
     assert decision.system_event is not None
-    assert decision.system_event.event_type == NotificationEventType.SYSTEM.value
+    assert decision.system_event.event_type == "system"
     assert decision.system_event.severity == "high"
     assert decision.system_event.payload["authoritative_source"] == "quantconnect"
 

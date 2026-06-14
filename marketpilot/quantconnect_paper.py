@@ -52,11 +52,13 @@ class QuantConnectPaperOrder:
     quantity: int
     submitted_at: datetime
     idempotency_key: str | None = None
+    order_role: str = "entry"
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "quantconnect_order_id", self.quantconnect_order_id.strip())
         object.__setattr__(self, "symbol", self.symbol.strip().upper())
         object.__setattr__(self, "status", self.status.strip().lower())
+        object.__setattr__(self, "order_role", self.order_role.strip().lower())
         if not self.quantconnect_order_id:
             raise ValueError("quantconnect_order_id is required after QuantConnect submission.")
 

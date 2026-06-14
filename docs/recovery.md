@@ -25,3 +25,16 @@ run, or no authoritative snapshot is available, recovery blocks new entries and
 requires explicit operator recovery. The system must return a typed
 `not_configured`, `not_run`, or `recovery_required` style status instead of
 pretending that local audit history is complete authority.
+
+## Protective Recovery
+
+A filled QuantConnect Paper position with active exit obligations must have
+protective state for both stop and target handling. If the QuantConnect
+snapshot shows a filled position but no matching protective stop/target state,
+protective recovery blocks new entries, preserves exit obligations, and marks
+explicit recovery required for the affected symbols.
+
+Protective recovery may create a high-severity notification-domain event, but
+the notification path is non-authoritative. A fake collector or future Telegram
+delivery failure must not change whether protective recovery is required, must
+not erase stop or target obligations, and must not unblock new entries.
