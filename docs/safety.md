@@ -122,3 +122,9 @@ deployment IDs, fake Paper portfolios, or invented Paper results.
 Deployment command text is operator-run documentation only. Tests must not run
 `lean cloud live deploy`, start a Live Node, require credentials, or contact
 QuantConnect.
+
+Restart recovery must also remain QuantConnect-first. When QuantConnect Paper
+state is unavailable, local audit history is context only, new entries are
+blocked, and explicit recovery is required before Paper entries resume. Local
+JSONL records must not be promoted into authoritative Paper cash, holdings,
+orders, fills, deployment status, algorithm status, or performance.
