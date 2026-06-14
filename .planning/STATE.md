@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to plan
-stopped_at: Phase 6 context gathered; ready to plan
-last_updated: "2026-06-14T04:10:00.000Z"
-last_activity: 2026-06-14 - Phase 6 discussed with all gray areas captured; ready to plan.
+status: Ready to execute
+stopped_at: Phase 6 planned; ready to execute
+last_updated: "2026-06-14T04:25:00.000Z"
+last_activity: 2026-06-14 - Phase 6 planned across five executable waves; ready to execute.
 progress:
   total_phases: 11
   completed_phases: 6
-  total_plans: 22
+  total_plans: 27
   completed_plans: 22
   percent: 55
 ---
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-06-14)
 ## Current Position
 
 Phase: 6 of 11 (portfolio risk and order lifecycle)
-Plan: context gathered; next command `/gsd-plan-phase 6`
-Status: Ready to plan
-Last activity: 2026-06-14 - Phase 6 discussed with all gray areas captured; ready to plan.
+Plan: 5 executable plans created
+Status: Ready to execute
+Last activity: 2026-06-14 - Phase 6 planned across five executable waves; ready to execute.
 
 Progress: [######-----] 55%
 
@@ -54,7 +54,7 @@ Progress: [######-----] 55%
 **Recent Trend:**
 
 - Last 5 plans: 04.1-03, 04.1-04, 05-01, 05-02, 05-03
-- Trend: Phase 5 scoring and ranking executed and verified successfully
+- Trend: Phase 6 planning completed after Phase 5 scoring and ranking verification
 
 *Updated after each plan completion*
 | Phase 04 P01 | 6 min | 2 tasks | 4 files |
@@ -68,6 +68,11 @@ Progress: [######-----] 55%
 | Phase 05 P01 | - | RSL setup | 8 files |
 | Phase 05 P02 | - | Scoring | 4 files |
 | Phase 05 P03 | - | Ranking | 5 files |
+| Phase 06 P01 | planned | Portfolio constraints and sizing | planned |
+| Phase 06 P02 | planned | Order lifecycle and idempotency | planned |
+| Phase 06 P03 | planned | Stops, targets, exits, and holding period | planned |
+| Phase 06 P04 | planned | Audit journal, restart recovery, corporate-action placeholders | planned |
+| Phase 06 P05 | planned | Notification-domain events and fake transport | planned |
 
 ## Accumulated Context
 
@@ -101,6 +106,7 @@ Recent decisions affecting current work:
 - Phase 6 discussion: Phase 6 creates order intent, lifecycle, exit, persistence, and notification-domain models only; actual QuantConnect Paper order submission remains Phase 8.
 - Phase 6 discussion: QuantConnect remains authoritative on restart mismatch; local JSONL audit journal is append-only recovery and audit context.
 - Phase 6 discussion: Notification-domain events are typed, sanitized, transport-independent, and delivery failure must never block safety logic.
+- Phase 6 planning: Five executable plans now cover risk sizing, order lifecycle/idempotency, exits, persistence/recovery, and notification-domain events.
 
 ### Pending Todos
 
@@ -124,6 +130,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-14T04:10:00.000Z
-Stopped at: Phase 6 context gathered; ready to plan
-Resume file: .planning/phases/06-portfolio-risk-and-order-lifecycle/06-CONTEXT.md
+Last session: 2026-06-14T04:25:00.000Z
+Stopped at: Phase 6 planned; ready to execute
+Resume file: .planning/phases/06-portfolio-risk-and-order-lifecycle/06-01-PLAN.md

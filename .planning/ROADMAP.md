@@ -222,11 +222,25 @@ Plans:
 
 Plans:
 
-- [ ] 06-01: Portfolio constraints and position sizing.
-- [ ] 06-02: Order state machine and duplicate-order prevention.
-- [ ] 06-03: Stops, targets, partial exits, trailing exits, and maximum holding period.
-- [ ] 06-04: Persistence, restart-state restoration, split/delisting handling where practical, and audit journal.
-- [ ] 06-05: Notification-domain events, formatters, fake transport, deduplication, and rate limiting.
+**Wave 1**
+
+- [ ] 06-01-PLAN.md - Portfolio constraints and position sizing.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 06-02-PLAN.md - Order state machine and duplicate-order prevention.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 06-03-PLAN.md - Stops, targets, partial exits, trailing exits, and maximum holding period.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 06-04-PLAN.md - Persistence, restart-state restoration, split/delisting handling where practical, and audit journal.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 06-05-PLAN.md - Notification-domain events, formatters, fake transport, deduplication, and rate limiting.
 
 ### Phase 7: Backtesting and Validation
 
@@ -326,7 +340,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 
 | 4. Volume Breakout | 4/4 | Complete   | 2026-06-13 |
 | 4.1. Multi-Timeframe Signal Foundation | 4/4 | Complete | 2026-06-14 |
 | 5. Relative Strength and Unified Scoring | 3/3 | Complete | 2026-06-14 |
-| 6. Portfolio Risk and Order Lifecycle | 0/5 | Not started; next | - |
+| 6. Portfolio Risk and Order Lifecycle | 0/5 | Planned; next execute | - |
 | 7. Backtesting and Validation | 0/5 | Not started | - |
 | 8. QuantConnect Paper Trading and Telegram | 0/4 | Not started | - |
 | 9. Render Dashboard | 0/4 | Not started | - |
