@@ -1,12 +1,15 @@
 from decimal import Decimal
+from datetime import datetime, timezone
 
 import pytest
 
 from marketpilot.backtesting import BacktestRunStatus
 from marketpilot.paper_modes import (
+    PaperModeTransition,
     PaperTradingMode,
     evaluate_paper_mode,
     load_paper_mode_config,
+    record_paper_mode_transition,
 )
 from marketpilot.validation import ActivationApprovalState, evaluate_activation_gates
 from marketpilot.validation import ValidationGateDecision
@@ -142,3 +145,59 @@ def test_stale_or_unavailable_gate_evidence_fails_closed(failed_gate):
     assert decision.mode is PaperTradingMode.INACTIVE
     assert decision.paper_order_eligible is False
     assert failed_gate in decision.reasons
+
+
+def test_transition_record_contains_auditable_mode_change_fields():
+    timestamp = datetime(2026, 6, 14, 12, 0, tzinfo=timezone.utc)
+
+    transition = record_paper_mode_transition(
+        prior_mode=PaperTradingMode.SHADOW,
+        requested_mode=PaperTradingMode.LIMITED_PAPER,
+        validation_decision=_gate_decision(ActivationApprovalState.APPROVED_FOR_LIMITED_PAPER),
+        timestamp=timestamp,
+        correlation_id="corr-limited-1",
+        operator_payload={"requested_by": "operator"},
+    )
+
+    assert isinstance(transition, PaperModeTransition)
+    assert transition.prior_mode is PaperTradingMode.SHADOW
+    assert transition.requested_mode is PaperTradingMode.LIMITED_PAPER
+    assert transition.resulting_mode is PaperTradingMode.LIMITED_PAPER
+    assert transition.decision_reason == "transition_approved"
+    assert transition.timestamp == timestamp
+    assert transition.correlation_id == "corr-limited-1"
+    assert transition.gate_evidence_summary["activation_state"] == "approved_for_limited_paper"
+    assert transition.gate_evidence_summary["paper_order_eligible"] is True
+
+
+def test_rejected_transition_preserves_prior_safe_state():
+    transition = record_paper_mode_transition(
+        prior_mode=PaperTradingMode.SHADOW,
+        requested_mode=PaperTradingMode.FULL_PAPER,
+        validation_decision=_gate_decision(ActivationApprovalState.APPROVED_FOR_SHADOW),
+        correlation_id="corr-rejected-1",
+    )
+
+    assert transition.prior_mode is PaperTradingMode.SHADOW
+    assert transition.requested_mode is PaperTradingMode.FULL_PAPER
+    assert transition.resulting_mode is PaperTradingMode.SHADOW
+    assert transition.decision_reason == "transition_rejected_fail_closed"
+    assert "requested_mode_not_allowed_by_activation_state" in transition.reasons
+
+
+def test_transition_payload_redacts_secret_like_keys_for_audit_storage():
+    transition = record_paper_mode_transition(
+        prior_mode=PaperTradingMode.INACTIVE,
+        requested_mode=PaperTradingMode.SHADOW,
+        validation_decision=_gate_decision(ActivationApprovalState.APPROVED_FOR_SHADOW),
+        correlation_id="corr-redacted-1",
+        operator_payload={
+            "quantconnect_api_token": "do-not-store",
+            "telegram_chat_id": "123456",
+            "note": "safe",
+        },
+    )
+
+    assert transition.operator_payload["quantconnect_api_token"] == "[redacted]"
+    assert transition.operator_payload["telegram_chat_id"] == "[redacted]"
+    assert transition.operator_payload["note"] == "safe"
