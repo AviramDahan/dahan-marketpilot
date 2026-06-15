@@ -89,7 +89,14 @@ Plans:
 4. All timestamps are stored UTC internally and converted to ET only at display and market-hours-check boundaries
 5. Dashboard never shows fabricated data; sync status, last sync time, and portfolio freshness indicator are always visible
 
-**Plans**: TBD
+**Plans:** 4 plans
+
+Plans:
+- [ ] 14-01-PLAN.md — Sync module & JSONL persistence (poll → reconcile → atomic persist → alert)
+- [ ] 14-02-PLAN.md — Dashboard data layer (3-state freshness + sync_jsonl loader)
+- [ ] 14-03-PLAN.md — Dashboard display (freshness banner, metrics, holdings, sync status)
+- [ ] 14-04-PLAN.md — Test suite (sync module + dashboard loader + regression)
+
 **UI hint**: yes
 
 ---
