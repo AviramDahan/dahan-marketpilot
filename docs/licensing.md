@@ -19,3 +19,19 @@ recorded in `THIRD_PARTY_NOTICES.md`.
 Do not claim that Dahan MarketPilot as a whole is Apache-2.0 merely because it
 integrates with or references QuantConnect materials. Re-check license
 requirements before copying code from any third-party source.
+
+## Release Attribution Review
+
+Before a release ships, review every direct-copy item and every substantially
+adapted third-party source introduced since the previous release.
+
+Required review phrase: substantially adapted third-party source.
+
+For each copied or substantially adapted source, update `NOTICE` and
+`THIRD_PARTY_NOTICES.md` before or in the same commit that introduces the reused
+material. Record the source URL, version or commit when available, license,
+reuse type, required attribution text, and affected project files.
+
+If no third-party source was copied or substantially adapted, keep
+`THIRD_PARTY_NOTICES.md` explicit that third-party source code has not been
+directly copied.

@@ -125,12 +125,12 @@
 
 ### CI/CD, Documentation, And Release
 
-- [ ] **CI-01**: GitHub Actions run deterministic unit tests without requiring QuantConnect, Telegram, Render, broker credentials, internet, or real market access.
-- [ ] **CI-02**: GitHub Actions include test, QuantConnect sync, cloud backtest, weekly validation, and dashboard health workflows when implementation reaches those phases.
-- [ ] **CI-03**: Documentation covers product purpose, architecture, QuantConnect responsibilities, GitHub responsibilities, Render responsibilities, Telegram responsibilities, safety, strategy rules, scoring, risk management, order lifecycle, execution assumptions, backtesting methodology, bias risks, activation gates, setup, operations, recovery, troubleshooting, limitations, licensing, and disclaimer.
-- [ ] **CI-04**: Security review verifies secret handling, read-only dashboard behavior, and absence of real-money trading paths.
-- [ ] **CI-05**: Release preparation verifies automated tests, operational documentation, attribution, no fake performance artifacts, and no profitability claims.
-- [ ] **CI-06**: Git status and change summaries distinguish executed checks from unexecuted checks.
+- [x] **CI-01**: GitHub Actions run deterministic unit tests without requiring QuantConnect, Telegram, Render, broker credentials, internet, or real market access.
+- [x] **CI-02**: GitHub Actions include test, QuantConnect sync, cloud backtest, weekly validation, and dashboard health workflows when implementation reaches those phases.
+- [x] **CI-03**: Documentation covers product purpose, architecture, QuantConnect responsibilities, GitHub responsibilities, Render responsibilities, Telegram responsibilities, safety, strategy rules, scoring, risk management, order lifecycle, execution assumptions, backtesting methodology, bias risks, activation gates, setup, operations, recovery, troubleshooting, limitations, licensing, and disclaimer.
+- [x] **CI-04**: Security review verifies secret handling, read-only dashboard behavior, and absence of real-money trading paths.
+- [x] **CI-05**: Release preparation verifies automated tests, operational documentation, attribution, no fake performance artifacts, and no profitability claims.
+- [x] **CI-06**: Git status and change summaries distinguish executed checks from unexecuted checks.
 
 ## v2 Requirements
 
@@ -246,12 +246,12 @@ Deferred to future releases and not part of the v1 roadmap:
 | DASH-05 | Phase 9 | Pending |
 | DASH-06 | Phase 9 | Pending |
 | DASH-07 | Phase 9 | Pending |
-| CI-01 | Phase 10 | Pending |
-| CI-02 | Phase 10 | Pending |
-| CI-03 | Phase 10 | Pending |
-| CI-04 | Phase 10 | Pending |
-| CI-05 | Phase 10 | Pending |
-| CI-06 | Phase 10 | Pending |
+| CI-01 | Phase 10 | Complete |
+| CI-02 | Phase 10 | Complete |
+| CI-03 | Phase 10 | Complete |
+| CI-04 | Phase 10 | Complete |
+| CI-05 | Phase 10 | Complete |
+| CI-06 | Phase 10 | Complete |
 
 **Coverage:**
 
@@ -261,4 +261,4 @@ Deferred to future releases and not part of the v1 roadmap:
 
 ---
 *Requirements defined: 2026-06-12*
-*Last updated: 2026-06-14 after Phase 4.1 multi-timeframe insertion*
+*Last updated: 2026-06-15 after Phase 10 release gate completion*
