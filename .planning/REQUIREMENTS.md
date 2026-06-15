@@ -26,7 +26,7 @@
 
 - [x] **QC-01**: A minimal non-trading `QCAlgorithm` compiles without submitting stock orders.
 - [ ] **QC-02**: Current official QuantConnect LEAN and Cloud APIs are verified before implementation code uses them.
-- [ ] **QC-03**: QuantConnect remains authoritative for simulated cash, portfolio equity, holdings, open positions, orders, fills, Paper Trading state, algorithm status, Paper Trading performance, and QuantConnect Backtest results.
+- [x] **QC-03**: QuantConnect remains authoritative for simulated cash, portfolio equity, holdings, open positions, orders, fills, Paper Trading state, algorithm status, Paper Trading performance, and QuantConnect Backtest results.
 - [ ] **QC-04**: LEAN CLI workflows are documented for sync, cloud backtest, and result retrieval without exposing credentials.
 - [x] **QC-05**: QuantConnect Object Store or Cloud API export mechanisms are designed only after official documentation verification.
 
@@ -49,13 +49,13 @@
 - [ ] **IND-03**: Required volume indicators include average volume 20/50, relative volume, average dollar volume 20/50, volume trend, and pullback-volume behavior.
 - [ ] **IND-04**: Required risk indicators include ATR14, ATR percentage, rolling volatility, structural swing high/low, recent drawdown, gap-risk approximation, and maximum adverse movement approximation where practical.
 - [ ] **IND-05**: Missing, invalid, infinite, stale, or NaN data rejects signals and never becomes a default positive score.
-- [ ] **SET-01**: Trend Pullback identifies strong stocks in established uptrends that pull back toward EMA20 or EMA50 and begin to recover.
-- [ ] **SET-02**: Trend Pullback rejects broken trend structure, excessive ATR, excessive stop distance, overextension, incomplete data, earnings-risk conflicts, weak reward/risk, and failed portfolio constraints.
+- [x] **SET-01**: Trend Pullback identifies strong stocks in established uptrends that pull back toward EMA20 or EMA50 and begin to recover.
+- [x] **SET-02**: Trend Pullback rejects broken trend structure, excessive ATR, excessive stop distance, overextension, incomplete data, earnings-risk conflicts, weak reward/risk, and failed portfolio constraints.
 - [x] **SET-03**: Volume Breakout calculates prior resistance from the previous completed bars only, excluding the current bar.
 - [x] **SET-04**: Volume Breakout requires volume confirmation, acceptable ATR, acceptable EMA20 extension, sufficient dollar volume, valid reward/risk, and non-RISK_OFF regime.
-- [ ] **SET-05**: Relative Strength Leader measures outperformance versus SPY and QQQ while enforcing healthy structure, liquidity, ATR, 52-week high proximity, and overextension limits.
+- [x] **SET-05**: Relative Strength Leader measures outperformance versus SPY and QQQ while enforcing healthy structure, liquidity, ATR, 52-week high proximity, and overextension limits.
 - [ ] **SET-06**: Trend Pullback, Volume Breakout, and Relative Strength Leader are implemented and validated independently before any Combined Swing strategy.
-- [ ] **SET-07**: Completed daily-bar signals execute only at a later valid tradable price by default, with the exact execution method recorded.
+- [x] **SET-07**: Completed daily-bar signals execute only at a later valid tradable price by default, with the exact execution method recorded.
 
 ### Strategy Modes And Multi-Timeframe Signals
 
@@ -78,9 +78,9 @@
 
 ### Scoring, Explanations, And Audit
 
-- [ ] **SCO-01**: Candidate scoring includes setup quality, trend, momentum, relative strength, volume, risk/reward, market regime, sector/portfolio fit, data quality, and earnings-risk policy.
-- [ ] **SCO-02**: Every signal and rejection includes numeric evidence, component scores, total score, classification, confidence, and hard rejection reasons.
-- [ ] **SCO-03**: Score classifications and confidence boundaries are configurable, documented, unit-tested, and included in reports.
+- [x] **SCO-01**: Candidate scoring includes setup quality, trend, momentum, relative strength, volume, risk/reward, market regime, sector/portfolio fit, data quality, and earnings-risk policy.
+- [x] **SCO-02**: Every signal and rejection includes numeric evidence, component scores, total score, classification, confidence, and hard rejection reasons.
+- [x] **SCO-03**: Score classifications and confidence boundaries are configurable, documented, unit-tested, and included in reports.
 - [x] **SCO-04**: The audit trail records signal inputs, scoring evidence, decisions, orders, fills, exits, alerts, configuration version, strategy version, and timestamps.
 
 ### Portfolio Risk And Order Lifecycle
@@ -174,7 +174,7 @@ Deferred to future releases and not part of the v1 roadmap:
 | CFG-05 | Phase 1 | Complete |
 | QC-01 | Phase 1 | Complete |
 | QC-02 | Phase 2 | Pending |
-| QC-03 | Phase 2 | Pending |
+| QC-03 | Phase 2 | Complete |
 | QC-04 | Phase 2 | Pending |
 | QC-05 | Phase 9 | Complete |
 | UNI-01 | Phase 2 | Pending |
@@ -191,13 +191,13 @@ Deferred to future releases and not part of the v1 roadmap:
 | IND-03 | Phase 2 | Pending |
 | IND-04 | Phase 2 | Pending |
 | IND-05 | Phase 2 | Pending |
-| SET-01 | Phase 3 | Pending |
-| SET-02 | Phase 3 | Pending |
+| SET-01 | Phase 3 | Complete |
+| SET-02 | Phase 3 | Complete |
 | SET-03 | Phase 4 | Complete |
 | SET-04 | Phase 4 | Complete |
 | SET-05 | Phase 5 | Complete |
 | SET-06 | Phase 5 | Complete |
-| SET-07 | Phase 3 | Pending |
+| SET-07 | Phase 3 | Complete |
 | MODE-01 | Phase 4.1 | Complete |
 | MODE-02 | Phase 4.1 | Complete |
 | MODE-03 | Phase 4.1 | Complete |
