@@ -54,3 +54,26 @@ streamlit run dashboard/app.py
 ```
 
 The shell must display `No live data connected`.
+
+## GitHub Actions Setup
+
+GitHub Actions default CI requires no QuantConnect, Telegram, Render, broker,
+internet, or real market access beyond dependency installation. The default
+workflow is `tests.yml` and runs deterministic offline pytest.
+
+Optional guarded external workflows use GitHub Actions Secrets. Store values
+only in the GitHub repository secret store and never in repository files:
+
+- `QUANTCONNECT_USER_ID`
+- `QUANTCONNECT_API_TOKEN`
+- `QUANTCONNECT_PROJECT_ID`
+- `DASHBOARD_HEALTH_URL`
+- `DASHBOARD_PASSWORD`
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
+
+`quantconnect.yml` is manual and currently records QuantConnect sync/backtest
+as `not_run` until a release operator approves a pinned Lean CLI package and
+external execution procedure. `dashboard-health.yml` performs a read-only GET
+only when `DASHBOARD_HEALTH_URL` is configured. Missing external prerequisites
+must be recorded as `skipped` or `not_run`, not as passed checks.

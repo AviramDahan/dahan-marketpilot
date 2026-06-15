@@ -38,3 +38,20 @@ Protective recovery may create a high-severity notification-domain event, but
 the notification path is non-authoritative. A fake collector or future Telegram
 delivery failure must not change whether protective recovery is required, must
 not erase stop or target obligations, and must not unblock new entries.
+
+## Release-Era Recovery
+
+CI/CD and dashboard evidence do not change trading authority. QuantConnect
+remains authoritative for simulated Paper cash, equity, holdings, orders, fills,
+deployment status, algorithm status, and real QuantConnect backtest artifacts.
+
+If a GitHub Actions run cannot reach QuantConnect, lacks GitHub Actions Secrets,
+or has an unapproved Lean package checkpoint, record the external check as
+`not_run` or `skipped`. Do not treat missing external evidence as approval to
+resume entries.
+
+If Paper state is unavailable, stale, mismatched, or recovery-required, block
+new entries until an operator completes explicit recovery against QuantConnect.
+Dashboard cache, local audit JSONL, GitHub Actions summaries, Telegram delivery,
+and Render health status are context only and must not be promoted into
+authoritative Paper state.

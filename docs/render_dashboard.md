@@ -73,3 +73,17 @@ python -m pytest tests/test_dashboard_render_config.py tests/test_dashboard_auth
 
 These tests are static and offline. They do not contact Render, QuantConnect,
 Telegram, brokers, market data providers, or the internet.
+
+## Dashboard Health Workflow
+
+GitHub Actions `dashboard-health.yml` can run on schedule or by manual dispatch.
+It reads `DASHBOARD_HEALTH_URL` from GitHub Actions Secrets and performs a
+read-only GET check only when the URL is configured.
+
+If `DASHBOARD_HEALTH_URL` is missing, the workflow writes `not_run` evidence.
+The check must not print the URL, POST to Render, call a deploy hook, submit
+orders, approve recovery, mutate dashboard state, mutate QuantConnect state, or
+send Telegram messages.
+
+Dashboard health evidence is operational context only. QuantConnect remains
+authoritative for Paper Trading state, and dashboard cache remains display-only.
