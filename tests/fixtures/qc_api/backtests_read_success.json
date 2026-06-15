@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "backtest": {
+    "backtestId": "BT-00000000000000000000000000000000",
+    "name": "Test Backtest",
+    "projectId": 99999,
+    "status": "Completed",
+    "statistics": {
+      "Sharpe Ratio": "1.25",
+      "Total Net Profit": "5250.00",
+      "Max Drawdown": "-3.2%",
+      "Total Orders": "42"
+    }
+  }
+}

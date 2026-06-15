@@ -1,0 +1,40 @@
+{
+  "success": true,
+  "state": "running",
+  "projectId": 99999,
+  "deployId": "L-00000000000000000000000000000000",
+  "holdings": {
+    "MSFT": {
+      "symbol": {"value": "MSFT"},
+      "quantity": 10,
+      "averagePrice": "420.00",
+      "marketPrice": "425.50"
+    }
+  },
+  "orders": {
+    "1": {
+      "id": "1001",
+      "symbol": {"value": "MSFT"},
+      "status": "filled",
+      "quantity": 10,
+      "price": "420.00",
+      "createdTime": "2026-06-15T10:30:00",
+      "lastFillTime": "2026-06-15T10:30:05"
+    },
+    "2": {
+      "id": "1002",
+      "symbol": {"value": "AAPL"},
+      "status": "submitted",
+      "quantity": 5,
+      "price": "0",
+      "createdTime": "2026-06-15T11:00:00"
+    }
+  },
+  "cash": {
+    "USD": {"amount": "98500.00"}
+  },
+  "statistics": {
+    "Equity": "102750.00",
+    "Unrealized": "55.00"
+  }
+}
