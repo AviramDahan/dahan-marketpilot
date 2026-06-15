@@ -61,7 +61,13 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 3. API calls automatically retry with exponential backoff + jitter on transient failures; rate limits are respected
 4. No credentials appear in any log output, error message, or committed file (detect-secrets hook active)
 
-**Plans**: TBD
+**Plans:** 4 plans
+
+Plans:
+- [ ] 13-01-PLAN.md — Dependencies and pre-commit hooks (detect-secrets, PAPER_TRADING_ONLY guard)
+- [ ] 13-02-PLAN.md — QCApiClient core (HMAC auth, safety gate, retry, credential redaction)
+- [ ] 13-03-PLAN.md — Typed endpoint wrappers (7 methods for live/backtest APIs)
+- [ ] 13-04-PLAN.md — Test suite with fixtures and meta-tests
 
 ---
 
