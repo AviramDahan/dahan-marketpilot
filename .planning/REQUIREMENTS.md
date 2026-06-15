@@ -88,14 +88,47 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| API-01..05 | TBD | Pending |
-| PTD-01..05 | TBD | Pending |
-| FT-01..04 | TBD | Pending |
-| SYNC-01..06 | TBD | Pending |
-| SCHED-01..06 | TBD | Pending |
-| MTF-01..05 | TBD | Pending |
-| DASH-01..05 | TBD | Pending |
-| SAFE-01..05 | TBD | Pending |
+| API-01 | 13 | Pending |
+| API-02 | 13 | Pending |
+| API-03 | 13 | Pending |
+| API-04 | 13 | Pending |
+| API-05 | 13 | Pending |
+| PTD-01 | 15 | Pending |
+| PTD-02 | 15 | Pending |
+| PTD-03 | 15 | Pending |
+| PTD-04 | 15 | Pending |
+| PTD-05 | 15 | Pending |
+| FT-01 | 15 | Pending |
+| FT-02 | 15 | Pending |
+| FT-03 | 15 | Pending |
+| FT-04 | 15 | Pending |
+| SYNC-01 | 14 | Pending |
+| SYNC-02 | 14 | Pending |
+| SYNC-03 | 14 | Pending |
+| SYNC-04 | 14 | Pending |
+| SYNC-05 | 14 | Pending |
+| SYNC-06 | 14 | Pending |
+| SCHED-01 | 16 | Pending |
+| SCHED-02 | 16 | Pending |
+| SCHED-03 | 16 | Pending |
+| SCHED-04 | 16 | Pending |
+| SCHED-05 | 16 | Pending |
+| SCHED-06 | 16 | Pending |
+| MTF-01 | 17 | Pending |
+| MTF-02 | 17 | Pending |
+| MTF-03 | 17 | Pending |
+| MTF-04 | 17 | Pending |
+| MTF-05 | 17 | Pending |
+| DASH-01 | 14 | Pending |
+| DASH-02 | 14 | Pending |
+| DASH-03 | 14 | Pending |
+| DASH-04 | 14 | Pending |
+| DASH-05 | 14 | Pending |
+| SAFE-01 | 13 | Pending |
+| SAFE-02 | 13 | Pending |
+| SAFE-03 | 16 | Pending |
+| SAFE-04 | 14 | Pending |
+| SAFE-05 | 15 | Pending |
 
 ---
 
