@@ -363,10 +363,18 @@ Plans:
 
 Plans:
 
-- [ ] 10-01: GitHub Actions for tests, QuantConnect sync, cloud backtest, weekly validation, and dashboard health.
-- [ ] 10-02: Security review, secret handling, and release gates.
-- [ ] 10-03: Operations, recovery, troubleshooting, setup, and limitations documentation.
-- [ ] 10-04: Final audit, licensing/attribution review, release preparation, and handoff.
+**Wave 1**
+
+- [ ] 10-01-PLAN.md - GitHub Actions for offline tests, guarded QuantConnect sync/backtest, weekly validation, and dashboard health with SHA/package checkpoints.
+
+**Wave 2** *(blocked on 10-01 completion)*
+
+- [ ] 10-02-PLAN.md - Security review, secret handling, read-only dashboard review, and security release gates.
+- [ ] 10-03-PLAN.md - Operations, setup, recovery, troubleshooting, and dashboard health documentation.
+
+**Wave 3** *(blocked on 10-02 and 10-03 completion)*
+
+- [ ] 10-04-PLAN.md - Final release audit, traceability, licensing/attribution review, and handoff.
 
 ## Progress
 
