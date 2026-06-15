@@ -1,0 +1,16 @@
+repos:
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: \.secrets\.baseline$
+
+  - repo: local
+    hooks:
+      - id: paper-trading-only-guard
+        name: Reject PAPER_TRADING_ONLY = False
+        entry: bash -c 'if grep -rn "PAPER_TRADING_ONLY\s*=\s*False" --include="*.py" .; then echo "ERROR: PAPER_TRADING_ONLY must never be set to False"; exit 1; fi'
+        language: system
+        types: [python]
+        pass_filenames: false
