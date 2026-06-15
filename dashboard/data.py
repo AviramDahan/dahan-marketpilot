@@ -177,6 +177,9 @@ def load_dashboard_snapshot(config: DashboardConfig, *, now: datetime) -> Dashbo
     if config.data_source_kind == "local_json":
         return _load_local_json_snapshot(config.data_source_path, cache_timestamp=now)
 
+    if config.data_source_kind == "object_store":
+        return _load_object_store_snapshot(config.data_source_path, cache_timestamp=now)
+
     return _source_error(
         code="dashboard_source_not_configured",
         message="Unsupported dashboard data source kind.",
@@ -269,6 +272,26 @@ def _parse_datetime(value: object) -> datetime | None:
 
 def _decimal(value: object) -> Decimal:
     return Decimal(str(value or "0"))
+
+
+def _load_object_store_snapshot(key: str | None, *, cache_timestamp: datetime) -> DashboardSnapshot:
+    """Object Store source loader stub - requires external writer injection at runtime."""
+    if not key:
+        return _source_error(
+            code="object_store_not_configured",
+            message="Object Store source path not configured.",
+            reason="object_store_not_configured",
+            status=DashboardSectionStatus.NOT_AVAILABLE,
+        )
+    # Without an injected Object Store writer, degrade safely.
+    # Real Object Store reads happen through ObjectStoreSourceLoader in
+    # marketpilot.dashboard_export with a writer injected at runtime.
+    return _source_error(
+        code="object_store_not_configured",
+        message="Object Store reader not configured at runtime.",
+        reason="object_store_not_configured",
+        status=DashboardSectionStatus.NOT_AVAILABLE,
+    )
 
 
 def _mapping(value: object) -> Mapping[str, object]:

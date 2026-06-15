@@ -53,6 +53,14 @@ Supported Phase 9 runtime source:
 - `local_json` - a read-only dashboard export JSON file available to the Render
   service filesystem.
 
+Supported Phase 10.1 runtime source:
+
+- `object_store` - a read-only QuantConnect Object Store dashboard key fetched
+  through `ObjectStoreSourceLoader`. Requires an injected writer at runtime.
+  External QuantConnect Object Store execution remains `not_run` unless
+  operator-configured credentials exist outside repository files. Local/offline
+  tests use `FakeObjectStoreWriter` and deterministic fixtures.
+
 The source path is configuration, not a credential. It must not contain tokens,
 passwords, account IDs, parent-directory traversal, remote URLs, deploy hooks,
 or mutation/write semantics. Missing or malformed sources render degraded

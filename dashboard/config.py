@@ -160,11 +160,15 @@ def _reject_raw_password_fields(raw: Mapping[str, object]) -> None:
 
 
 def _validate_data_source(kind: str, path: str | None) -> None:
-    if kind not in {"none", "local_json"}:
-        raise ValueError("dashboard.data_source_kind must be none or local_json.")
+    if kind not in {"none", "local_json", "object_store"}:
+        raise ValueError("dashboard.data_source_kind must be none, local_json, or object_store.")
     if kind == "none":
         if path is not None:
             raise ValueError("dashboard.data_source_path must be empty when data_source_kind is none.")
+        return
+    if kind == "object_store":
+        if not path:
+            raise ValueError("dashboard.data_source_path is required for object_store sources.")
         return
     if not path:
         raise ValueError("dashboard.data_source_path is required for local_json sources.")

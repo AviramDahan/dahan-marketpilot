@@ -159,6 +159,24 @@ dashboard:
   data_source_path: path/to/dashboard-export.json
 ```
 
+For an approved Object Store source (QuantConnect-authoritative), set:
+
+```yaml
+dashboard:
+  data_source_kind: object_store
+  data_source_path: dashboard/portfolio.json
+```
+
+The Object Store source uses `marketpilot.dashboard_export.ObjectStoreSourceLoader`
+with an injected writer at runtime. The writer only accepts keys from the
+approved `OBJECT_STORE_EXPORT_KEYS` set. QuantConnect remains the authority;
+the dashboard never writes, deletes, or mutates Object Store data.
+
+External QuantConnect Object Store reads remain `not_run` unless an operator
+configures credentials and executes a real runtime session. Local/offline tests
+use `FakeObjectStoreWriter` for deterministic coverage without QuantConnect,
+internet, or credential access.
+
 The configured file must be a read-only dashboard export payload using the same
 typed DTO contract as the deterministic dashboard fixtures. Missing files render
 `not_available`; malformed files render `error`; both paths are safe degraded
