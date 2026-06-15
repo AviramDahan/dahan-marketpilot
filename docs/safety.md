@@ -165,3 +165,31 @@ It must remain Overview-first on mobile and read-only for every page.
 Dashboard cache and FX display are display-only. Cached data must be labeled
 with source/cache timestamps and stale status. NIS conversion is never an
 accounting source; USD remains authoritative.
+
+## CI/CD And Release Safety
+
+GitHub Actions must keep the default CI path deterministic, offline, and
+secret-free. The `tests.yml` workflow runs local pytest only and must not require
+QuantConnect, Telegram, Render, broker credentials, internet access, or real
+market data.
+
+All workflow actions must be official GitHub-owned actions pinned to full
+40-character commit SHAs. Mutable action tags and third-party workflow actions
+are not approved for the release foundation.
+
+GitHub Actions Secrets may store these names for guarded external workflows:
+
+- `QUANTCONNECT_USER_ID`
+- `QUANTCONNECT_API_TOKEN`
+- `QUANTCONNECT_PROJECT_ID`
+- `DASHBOARD_HEALTH_URL`
+- `DASHBOARD_PASSWORD`
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
+
+Repository files may name those secrets, but must never contain their values.
+
+QuantConnect sync/backtest, dashboard health, and other external service checks
+are guarded release checks. Unexecuted external checks are not passed checks.
+When prerequisites are missing, rejected, or intentionally withheld, the
+evidence status must be `skipped` or `not_run`.

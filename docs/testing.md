@@ -195,3 +195,29 @@ strategy-mode timing alignment, report source labels, unavailable validation
 windows, chronological validation, sensitivity analysis, SPY/QQQ benchmark
 comparison, activation gates, report generation, preview notifications, and
 artifact safety.
+
+## Security Release Gates
+
+Phase 10 security release gates are deterministic and offline. Run:
+
+```powershell
+python -m pytest tests/test_security_release_gates.py tests/test_safety.py tests/test_dashboard_read_only.py tests/test_paper_trading_safety.py tests/test_backtest_artifact_safety.py -q
+```
+
+These tests inspect workflow files, security review evidence, dashboard
+read-only boundaries, Paper Trading safety, and fake-performance rejection.
+
+GitHub Actions Secrets may be configured outside the repository for guarded
+external checks:
+
+- `QUANTCONNECT_USER_ID`
+- `QUANTCONNECT_API_TOKEN`
+- `QUANTCONNECT_PROJECT_ID`
+- `DASHBOARD_HEALTH_URL`
+- `DASHBOARD_PASSWORD`
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
+
+Unexecuted external checks are not passed checks. Missing QuantConnect,
+Telegram, Render, broker, dashboard, operator-confirmation, or package
+prerequisites must be recorded as `skipped` or `not_run`.
