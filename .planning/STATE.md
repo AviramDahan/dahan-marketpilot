@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Phase 10.1 planned; ready for execution
-stopped_at: Completed 08-04-PLAN.md
-last_updated: "2026-06-15T18:48:40.642Z"
-last_activity: 2026-06-15 -- Phase 10.1 planned for runtime integration gap closure
+status: executing
+stopped_at: Completed 10.1-01-PLAN.md
+last_updated: "2026-06-15T18:59:45.356Z"
+last_activity: 2026-06-15
 progress:
   total_phases: 12
   completed_phases: 11
   total_plans: 53
-  completed_plans: 48
+  completed_plans: 49
   percent: 92
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-14)
 ## Current Position
 
 Phase: 10.1 of 12 (Close gap: runtime orchestrator for strategy-to-paper E2E flow)
-Plan: 0 of 5
-Status: Phase 10.1 planned; ready for execution
-Last activity: 2026-06-15 -- Phase 10.1 planned for runtime integration gap closure
+Plan: 1 of 5
+Status: Ready to execute
+Last activity: 2026-06-15
 
-Progress: [██████████] 100%
+Progress: [█████████░] 92%
 
 ## Performance Metrics
 
@@ -100,6 +100,7 @@ Progress: [██████████] 100%
 | Phase 10 P02 | 10min | 2 tasks | 4 files |
 | Phase 10 P03 | 9min | 2 tasks | 5 files |
 | Phase 10 P04 | 14min | 3 tasks | 4 files |
+| Phase 10.1 P01 | 7min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -158,6 +159,9 @@ Recent decisions affecting current work:
 - [Phase 08]: Phase 8 Plan 04: Regime alerts emit only on actual previous/current state transitions; unchanged states produce no alert.
 - [Phase 08]: Phase 8 Plan 04: Daily summaries are scheduled end-of-day notification artifacts with Paper mode, counts, warnings, and QuantConnect authority labels, not portfolio authority.
 - [Phase 08]: Phase 8 Plan 04: Telegram delivery results explicitly record `controls_safety_logic=false` and `delivery_required_for_safety=false`.
+- [Phase 10.1]: Phase 10.1 Plan 01: Runtime orchestration contracts are pure MarketPilot dataclasses; LEAN/API objects stay at adapter boundaries. — Preserves paper-only safety and keeps QuantConnect-specific objects in later adapter plans.
+- [Phase 10.1]: Phase 10.1 Plan 01: Runtime results default to paper-only audit evidence and cannot claim executed QuantConnect orders or fills without QuantConnect-authoritative state. — Prevents fake execution, fake fills, and local mirror authority.
+- [Phase 10.1]: Phase 10.1 Plan 01: Setup registry includes implemented independent setup evaluators only and does not enable Combined Swing. — Keeps Plan 10.1-01 scoped to existing setup evidence and avoids adding new strategy behavior.
 
 ### Pending Todos
 
@@ -187,6 +191,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-14T16:44:07.857Z
-Stopped at: Completed 08-04-PLAN.md
-Resume file: .planning/phases/08-quantconnect-paper-trading-and-telegram/08-04-SUMMARY.md
+Last session: 2026-06-15T18:59:45.301Z
+Stopped at: Completed 10.1-01-PLAN.md
+Resume file: .planning/phases/10.1-close-gap-runtime-orchestrator-for-strategy-to-paper-e2e-flo/10.1-01-SUMMARY.md
