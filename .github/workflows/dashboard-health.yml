@@ -1,0 +1,45 @@
+name: Dashboard Health
+
+"on":
+  schedule:
+    - cron: "43 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dashboard-health:
+    name: Read-only dashboard health
+    runs-on: ubuntu-latest
+    env:
+      DASHBOARD_HEALTH_URL: ${{ secrets.DASHBOARD_HEALTH_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.11.9"
+      - name: Run guarded read-only health check
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${DASHBOARD_HEALTH_URL:-}" ]; then
+            {
+              echo "## Dashboard health"
+              echo ""
+              echo "status: not_run"
+              echo "reason: DASHBOARD_HEALTH_URL is not configured."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          echo "::add-mask::$DASHBOARD_HEALTH_URL"
+          curl --fail --silent --show-error --location --max-time 20 --output /tmp/dashboard-health.html "$DASHBOARD_HEALTH_URL"
+          {
+            echo "## Dashboard health"
+            echo ""
+            echo "status: passed"
+            echo "method: read_only_get"
+          } >> "$GITHUB_STEP_SUMMARY"

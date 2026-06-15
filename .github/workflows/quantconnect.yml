@@ -1,0 +1,54 @@
+name: QuantConnect Guarded Validation
+
+"on":
+  workflow_dispatch:
+    inputs:
+      operator_confirmation:
+        description: "Type NOT_RUN_APPROVED to record an external QuantConnect not_run check."
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  quantconnect-not-run:
+    name: Guarded QuantConnect sync and backtest placeholder
+    runs-on: ubuntu-latest
+    env:
+      QUANTCONNECT_USER_ID: ${{ secrets.QUANTCONNECT_USER_ID }}
+      QUANTCONNECT_API_TOKEN: ${{ secrets.QUANTCONNECT_API_TOKEN }}
+      QUANTCONNECT_PROJECT_ID: ${{ secrets.QUANTCONNECT_PROJECT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.11.9"
+          cache: pip
+      - name: Record guarded QuantConnect status
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${QUANTCONNECT_USER_ID:-}" ]; then echo "::add-mask::$QUANTCONNECT_USER_ID"; fi
+          if [ -n "${QUANTCONNECT_API_TOKEN:-}" ]; then echo "::add-mask::$QUANTCONNECT_API_TOKEN"; fi
+          if [ -n "${QUANTCONNECT_PROJECT_ID:-}" ]; then echo "::add-mask::$QUANTCONNECT_PROJECT_ID"; fi
+
+          {
+            echo "## QuantConnect guarded validation"
+            echo ""
+            echo "status: not_run"
+            echo "sync: not_run"
+            echo "cloud_backtest: not_run"
+            echo "reason: Lean package install is intentionally disabled until a release operator approves a pinned CLI package and external execution procedure."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${{ inputs.operator_confirmation }}" != "NOT_RUN_APPROVED" ]; then
+            echo "Operator confirmation did not request an external not_run record."
+            exit 1
+          fi
+
+          if [ -z "${QUANTCONNECT_USER_ID:-}" ] || [ -z "${QUANTCONNECT_API_TOKEN:-}" ] || [ -z "${QUANTCONNECT_PROJECT_ID:-}" ]; then
+            echo "QuantConnect prerequisites are missing; external check remains not_run."
+          fi
