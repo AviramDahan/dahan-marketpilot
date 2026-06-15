@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+import logging
+from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 from typing import Mapping
@@ -20,6 +21,8 @@ from .models import (
     DashboardSnapshot,
     DashboardSourceMetadata,
 )
+
+_logger = logging.getLogger(__name__)
 
 
 APPROVED_QUANTCONNECT_READ_ENDPOINTS = frozenset(
@@ -180,6 +183,9 @@ def load_dashboard_snapshot(config: DashboardConfig, *, now: datetime) -> Dashbo
     if config.data_source_kind == "object_store":
         return _load_object_store_snapshot(config.data_source_path, cache_timestamp=now)
 
+    if config.data_source_kind == "sync_jsonl":
+        return _load_sync_jsonl_snapshot(config.data_source_path, config=config, cache_timestamp=now)
+
     return _source_error(
         code="dashboard_source_not_configured",
         message="Unsupported dashboard data source kind.",
@@ -218,6 +224,205 @@ def _load_local_json_snapshot(path_value: str | None, *, cache_timestamp: dateti
             reason="dashboard_source_error",
             status=DashboardSectionStatus.ERROR,
         )
+
+
+def _load_sync_jsonl_snapshot(
+    path_value: str | None,
+    *,
+    config: DashboardConfig,
+    cache_timestamp: datetime,
+) -> DashboardSnapshot:
+    if not path_value:
+        return DashboardDataClient.not_configured(missing=("dashboard_data_source",))
+    path = Path(path_value)
+    if not path.exists() or path.stat().st_size == 0:
+        return _sync_source_error(
+            code="sync_no_data",
+            message="No sync data available - run python -m marketpilot sync to start",
+            reason="no_sync_data",
+            status=DashboardSectionStatus.NOT_AVAILABLE,
+        )
+
+    try:
+        record = _read_last_sync_jsonl_record(path)
+    except Exception as exc:
+        return _sync_source_error(
+            code="sync_parse_error",
+            message=f"Sync JSONL record parse failed: {exc}",
+            reason="sync_parse_error",
+            status=DashboardSectionStatus.ERROR,
+        )
+    if record is None:
+        return _sync_source_error(
+            code="sync_no_data",
+            message="No sync data available - run python -m marketpilot sync to start",
+            reason="no_sync_data",
+            status=DashboardSectionStatus.NOT_AVAILABLE,
+        )
+
+    try:
+        return _snapshot_from_sync_record(record, config=config, cache_timestamp=cache_timestamp)
+    except Exception as exc:
+        return _sync_source_error(
+            code="sync_parse_error",
+            message=f"Sync JSONL record processing failed: {exc}",
+            reason="sync_parse_error",
+            status=DashboardSectionStatus.ERROR,
+        )
+
+
+def _read_last_sync_jsonl_record(path: Path) -> Mapping[str, object] | None:
+    with path.open("rb") as handle:
+        handle.seek(0, 2)
+        size = handle.tell()
+        if size == 0:
+            return None
+        chunk_size = min(size, 4096)
+        handle.seek(-chunk_size, 2)
+        chunk = handle.read().decode("utf-8")
+    lines = [line.strip() for line in chunk.splitlines() if line.strip()]
+    if not lines:
+        return None
+    payload = json.loads(lines[-1])
+    if not isinstance(payload, Mapping):
+        raise ValueError("sync JSONL record root must be a mapping")
+    return payload
+
+
+def _snapshot_from_sync_record(
+    record: Mapping[str, object],
+    *,
+    config: DashboardConfig,
+    cache_timestamp: datetime,
+) -> DashboardSnapshot:
+    portfolio_payload = _mapping_or_raise(record.get("portfolio"), "portfolio")
+    source_timestamp = _parse_utc_datetime(record.get("source_timestamp"))
+    freshness = _evaluate_sync_freshness(
+        source_timestamp,
+        cache_timestamp,
+        warning_seconds=config.stale_warning_seconds,
+        error_seconds=config.stale_error_seconds,
+    )
+    reasons = _sync_metadata_reasons(record, freshness)
+    portfolio = DashboardPortfolioSection(
+        status=_portfolio_status_for_freshness(freshness),
+        cash=_optional_decimal(portfolio_payload.get("cash")),
+        equity=_optional_decimal(portfolio_payload.get("equity")),
+        currency=str(portfolio_payload.get("currency") or "USD").strip().upper(),
+        holdings=tuple(_parse_sync_holding(item) for item in _list_of_mappings(portfolio_payload.get("holdings"))),
+        reasons=reasons,
+    )
+    metadata = DashboardSourceMetadata(
+        source="quantconnect_sync_jsonl",
+        source_timestamp=source_timestamp,
+        cache_timestamp=_ensure_utc(cache_timestamp),
+        freshness_status=freshness,
+        authority=DashboardAuthority.AUTHORITATIVE,
+        reasons=reasons,
+    )
+    not_available = _collection(DashboardSectionStatus.NOT_AVAILABLE, "sync_jsonl_section_not_loaded")
+    return DashboardSnapshot(
+        source_metadata=metadata,
+        portfolio=portfolio,
+        positions=not_available,
+        trades=not_available,
+        signals=not_available,
+        backtests=not_available,
+        strategies=not_available,
+        risk=not_available,
+        notifications=not_available,
+        activity=not_available,
+        system=not_available,
+    )
+
+
+def _sync_metadata_reasons(
+    record: Mapping[str, object],
+    freshness: DashboardFreshnessStatus,
+) -> tuple[str, ...]:
+    reasons: list[str] = []
+    generation = record.get("generation")
+    if not isinstance(generation, int) or generation <= 0:
+        _logger.warning("sync_jsonl record is missing a positive generation counter")
+        reasons.append("sync_generation_missing_or_zero")
+    if freshness is DashboardFreshnessStatus.STALE:
+        reasons.append("stale_source_timestamp")
+    elif freshness is DashboardFreshnessStatus.ERROR:
+        reasons.append("error_source_timestamp")
+    elif freshness is DashboardFreshnessStatus.UNKNOWN:
+        reasons.append("unknown_source_timestamp")
+    return tuple(reasons)
+
+
+def _portfolio_status_for_freshness(freshness: DashboardFreshnessStatus) -> DashboardSectionStatus:
+    if freshness is DashboardFreshnessStatus.ERROR:
+        return DashboardSectionStatus.ERROR
+    if freshness is DashboardFreshnessStatus.STALE:
+        return DashboardSectionStatus.STALE
+    return DashboardSectionStatus.AVAILABLE
+
+
+def _evaluate_sync_freshness(
+    source_timestamp: datetime | None,
+    cache_timestamp: datetime,
+    *,
+    warning_seconds: int,
+    error_seconds: int,
+) -> DashboardFreshnessStatus:
+    if source_timestamp is None:
+        return DashboardFreshnessStatus.UNKNOWN
+    now = _ensure_utc(cache_timestamp)
+    age_seconds = (now - source_timestamp).total_seconds()
+    if age_seconds <= warning_seconds:
+        return DashboardFreshnessStatus.FRESH
+    if age_seconds <= error_seconds:
+        return DashboardFreshnessStatus.STALE
+    return DashboardFreshnessStatus.ERROR
+
+
+def _parse_sync_holding(payload: Mapping[str, object]) -> DashboardHolding:
+    symbol = str(payload.get("symbol") or "").strip()
+    if not symbol:
+        raise ValueError("sync holding symbol is required")
+    return DashboardHolding(
+        symbol=symbol,
+        quantity=_required_int(payload.get("quantity"), "holding.quantity"),
+        average_price=_required_decimal(payload.get("average_price"), "holding.average_price"),
+        market_price=_required_decimal(payload.get("market_price"), "holding.market_price"),
+    )
+
+
+def _sync_source_error(
+    *,
+    code: str,
+    message: str,
+    reason: str,
+    status: DashboardSectionStatus,
+) -> DashboardSnapshot:
+    error = DashboardSectionError(code=code, message=message)
+    metadata = DashboardSourceMetadata(
+        source="quantconnect_sync_jsonl",
+        source_timestamp=None,
+        cache_timestamp=None,
+        freshness_status=DashboardFreshnessStatus.UNKNOWN,
+        authority=DashboardAuthority.AUTHORITATIVE,
+        reasons=(reason,),
+    )
+    portfolio = DashboardPortfolioSection(status=status, reasons=(reason,), errors=(error,))
+    section = DashboardCollectionSection(status=status, reasons=(reason,), errors=(error,))
+    return DashboardSnapshot(
+        source_metadata=metadata,
+        portfolio=portfolio,
+        positions=section,
+        trades=section,
+        signals=section,
+        backtests=section,
+        strategies=section,
+        risk=section,
+        notifications=section,
+        activity=section,
+        system=section,
+    )
 
 
 def _source_error(
@@ -270,8 +475,43 @@ def _parse_datetime(value: object) -> datetime | None:
     return datetime.fromisoformat(str(value))
 
 
+def _parse_utc_datetime(value: object) -> datetime | None:
+    try:
+        parsed = _parse_datetime(value)
+    except (TypeError, ValueError):
+        return None
+    if parsed is None:
+        return None
+    return _ensure_utc(parsed)
+
+
+def _ensure_utc(value: datetime) -> datetime:
+    if value.tzinfo is None or value.utcoffset() is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
 def _decimal(value: object) -> Decimal:
     return Decimal(str(value or "0"))
+
+
+def _optional_decimal(value: object) -> Decimal | None:
+    if value in (None, ""):
+        return None
+    return Decimal(str(value))
+
+
+def _required_decimal(value: object, field_name: str) -> Decimal:
+    parsed = _optional_decimal(value)
+    if parsed is None:
+        raise ValueError(f"{field_name} is required")
+    return parsed
+
+
+def _required_int(value: object, field_name: str) -> int:
+    if value in (None, ""):
+        raise ValueError(f"{field_name} is required")
+    return int(value)
 
 
 def _load_object_store_snapshot(key: str | None, *, cache_timestamp: datetime) -> DashboardSnapshot:
@@ -298,6 +538,12 @@ def _mapping(value: object) -> Mapping[str, object]:
     if isinstance(value, Mapping):
         return value
     return {}
+
+
+def _mapping_or_raise(value: object, field_name: str) -> Mapping[str, object]:
+    if isinstance(value, Mapping):
+        return value
+    raise ValueError(f"sync JSONL field '{field_name}' must be a mapping")
 
 
 def _list_of_mappings(value: object) -> tuple[Mapping[str, object], ...]:

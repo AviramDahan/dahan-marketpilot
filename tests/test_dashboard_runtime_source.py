@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
 
 from dashboard.config import DashboardConfig, load_dashboard_config
 from dashboard.data import load_dashboard_snapshot
-from dashboard.models import DashboardAuthority, DashboardSectionStatus
+from dashboard.models import DashboardAuthority, DashboardFreshnessStatus, DashboardSectionStatus
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,6 +26,29 @@ def _portfolio_payload() -> dict[str, object]:
             "holdings": [
                 {
                     "symbol": "MSFT",
+                    "quantity": 10,
+                    "average_price": "400.00",
+                    "market_price": "412.50",
+                }
+            ],
+        },
+    }
+
+
+def _sync_record(source_timestamp: datetime) -> dict[str, object]:
+    return {
+        "generation": 7,
+        "source_timestamp": source_timestamp.isoformat(),
+        "captured_at": "2026-06-15T10:40:01+00:00",
+        "sync_status": "success",
+        "reconciliation_clean": True,
+        "portfolio": {
+            "cash": "100000.00",
+            "equity": "101250.50",
+            "currency": "USD",
+            "holdings": [
+                {
+                    "symbol": "msft",
                     "quantity": 10,
                     "average_price": "400.00",
                     "market_price": "412.50",
@@ -86,6 +109,112 @@ def test_malformed_source_degrades_with_redacted_safe_error(tmp_path):
     assert "token" not in safe_error["message"].lower()
 
 
+def test_sync_jsonl_source_kind_is_accepted_by_config(tmp_path):
+    source = tmp_path / "portfolio_sync.jsonl"
+    config = DashboardConfig(data_source_kind="sync_jsonl", data_source_path=str(source))
+
+    assert config.data_source_kind == "sync_jsonl"
+    assert config.data_source_path == str(source)
+
+
+@pytest.mark.parametrize("contents", [None, ""])
+def test_sync_jsonl_missing_or_empty_source_degrades_without_fabricating(tmp_path, contents):
+    source = tmp_path / "portfolio_sync.jsonl"
+    if contents is not None:
+        source.write_text(contents, encoding="utf-8")
+    config = DashboardConfig(data_source_kind="sync_jsonl", data_source_path=str(source))
+
+    snapshot = load_dashboard_snapshot(config, now=NOW)
+
+    assert snapshot.source_metadata.source == "quantconnect_sync_jsonl"
+    assert snapshot.source_metadata.freshness_status is DashboardFreshnessStatus.UNKNOWN
+    assert snapshot.portfolio.status is DashboardSectionStatus.NOT_AVAILABLE
+    assert snapshot.portfolio.holdings == ()
+    assert snapshot.portfolio.cash is None
+    assert snapshot.portfolio.errors[0].code == "sync_no_data"
+
+
+def test_sync_jsonl_malformed_last_line_degrades_without_crashing(tmp_path):
+    source = tmp_path / "portfolio_sync.jsonl"
+    source.write_text(json.dumps(_sync_record(NOW)) + "\n{bad json", encoding="utf-8")
+    config = DashboardConfig(data_source_kind="sync_jsonl", data_source_path=str(source))
+
+    snapshot = load_dashboard_snapshot(config, now=NOW)
+
+    assert snapshot.source_metadata.source == "quantconnect_sync_jsonl"
+    assert snapshot.portfolio.status is DashboardSectionStatus.ERROR
+    assert snapshot.portfolio.errors[0].code == "sync_parse_error"
+
+
+def test_sync_jsonl_unparseable_source_timestamp_is_unknown_not_fabricated(tmp_path):
+    source = tmp_path / "portfolio_sync.jsonl"
+    record = _sync_record(NOW)
+    record["source_timestamp"] = "not-a-timestamp"
+    source.write_text(json.dumps(record) + "\n", encoding="utf-8")
+    config = DashboardConfig(data_source_kind="sync_jsonl", data_source_path=str(source))
+
+    snapshot = load_dashboard_snapshot(config, now=NOW)
+
+    assert snapshot.source_metadata.source_timestamp is None
+    assert snapshot.source_metadata.freshness_status is DashboardFreshnessStatus.UNKNOWN
+    assert snapshot.portfolio.status is DashboardSectionStatus.AVAILABLE
+    assert "unknown_source_timestamp" in snapshot.source_metadata.reasons
+
+
+def test_sync_jsonl_reads_last_line_and_loads_authoritative_portfolio(tmp_path):
+    source = tmp_path / "portfolio_sync.jsonl"
+    stale_record = _sync_record(datetime(2026, 6, 15, 10, 0, tzinfo=timezone.utc))
+    fresh_record = _sync_record(datetime(2026, 6, 15, 10, 40, tzinfo=timezone.utc))
+    fresh_record["portfolio"] = {
+        **fresh_record["portfolio"],
+        "holdings": [
+            {
+                "symbol": "aapl",
+                "quantity": 5,
+                "average_price": "175.00",
+                "market_price": "180.00",
+            }
+        ],
+    }
+    source.write_text(
+        json.dumps(stale_record) + "\n" + json.dumps(fresh_record) + "\n",
+        encoding="utf-8",
+    )
+    config = DashboardConfig(data_source_kind="sync_jsonl", data_source_path=str(source))
+
+    snapshot = load_dashboard_snapshot(config, now=NOW)
+
+    assert snapshot.source_metadata.source == "quantconnect_sync_jsonl"
+    assert snapshot.source_metadata.authority is DashboardAuthority.AUTHORITATIVE
+    assert snapshot.source_metadata.cache_timestamp == NOW
+    assert snapshot.source_metadata.freshness_status is DashboardFreshnessStatus.FRESH
+    assert snapshot.portfolio.status is DashboardSectionStatus.AVAILABLE
+    assert snapshot.portfolio.holdings[0].symbol == "AAPL"
+
+
+@pytest.mark.parametrize(
+    "age_seconds,freshness,portfolio_status",
+    [
+        (600, DashboardFreshnessStatus.FRESH, DashboardSectionStatus.AVAILABLE),
+        (601, DashboardFreshnessStatus.STALE, DashboardSectionStatus.STALE),
+        (1800, DashboardFreshnessStatus.STALE, DashboardSectionStatus.STALE),
+        (1801, DashboardFreshnessStatus.ERROR, DashboardSectionStatus.ERROR),
+    ],
+)
+def test_sync_jsonl_freshness_thresholds(tmp_path, age_seconds, freshness, portfolio_status):
+    source = tmp_path / "portfolio_sync.jsonl"
+    source.write_text(
+        json.dumps(_sync_record(NOW.replace(tzinfo=timezone.utc) - timedelta(seconds=age_seconds))) + "\n",
+        encoding="utf-8",
+    )
+    config = DashboardConfig(data_source_kind="sync_jsonl", data_source_path=str(source))
+
+    snapshot = load_dashboard_snapshot(config, now=NOW)
+
+    assert snapshot.source_metadata.freshness_status is freshness
+    assert snapshot.portfolio.status is portfolio_status
+
+
 def test_app_uses_runtime_loader_instead_of_hard_coded_not_configured():
     app_source = (ROOT / "dashboard" / "app.py").read_text(encoding="utf-8")
 
@@ -100,6 +229,9 @@ def test_app_uses_runtime_loader_instead_of_hard_coded_not_configured():
         ("local_json", "https://example.com/dashboard.json"),
         ("local_json", "../secret.json"),
         ("local_json", "token=secret-value"),
+        ("sync_jsonl", "https://example.com/portfolio_sync.jsonl"),
+        ("sync_jsonl", "../portfolio_sync.jsonl"),
+        ("sync_jsonl", "token=secret-value"),
         ("object_store_write", "dashboard/portfolio.json"),
     ],
 )
