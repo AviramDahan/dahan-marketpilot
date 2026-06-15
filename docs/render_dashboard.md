@@ -29,6 +29,18 @@ The start command binds Streamlit to `0.0.0.0` and the `$PORT` value provided by
 Render. This keeps the service reachable by Render without exposing any
 mutation workflow.
 
+## Cache And Stale Data
+
+The dashboard cache is display-only. Cache TTL is 60 seconds. Stale warning
+appears around 10 minutes, and a strong stale/error state appears around
+30 minutes. Render cold starts or failed source reads must show source/cache
+timestamps and stale/error labels when last-good display cache exists, or safe
+`not_available`/`error` states when no cache exists.
+
+FX display is also display-only. USD remains the source/accounting currency.
+NIS display requires FX rate, source, timestamp, and freshness metadata; missing
+or stale FX marks NIS unavailable/stale.
+
 ## Environment Variables
 
 Set these values in Render as environment variables or Blueprint prompts. Store

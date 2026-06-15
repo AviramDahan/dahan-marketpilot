@@ -27,3 +27,4 @@ dashboard:
   stale_warning_seconds: 600
   stale_error_seconds: 1800
   gentle_poll_seconds: 120
+  fx_stale_seconds: 86400

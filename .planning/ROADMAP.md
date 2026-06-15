@@ -22,7 +22,7 @@ Dahan MarketPilot v1 is planned as a safety-first sequence. The project starts w
 - [x] **Phase 6: Portfolio Risk and Order Lifecycle** - Add portfolio constraints, sizing, order state, stops, targets, exits, restart state, and notification-domain events. (completed 2026-06-14)
 - [x] **Phase 7: Backtesting and Validation** - Add realistic backtesting, no-look-ahead validation, chronological validation, activation gates, and reports. (completed 2026-06-14)
 - [x] **Phase 8: QuantConnect Paper Trading and Telegram** - Add gated paper modes, QuantConnect Paper Trading deployment design, reconciliation, recovery, and Telegram delivery. (completed 2026-06-14)
-- [ ] **Phase 9: Render Dashboard** - Add read-only mobile Streamlit dashboard backed by QuantConnect-sourced data, caching, auth, stale-data handling, and system health.
+- [x] **Phase 9: Render Dashboard** - Add read-only mobile Streamlit dashboard backed by QuantConnect-sourced data, caching, auth, stale-data handling, and system health. (completed 2026-06-15)
 - [ ] **Phase 10: CI/CD, Security and Release** - Add workflows, weekly validation, dashboard health, security review, operations docs, recovery docs, final audit, and release preparation.
 
 ## Phase Details
@@ -345,7 +345,7 @@ Plans:
 
 **Wave 6** *(blocked on 09-01, 09-02, 09-05, and 09-06 completion)*
 
-- [ ] 09-07: Cache/stale behavior, USD/NIS FX display helpers, and final dashboard test hardening.
+- [x] 09-07: Cache/stale behavior, USD/NIS FX display helpers, and final dashboard test hardening.
 
 ### Phase 10: CI/CD, Security and Release
 
@@ -384,5 +384,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 
 | 6. Portfolio Risk and Order Lifecycle | 5/5 | Complete    | 2026-06-14 |
 | 7. Backtesting and Validation | 5/5 | Complete    | 2026-06-14 |
 | 8. QuantConnect Paper Trading and Telegram | 4/4 | Complete    | 2026-06-14 |
-| 9. Render Dashboard | 6/7 | In Progress|  |
+| 9. Render Dashboard | 7/7 | Complete   | 2026-06-15 |
 | 10. CI/CD, Security and Release | 0/4 | Not started | - |

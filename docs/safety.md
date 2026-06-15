@@ -161,3 +161,7 @@ redacted.
 
 The dashboard action surface is limited to view, refresh, login, and logout.
 It must remain Overview-first on mobile and read-only for every page.
+
+Dashboard cache and FX display are display-only. Cached data must be labeled
+with source/cache timestamps and stale status. NIS conversion is never an
+accounting source; USD remains authoritative.

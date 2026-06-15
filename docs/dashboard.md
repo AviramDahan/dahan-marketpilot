@@ -95,6 +95,25 @@ empty/error states. It does not turn events into operator workflows.
 System Status renders QuantConnect, cache, FX, Telegram, Render, auth, and
 configuration health as redacted subsystem diagnostics.
 
+## Cache, Stale Data, And FX Display
+
+Dashboard cache copies are display-only. Every cached display must preserve the
+original source timestamp, cache timestamp, freshness status, and authority
+label. Manual refresh only clears/retries display reads; it does not mutate
+QuantConnect, Paper Trading state, Telegram state, recovery state, or Object
+Store data.
+
+Fresh data is under the stale warning threshold. Around 10 minutes, the
+dashboard shows a stale warning. Around 30 minutes, the dashboard shows a
+strong stale/error state. If a source read fails and a last-good display cache
+exists, the dashboard may show it with stale/error labeling. Without cache, the
+section must render `not_available` or `error`.
+
+USD remains the source/accounting currency. NIS is display-only and requires an
+explicit FX rate, source, timestamp, and freshness status. Missing or stale FX
+metadata preserves USD display and marks NIS as unavailable/stale without
+inventing a conversion.
+
 ## Approved QuantConnect Read Paths
 
 The approved production QuantConnect Cloud API read paths are:

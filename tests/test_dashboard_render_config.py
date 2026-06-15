@@ -78,3 +78,14 @@ def test_dashboard_package_is_included_for_render_runtime():
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
     assert '"dashboard*"' in pyproject
+
+
+def test_dashboard_cache_thresholds_are_documented_and_configured():
+    config = yaml.safe_load((ROOT / "config" / "dashboard.yaml").read_text(encoding="utf-8"))["dashboard"]
+    docs = (ROOT / "docs" / "render_dashboard.md").read_text(encoding="utf-8")
+
+    assert config["cache_ttl_seconds"] == 60
+    assert config["stale_warning_seconds"] == 600
+    assert config["stale_error_seconds"] == 1800
+    assert "10 minutes" in docs
+    assert "30 minutes" in docs
