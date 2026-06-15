@@ -382,7 +382,7 @@ Plans:
 **Goal:** Close the milestone audit runtime integration gap by planning and implementing a safe strategy-to-paper orchestrator that connects QuantConnect-authoritative data, setup evidence, scoring/ranking, risk/order lifecycle, Paper Trading reconciliation, Telegram notification-domain events, and dashboard export evidence without adding any real-money path.
 **Depends on:** Phase 10
 **Requirements**: QC-03, UNI-01..UNI-05, REG-01..REG-03, IND-01..IND-05, SET-01, SET-02, SET-05, SET-07, MODE-01..MODE-03, TF-01..TF-07, SCO-01..SCO-04, RISK-01..RISK-07, BT-01, TEL-01..TEL-03, DASH-04
-**Plans:** 2/5 plans executed
+**Plans:** 3/5 plans executed
 
 Plans:
 
@@ -396,7 +396,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 10.1-03-PLAN.md - LEAN bridge and static safety policy for the runtime path.
+- [x] 10.1-03-PLAN.md - LEAN bridge and static safety policy for the runtime path.
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -424,4 +424,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 
 | 8. QuantConnect Paper Trading and Telegram | 4/4 | Complete    | 2026-06-14 |
 | 9. Render Dashboard | 8/8 | Complete   | 2026-06-15 |
 | 10. CI/CD, Security and Release | 4/4 | Complete   | 2026-06-15 |
-| 10.1. Close gap: runtime orchestrator for strategy-to-paper E2E flow | 2/5 | In Progress|  |
+| 10.1. Close gap: runtime orchestrator for strategy-to-paper E2E flow | 3/5 | In Progress|  |

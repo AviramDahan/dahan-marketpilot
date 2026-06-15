@@ -32,23 +32,23 @@
 
 ### Universe And Market Regime
 
-- [ ] **UNI-01**: The system uses QuantConnect dynamic fundamental or liquidity universe selection rather than a static hand-written ticker list.
-- [ ] **UNI-02**: The universe filters for US-listed common equities, price at least $5, at least 250 completed daily bars, average 20-day volume at least 500,000 shares, average 20-day dollar volume at least $20,000,000, configurable minimum market capitalization, and valid tradability.
-- [ ] **UNI-03**: The universe excludes ETFs, OTC securities, preferred shares where identifiable, warrants, invalid securities, stale data, and critical missing data.
-- [ ] **UNI-04**: Universe records include counts, additions, removals, exclusions, exclusion reasons, sector distribution, update timestamp, and data-quality status.
-- [ ] **UNI-05**: SymbolData and indicator lifecycle cleanup handles securities leaving the universe.
-- [ ] **REG-01**: Market regime uses SPY and QQQ with EMA20, EMA50, EMA200, slopes, 20-day return, 60-day return, and optional breadth measures.
-- [ ] **REG-02**: RISK_ON, NEUTRAL, and RISK_OFF thresholds are configurable, documented, unit-tested, and reported.
-- [ ] **REG-03**: RISK_OFF blocks new long entries but does not automatically liquidate every existing position solely due to regime change.
+- [x] **UNI-01**: The system uses QuantConnect dynamic fundamental or liquidity universe selection rather than a static hand-written ticker list.
+- [x] **UNI-02**: The universe filters for US-listed common equities, price at least $5, at least 250 completed daily bars, average 20-day volume at least 500,000 shares, average 20-day dollar volume at least $20,000,000, configurable minimum market capitalization, and valid tradability.
+- [x] **UNI-03**: The universe excludes ETFs, OTC securities, preferred shares where identifiable, warrants, invalid securities, stale data, and critical missing data.
+- [x] **UNI-04**: Universe records include counts, additions, removals, exclusions, exclusion reasons, sector distribution, update timestamp, and data-quality status.
+- [x] **UNI-05**: SymbolData and indicator lifecycle cleanup handles securities leaving the universe.
+- [x] **REG-01**: Market regime uses SPY and QQQ with EMA20, EMA50, EMA200, slopes, 20-day return, 60-day return, and optional breadth measures.
+- [x] **REG-02**: RISK_ON, NEUTRAL, and RISK_OFF thresholds are configurable, documented, unit-tested, and reported.
+- [x] **REG-03**: RISK_OFF blocks new long entries but does not automatically liquidate every existing position solely due to regime change.
 - [x] **REG-04**: Telegram regime transition alerts are generated when enabled and duplicate unchanged-state alerts are suppressed.
 
 ### Indicators And Setups
 
-- [ ] **IND-01**: Required trend indicators include EMA8, EMA20, EMA50, EMA200, EMA slopes, moving-average alignment, EMA distances, and distance from 52-week high.
-- [ ] **IND-02**: Required momentum indicators include RSI14, MACD 12/26/9, ROC20, ROC60, 20-day return, 60-day return, relative strength versus SPY and QQQ, and momentum percentile where practical.
-- [ ] **IND-03**: Required volume indicators include average volume 20/50, relative volume, average dollar volume 20/50, volume trend, and pullback-volume behavior.
-- [ ] **IND-04**: Required risk indicators include ATR14, ATR percentage, rolling volatility, structural swing high/low, recent drawdown, gap-risk approximation, and maximum adverse movement approximation where practical.
-- [ ] **IND-05**: Missing, invalid, infinite, stale, or NaN data rejects signals and never becomes a default positive score.
+- [x] **IND-01**: Required trend indicators include EMA8, EMA20, EMA50, EMA200, EMA slopes, moving-average alignment, EMA distances, and distance from 52-week high.
+- [x] **IND-02**: Required momentum indicators include RSI14, MACD 12/26/9, ROC20, ROC60, 20-day return, 60-day return, relative strength versus SPY and QQQ, and momentum percentile where practical.
+- [x] **IND-03**: Required volume indicators include average volume 20/50, relative volume, average dollar volume 20/50, volume trend, and pullback-volume behavior.
+- [x] **IND-04**: Required risk indicators include ATR14, ATR percentage, rolling volatility, structural swing high/low, recent drawdown, gap-risk approximation, and maximum adverse movement approximation where practical.
+- [x] **IND-05**: Missing, invalid, infinite, stale, or NaN data rejects signals and never becomes a default positive score.
 - [x] **SET-01**: Trend Pullback identifies strong stocks in established uptrends that pull back toward EMA20 or EMA50 and begin to recover.
 - [x] **SET-02**: Trend Pullback rejects broken trend structure, excessive ATR, excessive stop distance, overextension, incomplete data, earnings-risk conflicts, weak reward/risk, and failed portfolio constraints.
 - [x] **SET-03**: Volume Breakout calculates prior resistance from the previous completed bars only, excluding the current bar.
@@ -59,21 +59,21 @@
 
 ### Strategy Modes And Multi-Timeframe Signals
 
-- [ ] **MODE-01**: The system supports exactly three regular strategy modes: `daily_only`, `daily_filter_4h_setup`, and `daily_filter_4h_setup_1h_optional`.
-- [ ] **MODE-02**: `daily_only` is the default, compatibility mode, and backtesting benchmark, and strategy mode remains separate from environment modes `backtest`, `shadow`, and `paper`.
-- [ ] **MODE-03**: Strategy-mode configuration is typed and validated, preferably through `config/strategy.yaml`; missing, empty, invalid, or unsupported mode values fail closed.
-- [ ] **TF-01**: Daily timeframe is mandatory and owns universe eligibility, liquidity, data quality, broad trend, EMA structure, SPY/QQQ regime, broad relative strength, volatility, gap/earnings context, and rejection of structurally weak candidates.
-- [ ] **TF-02**: In MTF modes, completed 4H bars are the primary setup/signal timeframe for Trend Pullback and Volume Breakout, including setup quality, recovery/breakout confirmation, momentum/volume evidence, invalidation, and primary setup timestamp.
-- [ ] **TF-03**: 1H is optional confirmation only in `daily_filter_4h_setup_1h_optional`; it can improve confidence/readiness/evidence but cannot independently create a trade or override failed Daily, invalid 4H, `RISK_OFF`, stale data, hard rejection, or invalid reward/risk.
-- [ ] **TF-04**: Signals use completed bars only and timing models support `completed_daily_bar`, `completed_four_hour_bar`, and `completed_one_hour_bar` without future bars, incomplete bars, or unrealistic same-bar assumptions.
-- [ ] **TF-05**: `SetupTiming` or its successor preserves strategy mode, signal timeframe, timestamp, bar start/end, completion status, exchange timezone, regular-hours status, partial-session status, freshness, source resolution, and later-valid-execution requirement.
-- [ ] **TF-06**: Daily, 4H, and 1H readiness are tracked independently; mandatory timeframe data fails closed, while missing optional 1H alone cannot reject a valid Daily+4H candidate.
-- [ ] **TF-07**: The system emits at most one candidate per symbol and does not create separate Daily, 4H, and 1H candidates.
-- [ ] **QC-MTF-01**: Current official QuantConnect/LEAN documentation is verified before implementation selects multi-resolution subscriptions, consolidators, calendar/custom anchoring, RTH filtering, extended-hours exclusion, holidays, early closes, DST handling, indicator warm-up, and dynamic-universe consolidator registration/cleanup.
-- [ ] **QC-MTF-02**: The 4H alignment policy is explicit. Because the US regular session is 6.5 hours, partial-session bars must be identified and forbidden from signal generation by default; partial evidence and a 2H alternative may be evaluated later, but 4H must not be silently replaced.
-- [ ] **SET-MTF-01**: Trend Pullback MTF behavior uses Daily for broader healthy trend, 4H for pullback/recovery primary setup, and optional 1H for entry-readiness confirmation.
-- [ ] **SET-MTF-02**: Volume Breakout MTF behavior uses Daily for structure, 4H for primary breakout, and optional 1H to confirm the breakout is holding and not overextended.
-- [ ] **SET-MTF-03**: Relative Strength Leader and Phase 5 scoring consume strategy mode and MTF evidence, including `strategy_mode`, `daily_context_score`, `four_hour_setup_score`, `one_hour_confirmation_score`, `timeframe_alignment_status`, and `data_quality_confidence`, without finalizing arbitrary MTF weights before validation.
+- [x] **MODE-01**: The system supports exactly three regular strategy modes: `daily_only`, `daily_filter_4h_setup`, and `daily_filter_4h_setup_1h_optional`.
+- [x] **MODE-02**: `daily_only` is the default, compatibility mode, and backtesting benchmark, and strategy mode remains separate from environment modes `backtest`, `shadow`, and `paper`.
+- [x] **MODE-03**: Strategy-mode configuration is typed and validated, preferably through `config/strategy.yaml`; missing, empty, invalid, or unsupported mode values fail closed.
+- [x] **TF-01**: Daily timeframe is mandatory and owns universe eligibility, liquidity, data quality, broad trend, EMA structure, SPY/QQQ regime, broad relative strength, volatility, gap/earnings context, and rejection of structurally weak candidates.
+- [x] **TF-02**: In MTF modes, completed 4H bars are the primary setup/signal timeframe for Trend Pullback and Volume Breakout, including setup quality, recovery/breakout confirmation, momentum/volume evidence, invalidation, and primary setup timestamp.
+- [x] **TF-03**: 1H is optional confirmation only in `daily_filter_4h_setup_1h_optional`; it can improve confidence/readiness/evidence but cannot independently create a trade or override failed Daily, invalid 4H, `RISK_OFF`, stale data, hard rejection, or invalid reward/risk.
+- [x] **TF-04**: Signals use completed bars only and timing models support `completed_daily_bar`, `completed_four_hour_bar`, and `completed_one_hour_bar` without future bars, incomplete bars, or unrealistic same-bar assumptions.
+- [x] **TF-05**: `SetupTiming` or its successor preserves strategy mode, signal timeframe, timestamp, bar start/end, completion status, exchange timezone, regular-hours status, partial-session status, freshness, source resolution, and later-valid-execution requirement.
+- [x] **TF-06**: Daily, 4H, and 1H readiness are tracked independently; mandatory timeframe data fails closed, while missing optional 1H alone cannot reject a valid Daily+4H candidate.
+- [x] **TF-07**: The system emits at most one candidate per symbol and does not create separate Daily, 4H, and 1H candidates.
+- [x] **QC-MTF-01**: Current official QuantConnect/LEAN documentation is verified before implementation selects multi-resolution subscriptions, consolidators, calendar/custom anchoring, RTH filtering, extended-hours exclusion, holidays, early closes, DST handling, indicator warm-up, and dynamic-universe consolidator registration/cleanup.
+- [x] **QC-MTF-02**: The 4H alignment policy is explicit. Because the US regular session is 6.5 hours, partial-session bars must be identified and forbidden from signal generation by default; partial evidence and a 2H alternative may be evaluated later, but 4H must not be silently replaced.
+- [x] **SET-MTF-01**: Trend Pullback MTF behavior uses Daily for broader healthy trend, 4H for pullback/recovery primary setup, and optional 1H for entry-readiness confirmation.
+- [x] **SET-MTF-02**: Volume Breakout MTF behavior uses Daily for structure, 4H for primary breakout, and optional 1H to confirm the breakout is holding and not overextended.
+- [x] **SET-MTF-03**: Relative Strength Leader and Phase 5 scoring consume strategy mode and MTF evidence, including `strategy_mode`, `daily_context_score`, `four_hour_setup_score`, `one_hour_confirmation_score`, `timeframe_alignment_status`, and `data_quality_confidence`, without finalizing arbitrary MTF weights before validation.
 - [ ] **BT-MTF-01**: Future backtesting compares `daily_only`, `daily_filter_4h_setup`, `daily_filter_4h_setup_1h_optional`, a mandatory-1H-confirmation variant for backtesting only, different 4H alignment policies, and a 2H alternative if technically justified.
 
 ### Scoring, Explanations, And Audit
@@ -177,20 +177,20 @@ Deferred to future releases and not part of the v1 roadmap:
 | QC-03 | Phase 2 | Complete |
 | QC-04 | Phase 2 | Pending |
 | QC-05 | Phase 9 | Complete |
-| UNI-01 | Phase 2 | Pending |
-| UNI-02 | Phase 2 | Pending |
-| UNI-03 | Phase 2 | Pending |
-| UNI-04 | Phase 2 | Pending |
-| UNI-05 | Phase 2 | Pending |
-| REG-01 | Phase 2 | Pending |
-| REG-02 | Phase 2 | Pending |
-| REG-03 | Phase 2 | Pending |
+| UNI-01 | Phase 2 | Complete |
+| UNI-02 | Phase 2 | Complete |
+| UNI-03 | Phase 2 | Complete |
+| UNI-04 | Phase 2 | Complete |
+| UNI-05 | Phase 2 | Complete |
+| REG-01 | Phase 2 | Complete |
+| REG-02 | Phase 2 | Complete |
+| REG-03 | Phase 2 | Complete |
 | REG-04 | Phase 8 | Complete |
-| IND-01 | Phase 2 | Pending |
-| IND-02 | Phase 2 | Pending |
-| IND-03 | Phase 2 | Pending |
-| IND-04 | Phase 2 | Pending |
-| IND-05 | Phase 2 | Pending |
+| IND-01 | Phase 2 | Complete |
+| IND-02 | Phase 2 | Complete |
+| IND-03 | Phase 2 | Complete |
+| IND-04 | Phase 2 | Complete |
+| IND-05 | Phase 2 | Complete |
 | SET-01 | Phase 3 | Complete |
 | SET-02 | Phase 3 | Complete |
 | SET-03 | Phase 4 | Complete |

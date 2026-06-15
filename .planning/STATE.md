@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 10.1-02-PLAN.md
-last_updated: "2026-06-15T19:14:15.043Z"
+stopped_at: Completed 10.1-03-PLAN.md
+last_updated: "2026-06-15T19:26:33.701Z"
 last_activity: 2026-06-15
 progress:
   total_phases: 12
   completed_phases: 11
   total_plans: 53
-  completed_plans: 50
-  percent: 94
+  completed_plans: 51
+  percent: 96
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-14)
 ## Current Position
 
 Phase: 10.1 of 12 (Close gap: runtime orchestrator for strategy-to-paper E2E flow)
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-06-15
 
-Progress: [█████████░] 94%
+Progress: [██████████] 96%
 
 ## Performance Metrics
 
@@ -102,6 +102,7 @@ Progress: [█████████░] 94%
 | Phase 10 P04 | 14min | 3 tasks | 4 files |
 | Phase 10.1 P01 | 7min | 3 tasks | 4 files |
 | Phase 10.1 P02 | 9min | 3 tasks | 3 files |
+| Phase 10.1 P03 | 7min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -166,6 +167,9 @@ Recent decisions affecting current work:
 - [Phase 10.1]: Phase 10.1 Plan 02: Runtime paper intent readiness requires validation, paper mode, QuantConnect reconciliation, QuantConnect-authoritative portfolio input, risk acceptance, and idempotency evidence. — Preserves paper-only safety and prevents score/ranking evidence from becoming an order instruction.
 - [Phase 10.1]: Phase 10.1 Plan 02: Scoring and BUY_CANDIDATE classification remain evidence only and do not submit orders or bypass risk/reconciliation gates. — Keeps high scores, classifications, and setup evidence separate from execution authority.
 - [Phase 10.1]: Phase 10.1 Plan 02: Reconciliation mismatch or missing QuantConnect snapshot blocks new entries, preserves exit obligations, and emits system events that do not control safety logic through delivery. — Maintains QuantConnect source-of-truth behavior while keeping notification transport non-authoritative.
+- [Phase 10.1]: LEAN runtime integration is adapter-only; setup, scoring, ranking, risk, reconciliation, paper eligibility, and notification decisions remain delegated to marketpilot.runtime_orchestrator. — Keeps QCAlgorithm-specific objects at the edge and avoids duplicating strategy logic in lean/main.py.
+- [Phase 10.1]: Dynamic universe hooks are allowed only through audited bridge wiring. — The old blanket add_universe ban was too broad for INT-02, while bridge static tests keep broker, uncontrolled order, credential, borrowing-style, and unsupported asset paths forbidden.
+- [Phase 10.1]: Dashboard/Object Store export and external QuantConnect execution remain not_run evidence in Plan 10.1-03. — No operator-run QuantConnect credentials or external execution occurred during this plan.
 
 ### Pending Todos
 
@@ -195,6 +199,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-15T19:14:15.031Z
-Stopped at: Completed 10.1-02-PLAN.md
+Last session: 2026-06-15T19:26:02.396Z
+Stopped at: Completed 10.1-03-PLAN.md
 Resume file: None
