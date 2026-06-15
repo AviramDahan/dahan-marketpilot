@@ -10,7 +10,7 @@ source:
   - 09-06-SUMMARY.md
   - 09-07-SUMMARY.md
 started: 2026-06-15T10:25:00Z
-updated: 2026-06-15T10:35:00Z
+updated: 2026-06-15T10:55:00Z
 ---
 
 ## Current Test
@@ -51,37 +51,18 @@ evidence: `tests/test_dashboard_secret_masking.py`
 
 ### 7. Runtime QuantConnect Data Source
 expected: After authentication, the Streamlit dashboard should load a configured QuantConnect-approved API/export/Object Store dashboard data source and render real configured snapshot data, while using degraded `not_configured` states only when setup is missing.
-result: issue
-reported: "dashboard/app.py currently hard-codes DashboardDataClient.not_configured(missing=(\"dashboard_data_source\",)), so authenticated runtime always renders the not-configured snapshot instead of reading a configured source."
-severity: blocker
-evidence: `dashboard/app.py`, `dashboard/data.py`, milestone integration checker
+result: pass
+evidence: `tests/test_dashboard_runtime_source.py`, `dashboard/app.py`, `dashboard/data.py`
 
 ## Summary
 
 total: 7
-passed: 6
-issues: 1
+passed: 7
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
 
 ## Gaps
 
-- truth: "Authenticated dashboard loads configured QuantConnect-approved dashboard data source and renders real configured snapshot data."
-  status: failed
-  reason: "Runtime app hard-codes DashboardDataClient.not_configured(missing=(\"dashboard_data_source\",)) instead of loading a configured dashboard source."
-  severity: blocker
-  test: 7
-  root_cause: "Phase 9 implemented DTOs, parsers, pages, auth, Render config, cache, and FX helpers, but did not wire a runtime data-source loader into dashboard/app.py."
-  artifacts:
-    - path: "dashboard/app.py"
-      issue: "Authenticated runtime snapshot is hard-coded to not_configured."
-    - path: "dashboard/data.py"
-      issue: "Read-only parsers exist but are not connected to runtime configuration."
-    - path: "config/dashboard.yaml"
-      issue: "No dashboard data source config is consumed by the Streamlit app."
-  missing:
-    - "Add a safe read-only dashboard data source configuration."
-    - "Load configured dashboard snapshot data in dashboard/app.py after authentication."
-    - "Keep missing setup as explicit not_configured/not_run evidence."
-  debug_session: "inline-verify-work-09"
+No open UAT gaps remain after 09-08.

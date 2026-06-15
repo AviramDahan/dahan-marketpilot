@@ -28,7 +28,7 @@
 - [ ] **QC-02**: Current official QuantConnect LEAN and Cloud APIs are verified before implementation code uses them.
 - [ ] **QC-03**: QuantConnect remains authoritative for simulated cash, portfolio equity, holdings, open positions, orders, fills, Paper Trading state, algorithm status, Paper Trading performance, and QuantConnect Backtest results.
 - [ ] **QC-04**: LEAN CLI workflows are documented for sync, cloud backtest, and result retrieval without exposing credentials.
-- [ ] **QC-05**: QuantConnect Object Store or Cloud API export mechanisms are designed only after official documentation verification.
+- [x] **QC-05**: QuantConnect Object Store or Cloud API export mechanisms are designed only after official documentation verification.
 
 ### Universe And Market Regime
 
@@ -115,13 +115,13 @@
 
 ### Dashboard
 
-- [ ] **DASH-01**: Render hosts a password-protected Streamlit dashboard.
-- [ ] **DASH-02**: The dashboard is read-only and contains no order submission, modification, cancellation, or manual trade controls.
-- [ ] **DASH-03**: Dashboard views include Overview, Positions, Trades, Signals, Backtests, Strategies, Risk, Notifications, Activity, and System Status.
-- [ ] **DASH-04**: Dashboard data is sourced from QuantConnect-approved API/export paths and displays stale-data warnings.
-- [ ] **DASH-05**: Dashboard displays portfolio values in USD and NIS and shows FX timestamp/source/staleness warnings.
-- [ ] **DASH-06**: Dashboard masks secrets and presents API/cache/authentication errors safely.
-- [ ] **DASH-07**: Dashboard tests cover API parsing, caching, stale data, authentication, read-only behavior, error presentation, and secret masking.
+- [x] **DASH-01**: Render hosts a password-protected Streamlit dashboard.
+- [x] **DASH-02**: The dashboard is read-only and contains no order submission, modification, cancellation, or manual trade controls.
+- [x] **DASH-03**: Dashboard views include Overview, Positions, Trades, Signals, Backtests, Strategies, Risk, Notifications, Activity, and System Status.
+- [x] **DASH-04**: Dashboard data is sourced from QuantConnect-approved API/export paths and displays stale-data warnings.
+- [x] **DASH-05**: Dashboard displays portfolio values in USD and NIS and shows FX timestamp/source/staleness warnings.
+- [x] **DASH-06**: Dashboard masks secrets and presents API/cache/authentication errors safely.
+- [x] **DASH-07**: Dashboard tests cover API parsing, caching, stale data, authentication, read-only behavior, error presentation, and secret masking.
 
 ### CI/CD, Documentation, And Release
 
@@ -176,7 +176,7 @@ Deferred to future releases and not part of the v1 roadmap:
 | QC-02 | Phase 2 | Pending |
 | QC-03 | Phase 2 | Pending |
 | QC-04 | Phase 2 | Pending |
-| QC-05 | Phase 9 | Pending |
+| QC-05 | Phase 9 | Complete |
 | UNI-01 | Phase 2 | Pending |
 | UNI-02 | Phase 2 | Pending |
 | UNI-03 | Phase 2 | Pending |
@@ -239,13 +239,13 @@ Deferred to future releases and not part of the v1 roadmap:
 | TEL-04 | Phase 8 | Complete |
 | TEL-05 | Phase 8 | Complete |
 | TEL-06 | Phase 8 | Complete |
-| DASH-01 | Phase 9 | Pending |
-| DASH-02 | Phase 9 | Pending |
-| DASH-03 | Phase 9 | Pending |
-| DASH-04 | Phase 9 | Pending |
-| DASH-05 | Phase 9 | Pending |
-| DASH-06 | Phase 9 | Pending |
-| DASH-07 | Phase 9 | Pending |
+| DASH-01 | Phase 9 | Complete |
+| DASH-02 | Phase 9 | Complete |
+| DASH-03 | Phase 9 | Complete |
+| DASH-04 | Phase 9 | Complete |
+| DASH-05 | Phase 9 | Complete |
+| DASH-06 | Phase 9 | Complete |
+| DASH-07 | Phase 9 | Complete |
 | CI-01 | Phase 10 | Complete |
 | CI-02 | Phase 10 | Complete |
 | CI-03 | Phase 10 | Complete |
@@ -261,4 +261,4 @@ Deferred to future releases and not part of the v1 roadmap:
 
 ---
 *Requirements defined: 2026-06-12*
-*Last updated: 2026-06-15 after Phase 10 release gate completion*
+*Last updated: 2026-06-15 after Phase 9 dashboard runtime-source gap closure*

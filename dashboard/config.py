@@ -9,7 +9,7 @@ from typing import Mapping
 
 import yaml
 
-from .redaction import REDACTED
+from .redaction import REDACTED, looks_secret_key
 
 
 DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[1] / "config" / "dashboard.yaml"
@@ -45,11 +45,15 @@ class DashboardConfig:
     stale_warning_seconds: int = 600
     stale_error_seconds: int = 1800
     gentle_poll_seconds: int = 120
+    data_source_kind: str = "none"
+    data_source_path: str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "trading_currency", self.trading_currency.strip().upper())
         object.__setattr__(self, "display_currency", self.display_currency.strip().upper())
         object.__setattr__(self, "password_env_var", self.password_env_var.strip().upper())
+        object.__setattr__(self, "data_source_kind", self.data_source_kind.strip().lower())
+        object.__setattr__(self, "data_source_path", _blank_to_none(self.data_source_path))
         if self.paper_trading_only is not True:
             raise ValueError("dashboard.paper_trading_only must be true.")
         if self.read_only is not True:
@@ -76,6 +80,7 @@ class DashboardConfig:
             raise ValueError("dashboard.stale_error_seconds must exceed stale_warning_seconds.")
         if self.gentle_poll_seconds <= 0:
             raise ValueError("dashboard.gentle_poll_seconds must be positive.")
+        _validate_data_source(self.data_source_kind, self.data_source_path)
 
     def to_safe_dict(self) -> dict[str, object]:
         return {
@@ -93,6 +98,8 @@ class DashboardConfig:
             "stale_warning_seconds": self.stale_warning_seconds,
             "stale_error_seconds": self.stale_error_seconds,
             "gentle_poll_seconds": self.gentle_poll_seconds,
+            "data_source_kind": self.data_source_kind,
+            "data_source_path": self.data_source_path,
         }
 
     def __repr__(self) -> str:
@@ -133,6 +140,8 @@ def load_dashboard_config(
         stale_warning_seconds=int(raw.get("stale_warning_seconds", 600)),
         stale_error_seconds=int(raw.get("stale_error_seconds", 1800)),
         gentle_poll_seconds=int(raw.get("gentle_poll_seconds", 120)),
+        data_source_kind=str(raw.get("data_source_kind", "none") or "none"),
+        data_source_path=_blank_to_none(raw.get("data_source_path")),
     )
 
 
@@ -148,3 +157,21 @@ def _reject_raw_password_fields(raw: Mapping[str, object]) -> None:
         normalized = str(key).strip().replace("-", "_").lower()
         if normalized in {"password", "dashboard_password", "auth_password"}:
             raise ValueError("dashboard password must come from an external environment variable.")
+
+
+def _validate_data_source(kind: str, path: str | None) -> None:
+    if kind not in {"none", "local_json"}:
+        raise ValueError("dashboard.data_source_kind must be none or local_json.")
+    if kind == "none":
+        if path is not None:
+            raise ValueError("dashboard.data_source_path must be empty when data_source_kind is none.")
+        return
+    if not path:
+        raise ValueError("dashboard.data_source_path is required for local_json sources.")
+    lowered = path.lower()
+    if "://" in lowered:
+        raise ValueError("dashboard.data_source_path must be a local/export path, not a remote URL.")
+    if "=" in path or any(looks_secret_key(part) for part in path.replace("\\", "/").split("/")):
+        raise ValueError("dashboard.data_source_path must not contain secret-like values.")
+    if ".." in Path(path).parts:
+        raise ValueError("dashboard.data_source_path must not contain parent-directory traversal.")

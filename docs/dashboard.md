@@ -144,6 +144,28 @@ Mutation paths are forbidden for the dashboard boundary, including live create,
 update, stop, order create/cancel/update, project update, backtest create, and
 Object Store set/delete paths.
 
+## Runtime Data Source
+
+The Streamlit app loads dashboard data through `load_dashboard_snapshot()` after
+authentication. The default configuration uses `data_source_kind: none`, which
+returns an explicit `not_configured` dashboard state with reason
+`dashboard_data_source`.
+
+For an approved local/export JSON source, set:
+
+```yaml
+dashboard:
+  data_source_kind: local_json
+  data_source_path: path/to/dashboard-export.json
+```
+
+The configured file must be a read-only dashboard export payload using the same
+typed DTO contract as the deterministic dashboard fixtures. Missing files render
+`not_available`; malformed files render `error`; both paths are safe degraded
+states and must not crash the dashboard. Remote URLs, mutation/write-like source
+kinds, parent-directory traversal, and secret-like path values are rejected by
+configuration validation.
+
 ## Fixtures
 
 Deterministic fixtures are test-only and must carry an explicit fixture label.

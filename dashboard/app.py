@@ -1,7 +1,9 @@
 """Thin Streamlit composition layer for the read-only dashboard shell."""
 
+from datetime import datetime, timezone
+
 from dashboard.auth import AuthStatus, DashboardAuth, authenticate_dashboard
-from dashboard.data import DashboardDataClient
+from dashboard.data import load_dashboard_snapshot
 from dashboard.pages import PAGE_REGISTRY, render_page
 from dashboard.config import load_dashboard_config
 from dashboard.safety_view import build_dashboard_shell
@@ -37,7 +39,7 @@ def main() -> None:
     if not shell.data_visible:
         return
 
-    snapshot = DashboardDataClient.not_configured(missing=("dashboard_data_source",))
+    snapshot = load_dashboard_snapshot(config, now=datetime.now(timezone.utc))
     selected = st.tabs([page.title for page in PAGE_REGISTRY])
     for tab, page in zip(selected, PAGE_REGISTRY):
         with tab:

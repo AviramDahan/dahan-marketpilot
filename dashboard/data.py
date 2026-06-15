@@ -2,16 +2,20 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from decimal import Decimal
+from pathlib import Path
 from typing import Mapping
 
+from .config import DashboardConfig
 from .models import (
     DashboardAuthority,
     DashboardCollectionSection,
     DashboardFreshnessStatus,
     DashboardHolding,
     DashboardPortfolioSection,
+    DashboardSectionError,
     DashboardSectionStatus,
     DashboardSnapshot,
     DashboardSourceMetadata,
@@ -164,8 +168,86 @@ class DashboardDataClient:
         )
 
 
+def load_dashboard_snapshot(config: DashboardConfig, *, now: datetime) -> DashboardSnapshot:
+    """Load the configured read-only dashboard snapshot or return an honest degraded state."""
+
+    if config.data_source_kind == "none":
+        return DashboardDataClient.not_configured(missing=("dashboard_data_source",))
+
+    if config.data_source_kind == "local_json":
+        return _load_local_json_snapshot(config.data_source_path, cache_timestamp=now)
+
+    return _source_error(
+        code="dashboard_source_not_configured",
+        message="Unsupported dashboard data source kind.",
+        reason="dashboard_data_source",
+    )
+
+
 def _collection(status: DashboardSectionStatus, *reasons: str) -> DashboardCollectionSection:
     return DashboardCollectionSection(status=status, reasons=tuple(reasons))
+
+
+def _load_local_json_snapshot(path_value: str | None, *, cache_timestamp: datetime) -> DashboardSnapshot:
+    if not path_value:
+        return DashboardDataClient.not_configured(missing=("dashboard_data_source",))
+    path = Path(path_value)
+    if not path.exists():
+        return _source_error(
+            code="dashboard_source_missing",
+            message=f"Dashboard data source is not available: {path}",
+            reason="missing_dashboard_data_source",
+            status=DashboardSectionStatus.NOT_AVAILABLE,
+        )
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+        if not isinstance(payload, Mapping):
+            raise ValueError("dashboard source root must be a mapping")
+        return DashboardDataClient.from_quantconnect_portfolio_fixture(
+            payload,
+            cache_timestamp=cache_timestamp,
+        )
+    except Exception as exc:
+        return _source_error(
+            code="dashboard_source_error",
+            message=f"Dashboard data source read failed: {exc}",
+            reason="dashboard_source_error",
+            status=DashboardSectionStatus.ERROR,
+        )
+
+
+def _source_error(
+    *,
+    code: str,
+    message: str,
+    reason: str,
+    status: DashboardSectionStatus = DashboardSectionStatus.ERROR,
+) -> DashboardSnapshot:
+    error = DashboardSectionError(code=code, message=message)
+    metadata = DashboardSourceMetadata(
+        source="dashboard_runtime_source",
+        source_timestamp=None,
+        cache_timestamp=None,
+        freshness_status=DashboardFreshnessStatus.UNKNOWN,
+        authority=DashboardAuthority.AUTHORITATIVE,
+        reasons=(reason,),
+    )
+    portfolio = DashboardPortfolioSection(status=status, reasons=(reason,), errors=(error,))
+    section = DashboardCollectionSection(status=status, reasons=(reason,), errors=(error,))
+    return DashboardSnapshot(
+        source_metadata=metadata,
+        portfolio=portfolio,
+        positions=section,
+        trades=section,
+        signals=section,
+        backtests=section,
+        strategies=section,
+        risk=section,
+        notifications=section,
+        activity=section,
+        system=section,
+    )
 
 
 def _parse_holding(payload: Mapping[str, object]) -> DashboardHolding:

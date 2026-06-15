@@ -41,6 +41,23 @@ FX display is also display-only. USD remains the source/accounting currency.
 NIS display requires FX rate, source, timestamp, and freshness metadata; missing
 or stale FX marks NIS unavailable/stale.
 
+## Runtime Data Source
+
+The Render dashboard uses the same read-only runtime source loader as local
+Streamlit. By default, `config/dashboard.yaml` sets `data_source_kind: none`,
+so authenticated users see a clear `not_configured` state until a dashboard
+export source is configured.
+
+Supported Phase 9 runtime source:
+
+- `local_json` - a read-only dashboard export JSON file available to the Render
+  service filesystem.
+
+The source path is configuration, not a credential. It must not contain tokens,
+passwords, account IDs, parent-directory traversal, remote URLs, deploy hooks,
+or mutation/write semantics. Missing or malformed sources render degraded
+dashboard states instead of crashing the Streamlit app.
+
 ## Environment Variables
 
 Set these values in Render as environment variables or Blueprint prompts. Store
