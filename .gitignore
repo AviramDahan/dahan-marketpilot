@@ -1,4 +1,4 @@
-# Python
+# Python bytecode (machine-specific, regenerated)
 __pycache__/
 *.py[cod]
 *.pyo
@@ -12,30 +12,19 @@ build/
 dist/
 *.egg-info/
 
-# Virtual environments
+# Virtual environments (machine-specific)
 .venv/
 venv/
 env/
 
-# Secrets and local environment
+# Secrets ONLY (never commit credentials)
 .env
 .env.*
 !.env.example
 secrets.toml
 .streamlit/secrets.toml
 lean/credentials.json
-lean/data/
-lean/storage/
-lean.json
-data/
 
-# Generated reports and artifacts
-reports/generated/
-*.log
-.planning/research/.cache/
-
-# OS and editor
+# OS artifacts
 .DS_Store
 Thumbs.db
-.vscode/
-.idea/
