@@ -29,7 +29,7 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
 ### v1.1 QuantConnect Live Paper Trading
 
-- [ ] **Phase 13: QC API Client & Safety Foundation** — Authenticated API client with defense-in-depth paper-only safety
+- [x] **Phase 13: QC API Client & Safety Foundation** — Authenticated API client with defense-in-depth paper-only safety (completed 2026-06-15)
 - [ ] **Phase 14: Data Sync & Dashboard Integration** — Reliable portfolio sync from QC with freshness-aware dashboard display
 - [ ] **Phase 15: Paper Trading & Order Flow** — Signal delivery to live algorithm with full fill tracking and audit trail
 - [ ] **Phase 16: Production Scheduler** — Autonomous market-hours pipeline execution with fault tolerance
@@ -39,7 +39,7 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
 | Phase | Name | Goal | Requirements | Plans (est.) |
 |-------|------|------|--------------|--------------|
-| 13 | QC API Client & Safety Foundation | Authenticate and communicate with QC REST API; block all real-money paths | API-01..05, SAFE-01, SAFE-02 | 4 |
+| 13 | QC API Client & Safety Foundation | 4/4 | Complete   | 2026-06-15 |
 | 14 | Data Sync & Dashboard Integration | Sync QC portfolio state and display with freshness guarantees | SYNC-01..06, DASH-01..05, SAFE-04 | 5 |
 | 15 | Paper Trading & Order Flow | Deliver signals to running algorithm; track fills with audit traceability | PTD-01..05, FT-01..04, SAFE-05 | 5 |
 | 16 | Production Scheduler | Run pipeline autonomously on NYSE schedule with fault tolerance | SCHED-01..06, SAFE-03 | 4 |
@@ -56,18 +56,20 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 **Requirements:** API-01, API-02, API-03, API-04, API-05, SAFE-01, SAFE-02
 
 **Success Criteria** (what must be TRUE):
+
 1. API client authenticates to QC and retrieves account/project info successfully
 2. Any attempt to call a live/real-money endpoint is refused with explicit error before the request leaves the process
 3. API calls automatically retry with exponential backoff + jitter on transient failures; rate limits are respected
 4. No credentials appear in any log output, error message, or committed file (detect-secrets hook active)
 
-**Plans:** 4 plans
+**Plans:** 4/4 plans complete
 
 Plans:
-- [ ] 13-01-PLAN.md — Dependencies and pre-commit hooks (detect-secrets, PAPER_TRADING_ONLY guard)
-- [ ] 13-02-PLAN.md — QCApiClient core (HMAC auth, safety gate, retry, credential redaction)
-- [ ] 13-03-PLAN.md — Typed endpoint wrappers (7 methods for live/backtest APIs)
-- [ ] 13-04-PLAN.md — Test suite with fixtures and meta-tests
+
+- [x] 13-01-PLAN.md — Dependencies and pre-commit hooks (detect-secrets, PAPER_TRADING_ONLY guard)
+- [x] 13-02-PLAN.md — QCApiClient core (HMAC auth, safety gate, retry, credential redaction)
+- [x] 13-03-PLAN.md — Typed endpoint wrappers (7 methods for live/backtest APIs)
+- [x] 13-04-PLAN.md — Test suite with fixtures and meta-tests
 
 ---
 
@@ -80,6 +82,7 @@ Plans:
 **Requirements:** SYNC-01, SYNC-02, SYNC-03, SYNC-04, SYNC-05, SYNC-06, DASH-01, DASH-02, DASH-03, DASH-04, DASH-05, SAFE-04
 
 **Success Criteria** (what must be TRUE):
+
 1. Dashboard displays current QC portfolio state (holdings, cash, P&L) refreshed approximately every 5 minutes during market hours
 2. Data older than 10 minutes shows visible stale warning; data older than 30 minutes shows strong error state
 3. Discrepancies between local mirror and QC authoritative state trigger Telegram SYNC_DISCREPANCY alert without auto-correcting
@@ -100,6 +103,7 @@ Plans:
 **Requirements:** PTD-01, PTD-02, PTD-03, PTD-04, PTD-05, FT-01, FT-02, FT-03, FT-04, SAFE-05
 
 **Success Criteria** (what must be TRUE):
+
 1. A paper trading algorithm can be deployed to QC Cloud and receive signal commands via Commands API without redeployment
 2. Signal-to-order-to-fill chain is fully traceable in the append-only audit journal
 3. Partial fills, order rejections, and their reasons are tracked and queryable
@@ -119,6 +123,7 @@ Plans:
 **Requirements:** SCHED-01, SCHED-02, SCHED-03, SCHED-04, SCHED-05, SCHED-06, SAFE-03
 
 **Success Criteria** (what must be TRUE):
+
 1. Pipeline triggers automatically on NYSE market schedule (ET timezone, DST-aware) via APScheduler in Render Background Worker
 2. Concurrent/overlapping runs are prevented via file lock; each run is idempotent and catch-up capable
 3. Upstream job failure skips downstream dependent jobs with logged reason and appropriate alert
@@ -138,6 +143,7 @@ Plans:
 **Requirements:** MTF-01, MTF-02, MTF-03, MTF-04, MTF-05
 
 **Success Criteria** (what must be TRUE):
+
 1. System runs comparative backtests across all three strategy modes (daily_only, daily_filter_4h_setup, daily_filter_4h_setup_1h_optional) via QC Cloud API
 2. Reports include Sharpe, drawdown, win rate, and mode-vs-mode divergence metrics with configuration/version metadata
 3. Material regressions trigger alerts but never automatically approve strategies, change modes, or submit orders
