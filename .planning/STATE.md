@@ -1,35 +1,36 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: Paper Trading Research Platform
-status: completed
-stopped_at: Milestone v1.0 archived
-last_updated: "2026-06-15T22:00:00.000Z"
+milestone: v1.1
+milestone_name: QuantConnect Live Paper Trading
+status: planning
+stopped_at: Defining requirements
+last_updated: "2026-06-15T23:00:00.000Z"
 last_activity: 2026-06-15
 progress:
-  total_phases: 12
-  completed_phases: 12
-  total_plans: 53
-  completed_plans: 53
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-15 after v1.0 milestone)
+See: .planning/PROJECT.md (updated 2026-06-15)
 
 **Core value:** The system must provide an auditable paper-only swing-trading workflow where every signal, backtest, paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
-**Current focus:** v1.0 milestone complete. Start next milestone with `/gsd-new-milestone`.
+**Current focus:** Defining requirements for v1.1 — QuantConnect Live Paper Trading
 
 ## Current Position
 
-Milestone: v1.0 — SHIPPED 2026-06-15
-Status: Complete and archived
-Tests: 433 passing | Requirements: 88/91 satisfied
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-06-15 — Milestone v1.1 started
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 

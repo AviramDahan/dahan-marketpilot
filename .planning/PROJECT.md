@@ -32,7 +32,7 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 
 ### Active
 
-(None — start next milestone with `/gsd-new-milestone`)
+(Defined in REQUIREMENTS.md for milestone v1.1)
 
 ### Out of Scope
 
@@ -125,6 +125,16 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 **Codebase:** ~13,125 LOC Python | 433 tests passing | 12 phases, 53 plans
 **Stack:** Python 3.12, QuantConnect LEAN, Streamlit, Telegram, GitHub Actions
 **Milestone:** v1.0 complete and archived. See `.planning/MILESTONES.md`.
+
+## Current Milestone: v1.1 QuantConnect Live Paper Trading
+
+**Goal:** Connect the research platform to QuantConnect for autonomous paper trade execution with data integrity and scheduling.
+
+**Target features:**
+- QC Live API Connector (submit orders, manage algorithm, receive fills)
+- Data Sync & Reconciliation (portfolio sync, discrepancy detection)
+- MTF Backtest Validation (comparative multi-timeframe backtests)
+- Production Scheduler (cron-based pipeline execution on market hours)
 
 ## Deferred Future Setup Ideas
 
