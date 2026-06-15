@@ -35,6 +35,7 @@ class DashboardAuthority(str, Enum):
 class DashboardFreshnessStatus(str, Enum):
     FRESH = "fresh"
     STALE = "stale"
+    ERROR = "error"
     UNKNOWN = "unknown"
 
 
