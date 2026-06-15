@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready for milestone verification
-stopped_at: Verified 10-ci-cd-security-and-release
-last_updated: "2026-06-15T14:08:32.913Z"
-last_activity: 2026-06-15 -- Phase 10 verification passed
+status: Milestone audit gaps found
+stopped_at: Updated v1.0 milestone audit
+last_updated: "2026-06-15T14:15:53.386Z"
+last_activity: 2026-06-15 -- Milestone audit found runtime integration gaps
 progress:
   total_phases: 11
   completed_phases: 11
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-14)
 
 **Core value:** The system must provide an auditable paper-only swing-trading workflow where every signal, backtest, paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
-**Current focus:** Milestone verification after Phase 10 verification
+**Current focus:** Runtime integration gap closure after milestone audit
 
 ## Current Position
 
 Phase: 10 of 11 (CI/CD, Security, and Release)
 Plan: 4 of 4
-Status: Phase 10 verification complete; ready for milestone verification
-Last activity: 2026-06-15 -- Phase 10 verification passed
+Status: Milestone audit complete with gaps_found; runtime integration closure required
+Last activity: 2026-06-15 -- Milestone audit found runtime integration gaps
 
 Progress: [██████████] 100%
 
@@ -59,7 +59,7 @@ Progress: [██████████] 100%
 **Recent Trend:**
 
 - Last 5 plans: 10-01, 10-02, 10-03, 10-04, 09-08
-- Trend: Phase 10 verification passed after Phase 09 dashboard runtime-source gap closure
+- Trend: Phase verification is complete, but milestone audit found runtime integration gaps before archive
 
 *Updated after each plan completion*
 | Phase 04 P01 | 6 min | 2 tasks | 4 files |
@@ -160,7 +160,9 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None yet.
+- Close runtime orchestrator gap: QuantConnect data -> setup evaluation -> scoring/ranking -> risk/order lifecycle -> paper reconciliation -> Telegram -> dashboard.
+- Close LEAN bridge gap: wire `lean/main.py` to safe MarketPilot strategy/runtime contracts without adding any real-money path.
+- Close dashboard source gap: add an approved QuantConnect Object Store/API/export producer or fetcher for read-only dashboard runtime data.
 
 ### Blockers/Concerns
 
