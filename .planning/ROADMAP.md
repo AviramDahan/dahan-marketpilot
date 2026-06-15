@@ -24,6 +24,7 @@ Dahan MarketPilot v1 is planned as a safety-first sequence. The project starts w
 - [x] **Phase 8: QuantConnect Paper Trading and Telegram** - Add gated paper modes, QuantConnect Paper Trading deployment design, reconciliation, recovery, and Telegram delivery. (completed 2026-06-14)
 - [x] **Phase 9: Render Dashboard** - Add read-only mobile Streamlit dashboard backed by QuantConnect-sourced data, caching, auth, stale-data handling, and system health. (completed 2026-06-15)
 - [x] **Phase 10: CI/CD, Security and Release** - Add workflows, weekly validation, dashboard health, security review, operations docs, recovery docs, final audit, and release preparation. (completed 2026-06-15)
+- [ ] **Phase 10.1: Close gap: runtime orchestrator for strategy-to-paper E2E flow** - Inserted milestone-audit closure phase to connect the runtime strategy pipeline end to end. (INSERTED)
 
 ## Phase Details
 
@@ -376,10 +377,21 @@ Plans:
 
 - [x] 10-04-PLAN.md - Final release audit, traceability, licensing/attribution review, and handoff.
 
+### Phase 10.1: Close gap: runtime orchestrator for strategy-to-paper E2E flow (INSERTED)
+
+**Goal:** Close the milestone audit runtime integration gap by planning and implementing a safe strategy-to-paper orchestrator that connects QuantConnect-authoritative data, setup evidence, scoring/ranking, risk/order lifecycle, Paper Trading reconciliation, Telegram notification-domain events, and dashboard export evidence without adding any real-money path.
+**Depends on:** Phase 10
+**Requirements**: QC-03, UNI-01..UNI-05, REG-01..REG-03, IND-01..IND-05, SET-01, SET-02, SET-05, SET-07, MODE-01..MODE-03, TF-01..TF-07, SCO-01..SCO-04, RISK-01..RISK-07, BT-01, TEL-01..TEL-03, DASH-04
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 10.1 to break down)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10.
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 10.1.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -394,3 +406,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 
 | 8. QuantConnect Paper Trading and Telegram | 4/4 | Complete    | 2026-06-14 |
 | 9. Render Dashboard | 8/8 | Complete   | 2026-06-15 |
 | 10. CI/CD, Security and Release | 4/4 | Complete   | 2026-06-15 |
+| 10.1. Close gap: runtime orchestrator for strategy-to-paper E2E flow | 0/0 | Inserted / Not Planned | - |
