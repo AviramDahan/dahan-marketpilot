@@ -14,24 +14,25 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 
 ### Validated
 
-- Phase 1 established repository foundation files, MIT licensing, attribution tracking, disclaimer, setup/config/testing docs, and AI collaboration instructions.
-- Phase 1 implemented central paper-only safety validation, safe YAML loading, FX seed calculation, and deterministic offline tests.
-- Phase 1 added safe foundational models and tests that protect required project safety files.
-- Phase 1 added a minimal non-trading QuantConnect shell and read-only dashboard shell with static safety tests.
-- Phase 4.1 implemented the multi-timeframe signal foundation: central StrategyMode config, timeframe-aware completed-bar contracts, generalized setup timing metadata, MTF setup evidence, deterministic tests, and synchronized documentation.
-- Phase 5 implemented Relative Strength Leader, MarketPilot Score, audit classifications, confidence, setup ranking, one-candidate-per-symbol behavior, and disabled Combined Swing readiness.
-- Phase 6 implemented portfolio risk constraints, risk-based position sizing, order lifecycle intent models, duplicate prevention, exit obligations, append-only audit journal, restart recovery placeholders, and transport-neutral notification-domain events.
+- ✓ Repository foundation, MIT licensing, attribution, disclaimer, setup/config/testing docs — v1.0
+- ✓ Central paper-only safety validation, safe YAML loading, FX seed calculation — v1.0
+- ✓ Foundational domain models protecting safety files — v1.0
+- ✓ Minimal non-trading QuantConnect shell and read-only dashboard shell — v1.0
+- ✓ Dynamic universe selection, market regime, indicators, data quality — v1.0
+- ✓ Trend Pullback setup with evidence, rejections, scoring — v1.0
+- ✓ Volume Breakout with prior-resistance, current-bar exclusion, volume confirmation — v1.0
+- ✓ Multi-timeframe signal foundation (StrategyMode, completed-bar contracts, MTF evidence) — v1.0
+- ✓ Relative Strength Leader, MarketPilot Score, ranking, classifications — v1.0
+- ✓ Portfolio risk constraints, position sizing, order lifecycle, notification events — v1.0
+- ✓ Backtesting with no-look-ahead, chronological validation, activation gates — v1.0
+- ✓ QuantConnect Paper Trading design, gated modes, reconciliation, Telegram delivery — v1.0
+- ✓ Read-only Render Streamlit dashboard with auth, caching, stale-data handling — v1.0
+- ✓ CI/CD workflows, security review, release audit, operational documentation — v1.0
+- ✓ Runtime orchestrator connecting full pipeline end-to-end (Phase 10.1) — v1.0
 
 ### Active
 
-- [x] Establish a repository foundation with licensing, attribution, disclaimer, AGENTS.md, and GSD planning context.
-- [x] Enforce simulated Paper Trading only through central safety configuration and validation.
-- [ ] Use QuantConnect LEAN and QuantConnect Cloud as the authoritative engine for backtests and Paper Trading state.
-- [ ] Build long-only US-equity swing strategies with dynamic universe selection, market regime controls, transparent scoring, no look-ahead behavior, and controlled strategy modes for daily-only and Daily/4H/optional-1H evidence.
-- [ ] Validate strategies with realistic backtesting, chronological validation, explicit fees/slippage, activation gates, and non-fabricated artifacts.
-- [ ] Send Telegram alerts for configured signals, paper orders, fills, stops, targets, regime changes, daily summaries, and system incidents without letting notification failures compromise trading safety.
-- [ ] Provide a password-protected, mobile-friendly, read-only Render Streamlit dashboard that displays QuantConnect-sourced paper state in USD and NIS.
-- [ ] Maintain complete audit trails, reports, tests, and operational documentation.
+(None — start next milestone with `/gsd-new-milestone`)
 
 ### Out of Scope
 
@@ -117,6 +118,13 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 - Final 4H alignment safety after implementation tests and backtesting.
 - Whether a 2H alternative is justified if 4H alignment proves unsafe or too sparse.
 - MTF score weights and thresholds; these must wait for backtesting and sensitivity validation.
+
+## Current State
+
+**Shipped:** v1.0 (2026-06-15)
+**Codebase:** ~13,125 LOC Python | 433 tests passing | 12 phases, 53 plans
+**Stack:** Python 3.12, QuantConnect LEAN, Streamlit, Telegram, GitHub Actions
+**Milestone:** v1.0 complete and archived. See `.planning/MILESTONES.md`.
 
 ## Deferred Future Setup Ideas
 
