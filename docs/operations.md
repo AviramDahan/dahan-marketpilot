@@ -93,3 +93,34 @@ QuantConnect, Telegram, or broker state.
 - Dashboard health is `passed`, `skipped`, or `not_run` with reason.
 - `SECURITY_REVIEW.md` and phase summaries are synchronized with the actual
   workflow behavior.
+
+## Runtime Pipeline (Phase 10.1)
+
+The runtime orchestrator (`marketpilot/runtime_orchestrator.py`) composes:
+
+1. Setup evaluation (Trend Pullback, Volume Breakout, Relative Strength)
+2. Scoring and ranking
+3. Risk sizing and portfolio constraints
+4. Order intent generation
+5. Notification-domain event emission
+
+Safety invariants:
+
+- The pipeline is **pure and side-effect-free**; it returns a result and events
+  but does not submit orders, call APIs, or mutate external state.
+- QuantConnect is the **sole authoritative source** for Paper portfolio.
+- Telegram delivery success or failure **cannot** affect trading, exits,
+  reconciliation, recovery, or safety decisions.
+- Dashboard export is **read-only** and non-authoritative.
+- All notification events carry `controls_safety_logic=False` and
+  `delivery_required_for_safety=False`.
+
+External checks (`not_run` boundaries):
+
+- QuantConnect Cloud sync, backtest, and Paper Trading deployment require
+  operator approval and external credentials.
+- Telegram delivery requires externally supplied bot token and chat ID.
+- Dashboard health requires externally configured URL.
+
+None of these external dependencies are simulated, faked, or claimed as
+passed when they have not actually executed.

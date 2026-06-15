@@ -196,6 +196,36 @@ windows, chronological validation, sensitivity analysis, SPY/QQQ benchmark
 comparison, activation gates, report generation, preview notifications, and
 artifact safety.
 
+## Phase 10.1 Runtime Integration Tests
+
+Phase 10.1 closes the strategy-to-paper E2E flow gap identified by milestone
+audit. Tests are deterministic and offline. Run:
+
+```powershell
+python -m pytest tests/test_runtime_orchestrator.py tests/test_runtime_reconciliation_gate.py tests/test_lean_runtime_bridge_static.py tests/test_dashboard_object_store_source.py tests/test_runtime_notification_emission.py -q
+```
+
+Current Phase 10.1 suites:
+
+- `tests/test_runtime_orchestrator.py`
+- `tests/test_runtime_reconciliation_gate.py`
+- `tests/test_lean_runtime_bridge_static.py`
+- `tests/test_dashboard_object_store_source.py`
+- `tests/test_runtime_notification_emission.py`
+
+These tests cover the runtime orchestrator pipeline (setup → scoring → ranking →
+risk → order intents), reconciliation gate decisions, static LEAN bridge safety,
+dashboard Object Store source/loader, and runtime notification emission with
+Telegram failure isolation.
+
+Key safety invariants proven:
+
+- Runtime pipeline is pure and side-effect-free.
+- Telegram delivery success/failure cannot affect trading, exits,
+  reconciliation, recovery, or safety decisions.
+- Dashboard export is read-only and non-authoritative.
+- QuantConnect remains the sole authoritative source for Paper portfolio state.
+
 ## Security Release Gates
 
 Phase 10 security release gates are deterministic and offline. Run:
