@@ -593,6 +593,7 @@ def test_qc_object_store_smoke_refuses_without_enable_flag(monkeypatch):
         module.run_smoke(
             command_label="object_store_signal_probe",
             dry_run=True,
+            diagnose_only=False,
             deploy=False,
             cleanup=True,
             file_name="main.py",
@@ -614,6 +615,7 @@ def test_qc_object_store_smoke_dry_run_is_sanitized(monkeypatch):
     result = module.run_smoke(
         command_label="object_store_signal_probe",
         dry_run=True,
+        diagnose_only=False,
         deploy=False,
         cleanup=True,
         file_name="main.py",
@@ -631,6 +633,103 @@ def test_qc_object_store_smoke_dry_run_is_sanitized(monkeypatch):
     assert result["signal_preview"]["paper_trading_only"] is True
     assert result["environment"]["QUANTCONNECT_API_TOKEN"] == "configured_redacted"
     assert "SECRET-TOKEN-DO-NOT-PRINT" not in rendered
+
+
+def test_qc_object_store_smoke_skips_deploy_when_preflight_fails(monkeypatch):
+    module = _load_qc_object_store_smoke_module()
+
+    class FakeClient:
+        def __init__(self):
+            self.compile_calls = 0
+            self.deploy_calls = 0
+
+        def discover_organization_id(self):
+            return "org-1"
+
+        def upload_object_store_file(self, **_kwargs):
+            return {"success": False, "errors": ["Organization not found"]}
+
+        def read_object_store_metadata(self, **_kwargs):
+            return {"success": False, "errors": ["File not found"]}
+
+        def create_compile(self, **_kwargs):
+            self.compile_calls += 1
+            raise AssertionError("compile should be skipped")
+
+        def create_live_algorithm(self, **_kwargs):
+            self.deploy_calls += 1
+            raise AssertionError("deploy should be skipped")
+
+    fake = FakeClient()
+    monkeypatch.setenv("MARKETPILOT_QC_OBJECT_STORE_SMOKE_ENABLED", "1")
+    monkeypatch.setenv("QC_PROJECT_ID", "32900381")
+    with patch.object(module, "QCApiClient", return_value=fake):
+        result = module.run_smoke(
+            command_label="object_store_signal_probe",
+            dry_run=False,
+            diagnose_only=False,
+            deploy=True,
+            cleanup=True,
+            file_name="main.py",
+            restore_original=True,
+            compile_polls=1,
+            compile_poll_seconds=0,
+            polls=1,
+            poll_seconds=0,
+        )
+
+    assert result["status"] == "blocked_external_object_store_permission_or_paid_tier_required"
+    assert result["deploy_skipped"] is True
+    assert result["object_store_preflight"]["write_available"] is False
+    assert fake.compile_calls == 0
+    assert fake.deploy_calls == 0
+
+
+def test_qc_object_store_smoke_diagnose_only_cleans_created_probe(monkeypatch):
+    module = _load_qc_object_store_smoke_module()
+
+    class FakeClient:
+        def __init__(self):
+            self.deleted = False
+
+        def discover_organization_id(self):
+            return "org-1"
+
+        def upload_object_store_file(self, **_kwargs):
+            return {"success": True}
+
+        def read_object_store_metadata(self, **_kwargs):
+            return {"success": True, "size": 42}
+
+        def delete_object_store_file(self, **_kwargs):
+            self.deleted = True
+            return True
+
+        def read_project_file(self, **_kwargs):
+            raise AssertionError("diagnose-only should not read project files")
+
+    fake = FakeClient()
+    monkeypatch.setenv("MARKETPILOT_QC_OBJECT_STORE_SMOKE_ENABLED", "1")
+    monkeypatch.setenv("QC_PROJECT_ID", "32900381")
+    with patch.object(module, "QCApiClient", return_value=fake):
+        result = module.run_smoke(
+            command_label="object_store_signal_probe",
+            dry_run=False,
+            diagnose_only=True,
+            deploy=True,
+            cleanup=True,
+            file_name="main.py",
+            restore_original=True,
+            compile_polls=1,
+            compile_poll_seconds=0,
+            polls=1,
+            poll_seconds=0,
+        )
+
+    assert result["status"] == "object_store_write_available"
+    assert result["object_store_preflight"]["object_properties"]["success"] is True
+    assert result["cleanup_success"] is True
+    assert fake.deleted is True
 
 
 def test_create_live_algorithm_hardcodes_paper_brokerage():

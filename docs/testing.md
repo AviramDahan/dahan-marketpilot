@@ -334,3 +334,18 @@ successfully. The Object Store upload itself returned `Organization not found`
 for the active organization id, so no Object Store algorithm receipt, order,
 fill, or rejection evidence is claimed. Record this status as
 `blocked_external_object_store_write_not_verified`.
+
+Phase 15-09 adds a safer Object Store preflight. Use diagnose-only before any
+full fallback smoke:
+
+```powershell
+$env:MARKETPILOT_QC_OBJECT_STORE_SMOKE_ENABLED="1"
+python scripts\qc_object_store_signal_smoke.py --diagnose-only --skip-deploy
+```
+
+Credentialed Phase 15-09 evidence: diagnose-only returned
+`blocked_external_object_store_permission_or_paid_tier_required` with
+`Organization not found` from `/object/set`. The run did not compile, deploy,
+send commands, poll logs, or poll orders. Resolve QuantConnect organization
+Object Store permission or paid-tier access before rerunning the full Object
+Store fallback smoke.

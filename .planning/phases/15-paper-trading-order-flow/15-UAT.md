@@ -18,6 +18,7 @@ SIMULATED PAPER TRADING ONLY - NOT FINANCIAL ADVICE.
 | Real QuantConnect paper command/order smoke | blocked_external_callback_not_verified | Phase 15-06 synced the callback-tolerant receiver, compiled successfully, deployed to Paper, and `/live/commands/create` returned success for `typed_order_command_probe`. However, no `on_command` debug log and no live order appeared after polling, so command callback/order execution is not externally verified. |
 | Phase 15-07 command-dispatch diagnosis tooling | blocked_external_dispatch_not_observed | Added a guarded no-order dispatch probe, official generic command payload alignment, and sanitized command receipt evidence. Credentialed external run compiled and deployed an echo probe, and command API returned success, but no dispatch marker appeared in live logs. |
 | Phase 15-08 Object Store fallback tooling | blocked_external_object_store_write_not_verified | Added guarded Object Store API wrappers, Object Store signal smoke runner, and LEAN Object Store polling through shared validation. External compile/deploy succeeded, but `/object/set` returned `Organization not found`; no algorithm receipt or order evidence is claimed. |
+| Phase 15-09 Object Store preflight diagnostics | blocked_external_object_store_permission_or_paid_tier_required | Reordered the Object Store smoke so `/object/set` runs before compile/deploy and added `--diagnose-only`. Credentialed diagnose-only returned `Organization not found` and performed no compile/deploy/order polling. |
 | Phase 15 full pass / phase-complete | blocked_external_callback_not_verified | Offline tests, cloud sync, compile, live create, read-only smoke, and command API acceptance passed, but real `on_command` to order delivery is not externally verified. |
 
 ## Offline User Acceptance Checks
@@ -69,6 +70,7 @@ Environment/API check on 2026-06-16:
 | Phase 15-07 delayed follow-up command | blocked_external_dispatch_not_observed; after waiting about 60 seconds, a second generic command to deploy `L-2c24272bebaead4a441fadf048662324` returned command API success, but 18 polls still showed 0 logs and no marker |
 | Phase 15-08 Object Store local fallback | passed_offline; wrappers are allowlisted, writes/deletes are namespace-limited to `32900381/marketpilot/signals/*.json`, the smoke runner dry-runs with redaction, and fake LEAN Object Store payloads reuse command validation |
 | Phase 15-08 Object Store external smoke | blocked_external_object_store_write_not_verified; compile `cc45d0b42ae58f274bd3b813432bcbcf-845d50c9f70c2df38cedff8fdf2e5eba` returned `BuildSuccess`, deploy `L-1d49f38582cfbf61646aa479f54fbaa7` returned `Running`, `/object/set` returned `Organization not found`, `/object/properties` returned `File not found`, 18 polls showed 0 logs and 0 orders, and the temporary deploy was stopped |
+| Phase 15-09 Object Store diagnose-only smoke | blocked_external_object_store_permission_or_paid_tier_required; project `32900381`, organization `ed947707222a7b9aeb5de9d0974e5994`, `/object/set` returned `Organization not found`, `/object/properties` returned `File not found`, and no compile/deploy/order polling was performed |
 
 Credentialed QuantConnect command delivery was accepted by the API, but no real
 external LEAN callback, order, fill, or rejection result is claimed by this UAT
@@ -89,6 +91,13 @@ Store write itself returned `Organization not found` for the active
 organization id visible in both `/account/read`, `projects/read`, and the
 Organization UI URL. Because the object was not created, no algorithm receipt,
 order, fill, rejection, or portfolio-change evidence is claimed.
+
+Phase 15-09 narrowed this into a prerequisite blocker: the Object Store smoke
+now writes the probe object before any Paper compile/deploy, and
+`--diagnose-only` can test Object Store access without starting an algorithm.
+The credentialed diagnose-only run still returned `Organization not found`, so
+operator-side QuantConnect organization permission or paid-tier remediation is
+required before rerunning the full fallback smoke.
 
 ## Human Verification Gate
 

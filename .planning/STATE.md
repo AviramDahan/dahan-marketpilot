@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Ready to execute Phase 15 Plan 09 Object Store preflight diagnostics
-stopped_at: 15-09-PLAN.md ready: Object Store preflight and permission blocker classification
-last_updated: "2026-06-16T18:40:00.000Z"
+status: Blocked 15-09 external Object Store permission or paid-tier required
+stopped_at: 15-09-SUMMARY.md checkpoint: blocked_external_object_store_permission_or_paid_tier_required
+last_updated: "2026-06-16T18:31:00.000Z"
 last_activity: 2026-06-16
 progress:
   total_phases: 5
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-06-15)
 
 Phase: 15
 Plan: 15-09-PLAN.md
-Status: Ready to execute Phase 15 Plan 09 Object Store preflight diagnostics
+Status: Blocked 15-09 external Object Store permission or paid-tier required
 Last activity: 2026-06-16
 
 Progress: [███████░░░] 71%
@@ -208,6 +208,7 @@ Recent decisions affecting current work:
 - [Phase 15]: Plan 08 will test a supported QuantConnect Object Store signal inbox fallback because generic Commands dispatch was accepted by the API but not observed by a no-order echo algorithm.
 - [Phase 15]: Plan 08 execution added Object Store wrappers, a guarded Object Store smoke, and LEAN Object Store polling through shared validation. Credentialed external compile/deploy succeeded, but `/object/set` returned `Organization not found`.
 - [Phase 15]: Plan 09 will make Object Store write access a fail-fast preflight before compile/deploy and classify persistent `Organization not found` as an external permission/paid-tier blocker.
+- [Phase 15]: Plan 09 execution added diagnose-only Object Store preflight. Credentialed diagnose-only returned `blocked_external_object_store_permission_or_paid_tier_required` without compile/deploy/order polling.
 - [Phase 15]: Plan 05 offline E2E tests prove local signal-command-LEAN-audit behavior only; mocks and fake fills are not real QuantConnect execution evidence.
 
 ### Pending Todos
@@ -226,7 +227,7 @@ Recent decisions affecting current work:
 - Exact QuantConnect API endpoints, Object Store behavior, notification APIs, Render deployment details, and Streamlit APIs must be re-verified during the relevant implementation phases.
 - Phase 5 execution should record the local Python version because the current shell has Python 3.10 while project metadata requires Python >=3.11 for strict/release validation.
 - Phase 9 must keep Render dashboard read-only and source Paper state from verified QuantConnect-approved paths.
-- Phase 15 Plan 07 external QuantConnect probe is partially verified through command API acceptance. Callback/order smoke remains blocked_external_dispatch_not_observed because even an isolated no-order echo algorithm did not produce observable `on_command` logs after `/live/commands/create`. Phase 15 Plan 08 tested a supported Object Store delivery fallback, but `/object/set` returned `Organization not found` for the active organization id.
+- Phase 15 Plan 07 external QuantConnect probe is partially verified through command API acceptance. Callback/order smoke remains blocked_external_dispatch_not_observed because even an isolated no-order echo algorithm did not produce observable `on_command` logs after `/live/commands/create`. Phase 15 Plans 08-09 tested a supported Object Store delivery fallback, but `/object/set` returns `Organization not found` for the active organization id before any deploy should run.
 
 ## Deferred Items
 
@@ -239,6 +240,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-16T18:40:00.000Z
-Stopped at: 15-09-PLAN.md ready: Object Store preflight and permission blocker classification
-Resume file: .planning/phases/15-paper-trading-order-flow/15-09-PLAN.md
+Last session: 2026-06-16T18:31:00.000Z
+Stopped at: 15-09-SUMMARY.md checkpoint: blocked_external_object_store_permission_or_paid_tier_required
+Resume file: .planning/phases/15-paper-trading-order-flow/15-09-SUMMARY.md

@@ -169,3 +169,13 @@ tested, but not externally proven:
 - A credentialed Paper compile/deploy succeeded, but `/object/set` returned
   `Organization not found`, so no algorithm receipt or order evidence is
   claimed.
+
+As of Phase 15-09, the Object Store smoke performs a fail-fast write preflight:
+
+- `--diagnose-only` tests `/object/set`, `/object/properties`, and cleanup
+  without compile, deploy, command dispatch, logs polling, or orders polling.
+- A failed Object Store write skips Paper deployment entirely.
+- Persistent `Organization not found` is recorded as
+  `blocked_external_object_store_permission_or_paid_tier_required`.
+- Operator-side QuantConnect organization permission or paid-tier remediation
+  is required before the full Object Store fallback can prove delivery.

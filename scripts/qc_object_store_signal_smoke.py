@@ -104,6 +104,7 @@ def run_smoke(
     *,
     command_label: str,
     dry_run: bool,
+    diagnose_only: bool,
     deploy: bool,
     cleanup: bool,
     file_name: str,
@@ -127,6 +128,7 @@ def run_smoke(
         "file_name": file_name,
         "restore_original": restore_original,
         "deploy": deploy,
+        "diagnose_only": diagnose_only,
         "cleanup": cleanup,
         "environment": summarize_env(),
         "signal_preview": sanitize(signal),
@@ -137,6 +139,30 @@ def run_smoke(
     client = QCApiClient()
     organization_id = os.environ.get("QC_ORGANIZATION_ID", "").strip() or client.discover_organization_id()
     result["organization_id"] = organization_id
+
+    content = json.dumps(signal, sort_keys=True).encode("utf-8")
+    preflight = _run_object_store_preflight(
+        client=client,
+        organization_id=organization_id,
+        project_id=project_id,
+        key=key,
+        content=content,
+        cleanup_after_success=cleanup and diagnose_only,
+    )
+    result["object_store_preflight"] = sanitize(preflight)
+    result["object_store_status"] = preflight["status"]
+    result["object_set"] = sanitize(preflight.get("object_set", {}))
+    if "object_properties" in preflight:
+        result["object_properties"] = sanitize(preflight["object_properties"])
+    if "cleanup_success" in preflight:
+        result["cleanup_success"] = preflight["cleanup_success"]
+    if diagnose_only:
+        result["status"] = preflight["status"]
+        return result
+    if not preflight["write_available"]:
+        result["status"] = preflight["status"]
+        result["deploy_skipped"] = True
+        return result
 
     if deploy:
         for name in DEPLOY_ENV:
@@ -184,18 +210,6 @@ def run_smoke(
         deploy_id = _read_env("QC_DEPLOY_ID")
     result["deploy_id"] = deploy_id
 
-    content = json.dumps(signal, sort_keys=True).encode("utf-8")
-    upload = client.upload_object_store_file(
-        organization_id=organization_id,
-        project_id=project_id,
-        key=key,
-        content=content,
-    )
-    result["object_set"] = sanitize(upload)
-    result["object_properties"] = sanitize(
-        client.read_object_store_metadata(organization_id=organization_id, key=key)
-    )
-
     observations: list[dict[str, object]] = []
     for index in range(polls):
         if index:
@@ -241,6 +255,59 @@ def run_smoke(
             key=key,
         )
     return result
+
+
+def _run_object_store_preflight(
+    *,
+    client: QCApiClient,
+    organization_id: str,
+    project_id: int,
+    key: str,
+    content: bytes,
+    cleanup_after_success: bool,
+) -> dict[str, object]:
+    upload = client.upload_object_store_file(
+        organization_id=organization_id,
+        project_id=project_id,
+        key=key,
+        content=content,
+    )
+    status = _classify_object_store_set(upload)
+    preflight: dict[str, object] = {
+        "status": status,
+        "write_available": status == "object_store_write_available",
+        "object_set": sanitize(upload),
+    }
+    if preflight["write_available"]:
+        preflight["object_properties"] = sanitize(
+            client.read_object_store_metadata(organization_id=organization_id, key=key)
+        )
+        if cleanup_after_success:
+            preflight["cleanup_success"] = client.delete_object_store_file(
+                organization_id=organization_id,
+                project_id=project_id,
+                key=key,
+            )
+    else:
+        try:
+            preflight["object_properties"] = sanitize(
+                client.read_object_store_metadata(organization_id=organization_id, key=key)
+            )
+        except Exception as exc:  # pragma: no cover - defensive external diagnostic
+            preflight["object_properties_error"] = {
+                "type": type(exc).__name__,
+                "detail": str(exc)[:240],
+            }
+    return preflight
+
+
+def _classify_object_store_set(response: Mapping[str, object]) -> str:
+    if response.get("success") is True:
+        return "object_store_write_available"
+    errors = " ".join(str(item) for item in response.get("errors", [])).lower()
+    if "organization not found" in errors or "permission" in errors or "paid" in errors:
+        return "blocked_external_object_store_permission_or_paid_tier_required"
+    return "blocked_external_object_store_write_not_verified"
 
 
 def _local_lean_main_content() -> str:
@@ -371,6 +438,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--command-label", default="object_store_signal_probe")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--diagnose-only", action="store_true")
     parser.add_argument("--skip-deploy", action="store_true")
     parser.add_argument("--file-name", default="main.py")
     parser.add_argument("--no-restore-original", action="store_true")
@@ -384,6 +452,7 @@ def main(argv: list[str] | None = None) -> int:
     output = run_smoke(
         command_label=args.command_label,
         dry_run=args.dry_run,
+        diagnose_only=args.diagnose_only,
         deploy=not args.skip_deploy,
         cleanup=not args.no_cleanup,
         file_name=args.file_name,

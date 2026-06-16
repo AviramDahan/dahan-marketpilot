@@ -130,7 +130,7 @@ Plans:
 - [ ] 15-06-PLAN.md - Gap closure: smoke helper and payload diagnostics complete; callback-to-order smoke still blocked
 - [ ] 15-07-PLAN.md - Gap closure: isolated command-dispatch probe deployed successfully, but generic command marker was not observed in logs
 - [ ] 15-08-PLAN.md - Gap closure: Object Store signal inbox implemented locally; external `/object/set` blocked with `Organization not found`
-- [ ] 15-09-PLAN.md - Gap closure: Object Store preflight/diagnose-only plan to avoid wasted deploys and classify permission blockers
+- [ ] 15-09-PLAN.md - Gap closure: Object Store preflight/diagnose-only implemented; QC organization permission/paid-tier blocker persists
 
 ---
 
