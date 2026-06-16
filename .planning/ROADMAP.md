@@ -40,7 +40,7 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 | Phase | Name | Goal | Requirements | Plans (est.) |
 |-------|------|------|--------------|--------------|
 | 13 | QC API Client & Safety Foundation | 4/4 | Complete   | 2026-06-15 |
-| 14 | Data Sync & Dashboard Integration | Sync QC portfolio state and display with freshness guarantees | SYNC-01..06, DASH-01..05, SAFE-04 | 5 |
+| 14 | Data Sync & Dashboard Integration | 1/4 | In Progress|  |
 | 15 | Paper Trading & Order Flow | Deliver signals to running algorithm; track fills with audit traceability | PTD-01..05, FT-01..04, SAFE-05 | 5 |
 | 16 | Production Scheduler | Run pipeline autonomously on NYSE schedule with fault tolerance | SCHED-01..06, SAFE-03 | 4 |
 | 17 | MTF Backtest Validation | Validate strategy modes through automated comparative backtests | MTF-01..05 | 3 |
@@ -89,10 +89,10 @@ Plans:
 4. All timestamps are stored UTC internally and converted to ET only at display and market-hours-check boundaries
 5. Dashboard never shows fabricated data; sync status, last sync time, and portfolio freshness indicator are always visible
 
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 
 Plans:
-- [ ] 14-01-PLAN.md — Sync module & JSONL persistence (poll → reconcile → atomic persist → alert)
+- [x] 14-01-PLAN.md — Sync module & JSONL persistence (poll → reconcile → atomic persist → alert)
 - [ ] 14-02-PLAN.md — Dashboard data layer (3-state freshness + sync_jsonl loader)
 - [ ] 14-03-PLAN.md — Dashboard display (freshness banner, metrics, holdings, sync status)
 - [ ] 14-04-PLAN.md — Test suite (sync module + dashboard loader + regression)

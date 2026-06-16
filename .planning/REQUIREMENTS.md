@@ -25,12 +25,12 @@
 
 ## Data Sync & Reconciliation
 
-- [ ] **SYNC-01**: System periodically polls QC /live/read for portfolio state (holdings, cash, P&L)
-- [ ] **SYNC-02**: Local mirror is compared against QC authoritative state using structured diff (deepdiff)
-- [ ] **SYNC-03**: Discrepancies above threshold trigger SYNC_DISCREPANCY alert through existing Telegram pipeline
-- [ ] **SYNC-04**: Reconciliation detects drift but never auto-corrects; human review required for resolution
-- [ ] **SYNC-05**: Sync operations are atomic with generation counters; partial syncs do not corrupt local state
-- [ ] **SYNC-06**: All local records carry staleness TTL; downstream consumers check freshness before use
+- [x] **SYNC-01**: System periodically polls QC /live/read for portfolio state (holdings, cash, P&L)
+- [x] **SYNC-02**: Local mirror is compared against QC authoritative state using structured diff (deepdiff)
+- [x] **SYNC-03**: Discrepancies above threshold trigger SYNC_DISCREPANCY alert through existing Telegram pipeline
+- [x] **SYNC-04**: Reconciliation detects drift but never auto-corrects; human review required for resolution
+- [x] **SYNC-05**: Sync operations are atomic with generation counters; partial syncs do not corrupt local state
+- [x] **SYNC-06**: All local records carry staleness TTL; downstream consumers check freshness before use
 
 ## Production Scheduler
 
@@ -62,7 +62,7 @@
 - [ ] **SAFE-01**: PAPER_TRADING_ONLY remains hardcoded constant (not env var); runtime startup assertion validates; pre-commit hook rejects False
 - [ ] **SAFE-02**: No code path accepts live brokerage credentials; defense-in-depth across all layers
 - [ ] **SAFE-03**: All existing v1.0 tests (433) pass unchanged after v1.1 implementation; new modules use lazy imports
-- [ ] **SAFE-04**: All timestamps stored as UTC internally; convert to ET only at display and market-hours-check boundaries
+- [x] **SAFE-04**: All timestamps stored as UTC internally; convert to ET only at display and market-hours-check boundaries
 - [ ] **SAFE-05**: Execution window guards skip stale signals if triggered outside valid execution window
 
 ---
@@ -102,12 +102,12 @@
 | FT-02 | 15 | Pending |
 | FT-03 | 15 | Pending |
 | FT-04 | 15 | Pending |
-| SYNC-01 | 14 | Pending |
-| SYNC-02 | 14 | Pending |
-| SYNC-03 | 14 | Pending |
-| SYNC-04 | 14 | Pending |
-| SYNC-05 | 14 | Pending |
-| SYNC-06 | 14 | Pending |
+| SYNC-01 | 14 | Complete |
+| SYNC-02 | 14 | Complete |
+| SYNC-03 | 14 | Complete |
+| SYNC-04 | 14 | Complete |
+| SYNC-05 | 14 | Complete |
+| SYNC-06 | 14 | Complete |
 | SCHED-01 | 16 | Pending |
 | SCHED-02 | 16 | Pending |
 | SCHED-03 | 16 | Pending |
@@ -127,7 +127,7 @@
 | SAFE-01 | 13 | Pending |
 | SAFE-02 | 13 | Pending |
 | SAFE-03 | 16 | Pending |
-| SAFE-04 | 14 | Pending |
+| SAFE-04 | 14 | Complete |
 | SAFE-05 | 15 | Pending |
 
 ---
