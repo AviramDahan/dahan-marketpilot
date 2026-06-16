@@ -20,6 +20,8 @@ from marketpilot.paper_order_flow import (
     deploy_paper_algorithm,
     parse_quantconnect_live_order,
     parse_quantconnect_live_orders,
+    poll_quantconnect_order_updates,
+    read_signal_order_fill_trace,
     submit_signal_command,
 )
 
@@ -153,6 +155,163 @@ def test_live_orders_parser_accepts_raw_page_mapping():
         OrderLifecycleState.SUBMITTED,
         OrderLifecycleState.FILLED,
     ]
+
+
+class FakeLiveOrdersClient:
+    def __init__(self, orders) -> None:
+        self.orders = orders
+        self.calls: list[dict[str, object]] = []
+
+    def read_live_orders(self, **kwargs):
+        self.calls.append(kwargs)
+        return self.orders
+
+
+def _audit_records(path):
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+
+
+def test_fill_poll_appends_audit_record(tmp_path):
+    audit_path = tmp_path / "paper_audit.jsonl"
+    client = FakeLiveOrdersClient(
+        [
+            _qc_order_payload(status="Submitted", quantityFilled=0, remainingQuantity=10),
+            _qc_order_payload(id=702, status="PartiallyFilled", quantityFilled=4, remainingQuantity=6, averageFillPrice="421.25"),
+            _qc_order_payload(id=703, status="Filled", quantityFilled=10, remainingQuantity=0, averageFillPrice="422.00"),
+            _qc_order_payload(id=704, status="Invalid", quantityFilled=0, remainingQuantity=10, message="insufficient buying power"),
+            _qc_order_payload(id=705, status="BrokeragePendingReview"),
+        ]
+    )
+
+    result = poll_quantconnect_order_updates(
+        project_id=123,
+        deploy_id="L-paper-001",
+        audit_journal_path=audit_path,
+        correlation_id="corr-fill-poll",
+        client=client,
+        observed_at_utc=datetime(2026, 6, 16, 13, 45, tzinfo=UTC),
+    )
+
+    assert client.calls == [{"project_id": 123, "deploy_id": "L-paper-001"}]
+    assert result.observed_count == 5
+    assert result.audit_record_count == 5
+    assert result.warning_count == 1
+
+    records = _audit_records(audit_path)
+    assert [record["event_type"] for record in records] == [
+        "paper_order_observed",
+        "paper_fill_observed",
+        "paper_fill_observed",
+        "paper_order_rejected",
+        "paper_order_observed",
+    ]
+    fill_payload = records[1]["payload"]
+    assert fill_payload["source_authority"] == "quantconnect"
+    assert fill_payload["local_authority"] is False
+    assert fill_payload["paper_trading_only"] is True
+    assert fill_payload["correlation_id"] == "corr-fill-poll"
+    assert fill_payload["quantconnect_order_id"] == "702"
+    assert fill_payload["signal_id"] == "sig-001"
+    assert fill_payload["idempotency_key"] == "order-intent-abc123"
+    assert fill_payload["status"] == "partially_filled"
+    assert fill_payload["raw_status"] == "PartiallyFilled"
+    assert fill_payload["filled_quantity"] == 4
+    assert fill_payload["remaining_quantity"] == 6
+    assert fill_payload["average_fill_price"] == "421.25"
+
+    rejection_payload = records[3]["payload"]
+    assert rejection_payload["rejection_reason"] == "insufficient buying power"
+    assert rejection_payload["raw_status"] == "Invalid"
+
+    unknown_payload = records[4]["payload"]
+    assert unknown_payload["status"] == "unknown"
+    assert unknown_payload["parse_warnings"] == ["unknown_order_status"]
+    assert unknown_payload["raw_payload"]["status"] == "BrokeragePendingReview"
+
+
+def test_fill_poll_does_not_append_fill_without_quantconnect_fill_data(tmp_path):
+    audit_path = tmp_path / "paper_audit.jsonl"
+    client = FakeLiveOrdersClient(
+        [
+            _qc_order_payload(
+                status="Filled",
+                quantityFilled=None,
+                remainingQuantity=None,
+                averageFillPrice=None,
+                lastFillTime=None,
+            )
+        ]
+    )
+
+    result = poll_quantconnect_order_updates(
+        project_id=123,
+        deploy_id="L-paper-001",
+        audit_journal_path=audit_path,
+        correlation_id="corr-no-infer",
+        client=client,
+        observed_at_utc=datetime(2026, 6, 16, 13, 45, tzinfo=UTC),
+    )
+
+    assert result.observed_count == 1
+    assert result.audit_record_count == 1
+    records = _audit_records(audit_path)
+    assert records[0]["event_type"] == "paper_order_observed"
+    assert records[0]["payload"]["status"] == "filled"
+    assert records[0]["payload"]["filled_quantity"] is None
+    assert "missing_filled_quantity" in records[0]["payload"]["parse_warnings"]
+
+
+def test_trace_chain_returns_signal_order_fill_records(tmp_path):
+    audit_path = tmp_path / "paper_audit.jsonl"
+    sync_path = tmp_path / "sync.jsonl"
+    _write_sync_record(sync_path, source_timestamp="2026-06-16T13:34:00+00:00")
+    client = FakeLiveOrdersClient(
+        [
+            _qc_order_payload(id=701, status="Submitted", quantityFilled=0, remainingQuantity=10),
+            _qc_order_payload(id=702, status="Filled", quantityFilled=10, remainingQuantity=0, averageFillPrice="422.00"),
+        ]
+    )
+    submit_signal_command(
+        project_id=123,
+        deploy_id="L-paper-001",
+        intent=_order_intent(signal_time=datetime(2026, 6, 16, 13, 30, tzinfo=UTC)),
+        correlation_id="corr-trace",
+        signal_id="sig-001",
+        expires_at_utc=datetime(2026, 6, 16, 13, 50, tzinfo=UTC),
+        sync_jsonl_path=sync_path,
+        ledger_path=tmp_path / "signal_ledger.jsonl",
+        audit_journal_path=audit_path,
+        client=FakeQCApiClient(),
+        now_utc=datetime(2026, 6, 16, 13, 35, tzinfo=UTC),
+    )
+    poll_quantconnect_order_updates(
+        project_id=123,
+        deploy_id="L-paper-001",
+        audit_journal_path=audit_path,
+        correlation_id="corr-trace",
+        client=client,
+        observed_at_utc=datetime(2026, 6, 16, 13, 45, tzinfo=UTC),
+    )
+
+    trace = read_signal_order_fill_trace(audit_journal_path=audit_path, signal_id="sig-001")
+
+    assert [record["event_type"] for record in trace] == [
+        "paper_signal_command_delivered",
+        "paper_order_observed",
+        "paper_fill_observed",
+    ]
+    assert [record["payload"].get("quantconnect_order_id") for record in trace] == [None, "701", "702"]
+
+    by_key = read_signal_order_fill_trace(
+        audit_journal_path=audit_path,
+        idempotency_key="order-intent-abc123",
+    )
+    assert by_key == trace
+
+
+def test_trace_query_requires_signal_or_idempotency_key(tmp_path):
+    with pytest.raises(ValueError, match="signal_id or idempotency_key"):
+        read_signal_order_fill_trace(audit_journal_path=tmp_path / "paper_audit.jsonl")
 
 
 def _order_intent(*, signal_time: datetime | None = None) -> OrderIntent:
