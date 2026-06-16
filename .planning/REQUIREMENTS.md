@@ -185,5 +185,5 @@
 
 ---
 
-**Total:** 60 requirements across 11 categories
+**Total:** 63 requirements across 11 categories
 **Closes v1.0 gaps:** QC-02 (via API-01..05, PTD-01..05), QC-04 (via SYNC-01..06), BT-MTF-01 (via MTF-01..05)
