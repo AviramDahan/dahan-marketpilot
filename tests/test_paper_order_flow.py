@@ -8,7 +8,7 @@ from decimal import Decimal
 
 import pytest
 
-from marketpilot.order_lifecycle import OrderIntent
+from marketpilot.order_lifecycle import OrderIntent, OrderLifecycleState
 from marketpilot.paper_command_models import (
     MarketPilotSignalCommand,
     SignalFreshnessPolicy,
@@ -16,10 +16,143 @@ from marketpilot.paper_command_models import (
     build_order_tag,
     parse_order_tag,
 )
-from marketpilot.paper_order_flow import deploy_paper_algorithm, submit_signal_command
+from marketpilot.paper_order_flow import (
+    deploy_paper_algorithm,
+    parse_quantconnect_live_order,
+    parse_quantconnect_live_orders,
+    submit_signal_command,
+)
 
 
 UTC = timezone.utc
+
+
+def _qc_order_payload(**overrides):
+    payload = {
+        "id": 701,
+        "symbol": {"value": "MSFT"},
+        "status": "Submitted",
+        "quantity": 10,
+        "quantityFilled": 0,
+        "remainingQuantity": 10,
+        "averageFillPrice": None,
+        "createdTime": "2026-06-16T13:36:00Z",
+        "lastFillTime": None,
+        "tag": "mp:sig-001:order-intent-abc123",
+    }
+    payload.update(overrides)
+    return payload
+
+
+def test_live_order_parser_maps_status_and_marketpilot_tag():
+    parsed = parse_quantconnect_live_order(_qc_order_payload())
+
+    assert parsed.quantconnect_order_id == "701"
+    assert parsed.signal_id == "sig-001"
+    assert parsed.idempotency_key == "order-intent-abc123"
+    assert parsed.lifecycle_state is OrderLifecycleState.SUBMITTED
+    assert parsed.raw_status == "Submitted"
+    assert parsed.quantity == 10
+    assert parsed.filled_quantity == 0
+    assert parsed.remaining_quantity == 10
+    assert parsed.submitted_at.isoformat() == "2026-06-16T13:36:00+00:00"
+    assert parsed.parse_warnings == ()
+
+
+@pytest.mark.parametrize(
+    ("raw_status", "filled_quantity", "remaining_quantity", "expected_state"),
+    [
+        ("PartiallyFilled", 4, 6, OrderLifecycleState.PARTIALLY_FILLED),
+        ("Filled", 10, 0, OrderLifecycleState.FILLED),
+        ("Canceled", 0, 10, OrderLifecycleState.CANCELED),
+    ],
+)
+def test_live_order_parser_preserves_partial_filled_and_canceled_quantities(
+    raw_status, filled_quantity, remaining_quantity, expected_state
+):
+    parsed = parse_quantconnect_live_order(
+        _qc_order_payload(
+            status=raw_status,
+            quantityFilled=filled_quantity,
+            remainingQuantity=remaining_quantity,
+            averageFillPrice="421.25" if filled_quantity else None,
+            lastFillTime="2026-06-16T13:38:00Z" if filled_quantity else None,
+        )
+    )
+
+    assert parsed.lifecycle_state is expected_state
+    assert parsed.raw_status == raw_status
+    assert parsed.filled_quantity == filled_quantity
+    assert parsed.remaining_quantity == remaining_quantity
+    if filled_quantity:
+        assert parsed.average_fill_price == "421.25"
+        assert parsed.last_fill_at.isoformat() == "2026-06-16T13:38:00+00:00"
+
+
+def test_live_order_parser_preserves_rejection_reason():
+    parsed = parse_quantconnect_live_order(
+        _qc_order_payload(
+            status="Invalid",
+            quantityFilled=0,
+            remainingQuantity=10,
+            message="insufficient buying power",
+        )
+    )
+
+    assert parsed.lifecycle_state is OrderLifecycleState.REJECTED
+    assert parsed.rejection_reason == "insufficient buying power"
+    assert parsed.raw_status == "Invalid"
+    assert parsed.raw_payload["message"] == "insufficient buying power"
+
+
+def test_live_order_parser_flags_unknown_status_and_preserves_raw_evidence():
+    payload = _qc_order_payload(status="BrokeragePendingReview", unexpected={"raw": True})
+
+    parsed = parse_quantconnect_live_order(payload)
+
+    assert parsed.lifecycle_state is None
+    assert parsed.raw_status == "BrokeragePendingReview"
+    assert "unknown_order_status" in parsed.parse_warnings
+    assert parsed.raw_payload == payload
+
+
+def test_live_order_parser_does_not_infer_fill_without_quantconnect_fill_data():
+    parsed = parse_quantconnect_live_order(
+        _qc_order_payload(
+            status="Filled",
+            quantityFilled=None,
+            filledQuantity=None,
+            fillQuantity=None,
+            remainingQuantity=None,
+            averageFillPrice=None,
+            lastFillTime=None,
+        )
+    )
+
+    assert parsed.lifecycle_state is OrderLifecycleState.FILLED
+    assert parsed.filled_quantity is None
+    assert parsed.remaining_quantity is None
+    assert parsed.average_fill_price is None
+    assert parsed.last_fill_at is None
+    assert "missing_filled_quantity" in parsed.parse_warnings
+
+
+def test_live_orders_parser_accepts_raw_page_mapping():
+    parsed = parse_quantconnect_live_orders(
+        {
+            "success": True,
+            "orders": {
+                "701": _qc_order_payload(id=701, status="Submitted"),
+                "702": _qc_order_payload(id=702, status="Filled", quantityFilled=10, remainingQuantity=0),
+            },
+        }
+    )
+
+    assert [order.quantconnect_order_id for order in parsed] == ["701", "702"]
+    assert [order.lifecycle_state for order in parsed] == [
+        OrderLifecycleState.SUBMITTED,
+        OrderLifecycleState.FILLED,
+    ]
 
 
 def _order_intent(*, signal_time: datetime | None = None) -> OrderIntent:
