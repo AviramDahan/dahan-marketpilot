@@ -285,3 +285,13 @@ variable names to be configured outside the repository and outside chat:
 If these are absent, record the smoke status as
 `blocked_external_not_verified`. Do not treat mocks, fake fills, or `not_run`
 as real QuantConnect evidence.
+
+Current external evidence from 2026-06-16:
+
+- Authenticated `/live/list`, `/live/read`, and `/live/orders/read` smoke
+  passed against the user-managed Paper deployment for project `32900381`.
+- The deployment was read as `running`, with equity `27027.03` and 0 live
+  orders.
+- Command-to-order smoke remains blocked until the current Phase 15 LEAN
+  command receiver code is synced, compiled, and deployed to QuantConnect
+  Paper.

@@ -118,7 +118,7 @@ Plans:
 4. Stale signals triggered outside valid execution window are safely skipped with logged reason
 5. Duplicate deploy requests are rejected via idempotent keys; retry-safe operations throughout
 
-**Plans:** 4/5 plans executed
+**Plans:** 4/5 plans complete, 1/5 externally partially verified
 
 Plans:
 
@@ -126,7 +126,7 @@ Plans:
 - [x] 15-02-PLAN.md - Signal command builder, deployment idempotency, pre-submit sync gate, and stale-window skips
 - [x] 15-03-PLAN.md - LEAN `on_command` receiver, internal stale/duplicate safety gates, and tagged paper orders
 - [x] 15-04-PLAN.md - Authoritative QC order/fill polling, audit JSONL mirror, and signal-order-fill trace queries
-- [ ] 15-05-PLAN.md - Offline E2E tests, docs, UAT/verification, and credentialed paper smoke checkpoint
+- [ ] 15-05-PLAN.md - Offline E2E tests, docs, UAT/verification, read-only QC smoke verified; command-to-order smoke still blocked until Phase 15 LEAN receiver is deployed
 
 ---
 

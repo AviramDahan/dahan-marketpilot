@@ -248,6 +248,32 @@ def test_read_live_algorithm_returns_paper_snapshot():
     assert result.holdings[0].quantity == 10
 
 
+def test_read_live_algorithm_parses_real_live_dashboard_shape():
+    from decimal import Decimal
+
+    from marketpilot.quantconnect_paper import QuantConnectDeploymentStatus
+
+    client = _make_client_with_mocked_auth()
+    fixture = {
+        "success": True,
+        "status": "Running",
+        "runtimeStatistics": {
+            "Equity": "$27,027.03",
+            "Unrealized": "$0.00",
+        },
+        "orders": [],
+    }
+    with patch.object(client, "_make_request", return_value=fixture):
+        result = client.read_live_algorithm(
+            project_id=99999,
+            deploy_id="L-00000000000000000000000000000000",
+        )
+
+    assert result.deployment_status is QuantConnectDeploymentStatus.RUNNING
+    assert result.portfolio_equity == Decimal("27027.03")
+    assert result.cash == Decimal("0")
+
+
 def test_read_live_orders_returns_tuple_of_orders():
     from marketpilot.quantconnect_paper import QuantConnectPaperOrder
 

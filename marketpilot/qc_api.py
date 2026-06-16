@@ -416,17 +416,25 @@ class QCApiClient:
                     )
                 )
 
-        # Parse cash and equity
-        cash = Decimal(
-            str(response.get("cash", {}).get("USD", {}).get("amount", 0))
+        # Parse cash and equity. QuantConnect live/read can return either the
+        # internal API shape (`cash`, `statistics`) or the live-dashboard shape
+        # (`runtimeStatistics` with formatted currency strings).
+        cash = _decimal_from_quantconnect_value(
+            response.get("cash", {}).get("USD", {}).get("amount", 0)
             if isinstance(response.get("cash"), dict)
-            else str(response.get("cash", 0))
+            else response.get("cash", 0)
         )
         statistics = response.get("statistics", {})
-        portfolio_equity = Decimal(str(statistics.get("Equity", cash)))
+        runtime_statistics = response.get("runtimeStatistics", {})
+        portfolio_equity = _decimal_from_quantconnect_value(
+            statistics.get("Equity", runtime_statistics.get("Equity", cash))
+        )
+        unrealized_profit = _decimal_from_quantconnect_value(
+            statistics.get("Unrealized", runtime_statistics.get("Unrealized", 0))
+        )
 
         # Deployment and algorithm status
-        state = response.get("state", "").lower()
+        state = str(response.get("state") or response.get("status") or "").lower()
         try:
             deployment_status = QuantConnectDeploymentStatus(state)
         except ValueError:
@@ -450,9 +458,7 @@ class QCApiClient:
             performance=QuantConnectPaperPerformance(
                 total_orders=len(orders),
                 total_fills=len(fills),
-                unrealized_profit=Decimal(
-                    str(statistics.get("Unrealized", 0))
-                ),
+                unrealized_profit=unrealized_profit,
             ),
         )
 
@@ -533,6 +539,25 @@ def _validate_paper_data_providers(
             )
         normalized[provider_name] = {"id": provider_id}
     return normalized
+
+
+def _decimal_from_quantconnect_value(value: object) -> Decimal:
+    """Parse numeric QuantConnect values, including formatted dashboard strings."""
+    if value is None:
+        return Decimal("0")
+    if isinstance(value, Decimal):
+        return value
+    if isinstance(value, int | float):
+        return Decimal(str(value))
+    text = str(value).strip()
+    if not text:
+        return Decimal("0")
+    normalized = text.replace("$", "").replace(",", "").replace("%", "").strip()
+    if normalized.startswith("(") and normalized.endswith(")"):
+        normalized = f"-{normalized[1:-1]}"
+    if not normalized:
+        return Decimal("0")
+    return Decimal(normalized)
 
 
 def _parse_live_order(order_key: object, payload: Mapping[str, Any]) -> QuantConnectPaperOrder:
