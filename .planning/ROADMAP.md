@@ -156,7 +156,19 @@ Plans:
 4. All 433+ existing v1.0 tests pass unchanged after full v1.1 implementation (lazy imports, optional params)
 5. GitHub Actions monitors heartbeat and sends failure alert if scheduled run is missed
 
-**Plans**: TBD
+**Plans**: 5 plans planned across 4 execution waves. Planning artifacts exist; execution has not started.
+
+**Execution Waves:**
+
+- Wave 1:
+  - [ ] 16-01-PLAN.md - Scheduler clock, APScheduler configuration, and NYSE/ET market-session guard
+  - [ ] 16-02-PLAN.md - Production runtime runner and dependency-aware job graph
+- Wave 2:
+  - [ ] 16-03-PLAN.md - Durable lock, run ledger, idempotent retries, and conservative catch-up
+- Wave 3:
+  - [ ] 16-04-PLAN.md - Heartbeat, system-health records, and monitor-only GitHub Actions missed-run check
+- Wave 4:
+  - [ ] 16-05-PLAN.md - Render Background Worker boundary, Phase 16.1 interfaces, docs, and regression gate
 
 ---
 

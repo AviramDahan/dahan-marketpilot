@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Planning-only v1.1 production readiness gaps added; Phase 15 order authority pending next market window
-stopped_at: Roadmap and requirements updated with Phase 16.1 and Phase 16.2; no Phase 16+ implementation started
-last_updated: "2026-06-17T01:45:00.000Z"
+status: Phase 16 planning complete; Phase 15 order authority pending next market window
+stopped_at: Phase 16 planned across 5 plans and 4 execution waves; no Phase 16 implementation started
+last_updated: "2026-06-17T02:02:53.6719776+03:00"
 last_activity: 2026-06-17
 progress:
   total_phases: 7
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-15)
 
 **Core value:** The system must provide an auditable paper-only swing-trading workflow where every signal, backtest, paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
-**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 15 is waiting for the next valid US market-hours or next-open `/live/orders/read` order/fill/rejection verification. Only planning updates are allowed for later production-readiness gaps until that market-window gate is completed.
+**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 15 is waiting for the next valid US market-hours or next-open `/live/orders/read` order/fill/rejection verification. Phase 16 planning is complete, but Phase 16 execution must not start until explicitly requested.
 
 ## Current Position
 
-Phase: 15
-Plan: 15-11-SUMMARY.md complete; next Phase 15 action is order-authority verification during market window
-Status: Planning-only v1.1 production readiness gaps added; Phase 15 order authority pending next market window
+Phase: 15 / 16 planning checkpoint
+Plan: 15-11-SUMMARY.md complete; 16-01 through 16-05 planned; next Phase 15 action is order-authority verification during market window
+Status: Phase 16 planning complete; Phase 15 order authority pending next market window
 Last activity: 2026-06-17
 
 Progress: [███████░░░] 71%
