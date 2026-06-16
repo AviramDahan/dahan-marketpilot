@@ -15,7 +15,7 @@ SIMULATED PAPER TRADING ONLY - NOT FINANCIAL ADVICE.
 | Targeted Phase 15 and sync regression command | passed_offline | `pytest tests/test_paper_order_flow_e2e.py tests/test_paper_order_flow.py tests/test_lean_command_flow.py tests/test_qc_api.py tests/test_sync.py -q` passed during Task 2. |
 | Full local pytest suite | passed_with_version_caveat | `pytest -q` passed under local Python 3.10.10; project metadata requires Python >=3.11 for strict/release verification. |
 | Real QuantConnect paper read smoke | passed_external_read_only | On 2026-06-16T12:46:23Z, authenticated QuantConnect API reads verified project `32900381`, deploy `L-223eafd89aaac127343bb441bf96e423`, deployment status `running`, algorithm status `running`, equity `27027.03`, and successful `/live/orders/read` with 0 orders. |
-| Real QuantConnect paper command/order smoke | blocked_external_callback_not_verified | Phase 15 code was synced to QuantConnect, compiled successfully, deployed to Paper, and `/live/commands/create` returned success. However, no `on_command` debug log and no live order appeared after polling, so command callback/order execution is not externally verified. |
+| Real QuantConnect paper command/order smoke | blocked_external_callback_not_verified | Phase 15-06 synced the callback-tolerant receiver, compiled successfully, deployed to Paper, and `/live/commands/create` returned success for `typed_order_command_probe`. However, no `on_command` debug log and no live order appeared after polling, so command callback/order execution is not externally verified. |
 | Phase 15 full pass / phase-complete | blocked_external_callback_not_verified | Offline tests, cloud sync, compile, live create, read-only smoke, and command API acceptance passed, but real `on_command` to order delivery is not externally verified. |
 
 ## Offline User Acceptance Checks
@@ -57,14 +57,19 @@ Environment/API check on 2026-06-16:
 | Paper deployment create | passed; deploy `L-6e97706430e5dfec3e6615282153ad47`, status `Running` |
 | `/live/commands/create` | passed; API returned `success=true` for a `marketpilot_signal` smoke command |
 | `on_command` debug/order evidence | blocked; no `MarketPilot command received` log and no order after polling `/live/logs/read` and `/live/orders/read` |
+| Phase 15-06 smoke helper | passed_offline; refuses by default unless `MARKETPILOT_QC_COMMAND_SMOKE_ENABLED=1`; dry-run output redacts secrets |
+| Phase 15-06 command normalization | passed_offline; accepts lower-case payloads, PascalCase dynamic attributes, `parameters` envelope, and nested `marketpilot_signal` while preserving unsafe-order rejection |
+| Phase 15-06 cloud compile | passed; compile `54a09ada5318ca08dfd15e3ac7ec12ad-b1d7a4c2bb865f244914254e68bd0b07`, `BuildSuccess` |
+| Phase 15-06 Paper deployment create | passed; deploy `L-bd51091b63e10262fac1b2ca8b877f49`, status `Running` |
+| Phase 15-06 typed command smoke | blocked_external_callback_not_verified; `typed_order_command_probe` returned `command_api_success=true`, 12 polls over ~60s returned 0 logs and 0 orders |
 
 Credentialed QuantConnect command delivery was accepted by the API, but no real
 external LEAN callback, order, fill, or rejection result is claimed by this UAT
 record. Mocks and fake fills are local regression evidence only.
 
-The current blocker is narrower than initial setup: QuantConnect accepts the
-command request, but the generic Python `on_command` receiver did not produce
-debug or order evidence during the smoke window.
+The current blocker is narrower than initial setup: QuantConnect accepts both
+plain and typed command requests, but the Python `on_command` receiver did not
+produce debug or order evidence during the smoke windows.
 
 ## Human Verification Gate
 

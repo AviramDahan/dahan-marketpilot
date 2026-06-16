@@ -56,6 +56,66 @@ def test_normalize_marketpilot_command_accepts_attribute_payload():
     assert command.command.symbol == "AAPL"
 
 
+def test_normalize_marketpilot_command_accepts_pascal_case_attribute_payload():
+    payload = SimpleNamespace(
+        CommandType="marketpilot_signal",
+        CorrelationId="corr-001",
+        SignalId="sig-001",
+        IdempotencyKey="order-intent-001",
+        Symbol="MSFT",
+        Quantity=12,
+        SignalTimeUtc="2026-06-16T14:20:00+00:00",
+        ExpiresAtUtc="2026-06-16T14:40:00+00:00",
+        StrategyMode="daily_only",
+        PrimarySetup="relative_strength_leader",
+        PaperTradingOnly=True,
+        CommandDeliveryIsOrderExecution=False,
+    )
+
+    command = normalize_marketpilot_command(payload)
+
+    assert command.accepted is True
+    assert command.command is not None
+    assert command.command.symbol == "MSFT"
+
+
+def test_normalize_marketpilot_command_accepts_parameters_envelope():
+    payload = {
+        "$type": "MarketPilotSignalCommand",
+        "parameters": _payload(symbol="SPY"),
+    }
+
+    command = normalize_marketpilot_command(payload)
+
+    assert command.accepted is True
+    assert command.command is not None
+    assert command.command.symbol == "SPY"
+
+
+def test_normalize_marketpilot_command_accepts_nested_marketpilot_signal_payload():
+    payload = {"marketpilot_signal": _payload(symbol="QQQ")}
+
+    command = normalize_marketpilot_command(payload)
+
+    assert command.accepted is True
+    assert command.command is not None
+    assert command.command.symbol == "QQQ"
+
+
+def test_normalize_marketpilot_command_rejects_unsafe_typed_order_probe():
+    payload = {
+        "$type": "OrderCommand",
+        "symbol": {"value": "SPY"},
+        "order_type": "market",
+        "quantity": 1,
+    }
+
+    command = normalize_marketpilot_command(payload)
+
+    assert command.accepted is False
+    assert command.reason == "unsupported_field_order_type"
+
+
 @pytest.mark.parametrize(
     "field,value,reason",
     [

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import importlib.util
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -26,6 +27,7 @@ from marketpilot.qc_api import (
 )
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "qc_api"
+QC_COMMAND_SMOKE = Path(__file__).resolve().parents[1] / "scripts" / "qc_command_smoke.py"
 
 
 def _load_fixture(name: str) -> dict:
@@ -37,6 +39,14 @@ def _make_client_with_mocked_auth() -> QCApiClient:
     config = QCApiConfig(user_id="99999", api_token="FAKE-TOKEN-DO-NOT-USE")
     with patch.object(QCApiClient, "_validate_credentials"):
         return QCApiClient(config=config)
+
+
+def _load_qc_command_smoke_module():
+    spec = importlib.util.spec_from_file_location("qc_command_smoke_test_module", QC_COMMAND_SMOKE)
+    module = importlib.util.module_from_spec(spec)
+    assert spec is not None and spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
 
 
 # ---------------------------------------------------------------------------
@@ -85,6 +95,7 @@ def test_safety_gate_allows_read_endpoints():
     client = _make_client_with_mocked_auth()
     # Should not raise
     client._validate_endpoint("live/read")
+    client._validate_endpoint("live/logs/read")
     client._validate_endpoint("authenticate")
     client._validate_endpoint("backtests/read")
 
@@ -305,6 +316,68 @@ def test_read_live_orders_returns_tuple_of_orders():
     assert rejected.rejection_reason == "insufficient buying power"
     assert rejected.filled_quantity == 0
     assert rejected.remaining_quantity == 5
+
+
+def test_read_live_logs_uses_algorithm_id_payload():
+    client = _make_client_with_mocked_auth()
+    with patch.object(client, "_make_request", return_value={"success": True, "LiveLogs": []}) as mock_request:
+        result = client.read_live_logs(project_id=99999, deploy_id="L-paper", start=5, end=15)
+
+    assert result == {"success": True, "LiveLogs": []}
+    mock_request.assert_called_once_with(
+        "live/logs/read",
+        {
+            "projectId": 99999,
+            "algorithmId": "L-paper",
+            "start": 5,
+            "end": 15,
+        },
+    )
+
+
+def test_qc_command_smoke_refuses_without_enable_flag(monkeypatch):
+    module = _load_qc_command_smoke_module()
+    monkeypatch.delenv("MARKETPILOT_QC_COMMAND_SMOKE_ENABLED", raising=False)
+
+    with pytest.raises(SystemExit, match="MARKETPILOT_QC_COMMAND_SMOKE_ENABLED"):
+        module.run_smoke(
+            command_label="marketpilot_signal",
+            dry_run=True,
+            polls=1,
+            poll_seconds=0,
+        )
+
+
+def test_qc_command_smoke_dry_run_redacts_secret_env(monkeypatch):
+    module = _load_qc_command_smoke_module()
+    monkeypatch.setenv("MARKETPILOT_QC_COMMAND_SMOKE_ENABLED", "1")
+    monkeypatch.setenv("QUANTCONNECT_USER_ID", "507952")
+    monkeypatch.setenv("QUANTCONNECT_API_TOKEN", "SECRET-TOKEN-DO-NOT-PRINT")
+    monkeypatch.setenv("QC_PROJECT_ID", "32900381")
+    monkeypatch.setenv("QC_DEPLOY_ID", "L-paper")
+
+    result = module.run_smoke(
+        command_label="marketpilot_signal",
+        dry_run=True,
+        polls=1,
+        poll_seconds=0,
+    )
+
+    rendered = json.dumps(result)
+    assert result["status"] == "dry_run"
+    assert result["command_preview"]["command_type"] == "marketpilot_signal"
+    assert result["environment"]["QUANTCONNECT_API_TOKEN"] == "configured_redacted"
+    assert "SECRET-TOKEN-DO-NOT-PRINT" not in rendered
+
+
+def test_qc_command_smoke_builds_typed_probe_payload():
+    module = _load_qc_command_smoke_module()
+
+    payload = module.build_command("typed_order_command_probe")
+
+    assert payload["$type"] == "MarketPilotSignalCommand"
+    assert payload["parameters"]["command_type"] == "marketpilot_signal"
+    assert payload["parameters"]["paper_trading_only"] is True
 
 
 def test_create_live_algorithm_hardcodes_paper_brokerage():

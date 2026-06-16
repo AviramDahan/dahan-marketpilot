@@ -66,6 +66,7 @@ def normalize_marketpilot_command(payload: object) -> CommandNormalizationResult
 
     if payload is None:
         return CommandNormalizationResult(False, "missing_command_payload")
+    payload = _unwrap_command_payload(payload)
 
     field_names = _payload_field_names(payload)
     unsafe_field = next((field for field in sorted(_UNSAFE_ORDER_FIELDS) if field in field_names), None)
@@ -175,9 +176,13 @@ def _payload_field_names(payload: object) -> frozenset[str]:
 def _field_value(payload: object, field_name: str) -> object:
     candidates = _field_candidates(field_name)
     if isinstance(payload, Mapping):
+        lowered = {str(key).lower(): key for key in payload}
         for candidate in candidates:
             if candidate in payload:
                 return payload[candidate]
+            lowered_key = lowered.get(candidate.lower())
+            if lowered_key is not None:
+                return payload[lowered_key]
         return None
 
     for candidate in candidates:
@@ -213,8 +218,30 @@ def _parse_required_aware_utc(payload: object, field_name: str) -> datetime | st
 
 def _field_candidates(field_name: str) -> tuple[str, ...]:
     pascal = "".join(part.capitalize() for part in field_name.split("_"))
+    camel = pascal[0].lower() + pascal[1:] if pascal else field_name
     mixed = field_name[0].upper() + field_name[1:] if field_name else field_name
-    return (field_name, mixed, pascal)
+    return (field_name, mixed, pascal, camel)
+
+
+def _unwrap_command_payload(payload: object) -> object:
+    if isinstance(payload, Mapping):
+        nested = payload.get("marketpilot_signal") or payload.get("MarketPilotSignal")
+        if nested is not None:
+            return nested
+
+        parameters = payload.get("parameters") or payload.get("Parameters")
+        type_name = str(payload.get("$type") or payload.get("type") or payload.get("Type") or "")
+        if parameters is not None and (
+            type_name.endswith("MarketPilotSignalCommand")
+            or type_name == COMMAND_TYPE_MARKETPILOT_SIGNAL
+            or (
+                isinstance(parameters, Mapping)
+                and _field_value(parameters, "command_type") == COMMAND_TYPE_MARKETPILOT_SIGNAL
+            )
+        ):
+            return parameters
+
+    return payload
 
 
 __all__ = [

@@ -297,3 +297,8 @@ Current external evidence from 2026-06-16:
   `/live/commands/create`.
 - Callback-to-order smoke remains blocked because no `on_command` debug log or
   live order appeared after polling `/live/logs/read` and `/live/orders/read`.
+- Phase 15-06 added `scripts/qc_command_smoke.py`, which refuses to run unless
+  `MARKETPILOT_QC_COMMAND_SMOKE_ENABLED=1` and redacts secret environment
+  values from output.
+- A typed command probe also returned command API success, but still produced 0
+  callback logs and 0 live orders after 12 polls.

@@ -136,6 +136,7 @@ _ALLOWED_ENDPOINTS: frozenset[str] = frozenset(
         "authenticate",
         "live/read",
         "live/list",
+        "live/logs/read",
         "backtests/create",
         "backtests/read",
         "backtests/list",
@@ -490,6 +491,25 @@ class QCApiClient:
         """Read one official QuantConnect live orders page."""
         return self._make_request(
             "live/orders/read",
+            {
+                "projectId": project_id,
+                "algorithmId": deploy_id,
+                "start": start,
+                "end": end,
+            },
+        )
+
+    def read_live_logs(
+        self,
+        *,
+        project_id: int,
+        deploy_id: str,
+        start: int = 0,
+        end: int = 100,
+    ) -> dict:
+        """Read QuantConnect live logs for a running paper algorithm."""
+        return self._make_request(
+            "live/logs/read",
             {
                 "projectId": project_id,
                 "algorithmId": deploy_id,

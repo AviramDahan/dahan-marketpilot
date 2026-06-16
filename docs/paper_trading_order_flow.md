@@ -117,3 +117,11 @@ Real QuantConnect paper execution can be claimed only after a credentialed
 paper-only smoke run records sanitized evidence from a user-managed running
 paper deployment. Without that run, PTD-01/PTD-02 external delivery evidence and
 the running-QuantConnect phase goal remain `blocked_external_not_verified`.
+
+As of Phase 15-06, QuantConnect cloud file sync, compile, Paper deployment
+creation, read-only polling, and `/live/commands/create` acceptance are verified.
+Callback-to-order evidence remains blocked: both plain and typed MarketPilot
+command probes returned command API success, but `/live/logs/read` and
+`/live/orders/read` showed no `on_command` debug log and no live order during
+the smoke windows. API acceptance must still not be treated as callback
+execution, order submission, fill evidence, or portfolio change.
