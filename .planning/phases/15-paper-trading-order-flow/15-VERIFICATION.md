@@ -41,6 +41,7 @@ mocked live orders, fake LEAN objects, and fake fills are not external evidence.
 | Phase 15-09 Object Store diagnose-only smoke | passed_external_object_store_write | `qc_object_store_signal_smoke.py --diagnose-only` performs `/object/set` before any compile/deploy. After removing the session-level JSON content type from multipart uploads, credentialed diagnose-only used project `32900381`, organization `ed947707222a7b9aeb5de9d0974e5994`, and key `32900381/marketpilot/signals/object-store-smoke-20260616221505.json`; `/object/set` returned `success=true`, `/object/properties` returned JSON metadata, cleanup succeeded, and no compile/deploy/order polling was performed. |
 | Phase 15-09 full Object Store fallback smoke | object_store_written_no_algorithm_receipt_observed | Full fallback smoke wrote key `32900381/marketpilot/signals/object-store-smoke-20260616221527.json`, compiled `462cdc22a9803673f0b85cbe82d09db0-4e5dd314ca2c676616079f237105ca84` to `BuildSuccess`, deployed Paper algorithm `L-35940c556bcc768d5ca186f28d868441`, restored `main.py`, cleaned up the object, and stopped the temporary deployment. Eighteen polls observed 0 live logs, 0 tagged orders, and no receipt marker. |
 | Phase 15-10 corrected live-log Object Store fallback smoke | object_store_delivery_receipt_or_rejection_observed | Corrected `/live/logs/read` to send `format`, `startLine`, `endLine`, and `deploymentLogs`. Full fallback smoke wrote key `32900381/marketpilot/signals/object-store-smoke-20260616222641.json`, compiled `17cf8c855b9f015b657bb8ee93dde36f-fc7dc35aac534131b7f46de7f1f4338f` to `BuildSuccess`, deployed Paper algorithm `L-103091222fcd6eee4aae06e1de635e38`, observed `MarketPilot Object Store signal received.` and `MarketPilot object_store accepted: SPY 1` in live logs, observed a QuantConnect `New Order Event` with status `Submitted`, cleaned up the object, and stopped the deployment. `/live/orders/read` returned 0 orders during the smoke window. |
+| Phase 15-11 short auto-stop smoke | passed_external_auto_stop | Object Store fallback smokes now stop temporary Paper deployments by default and require `--keep-running` for explicit next-open observation. A short credentialed smoke wrote key `32900381/marketpilot/signals/object-store-smoke-20260616223659.json`, compiled `afa175c1bfd2ec3fbe9761e785d36564-3a1e17366ee80c002632e087f0b2adc5` to `BuildSuccess`, deployed `L-d54a7a1b3ffb938b43db9cab1a0f2560`, cleaned up the object, and returned `stop_success=true`. |
 
 ## Requirement Evidence Matrix
 
@@ -117,6 +118,11 @@ QuantConnect paper order event with status `Submitted`. `/live/orders/read`
 still returned 0 orders during the polling window, likely because the order was
 submitted while the market was closed and was converted to fill at next market
 open.
+
+Phase 15-11 added auto-stop safety to the Object Store smoke. Temporary Paper
+deployments are stopped by default after polling; next-open observation requires
+the explicit `--keep-running` flag. A short credentialed smoke verified external
+`stop_success=true`.
 
 ## Secret Handling
 

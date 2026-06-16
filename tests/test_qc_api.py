@@ -782,6 +782,140 @@ def test_qc_object_store_smoke_diagnose_only_cleans_created_probe(monkeypatch):
     assert fake.deleted is True
 
 
+def test_qc_object_store_smoke_stops_created_deployment_by_default(monkeypatch):
+    module = _load_qc_object_store_smoke_module()
+
+    class FakeClient:
+        def __init__(self):
+            self.stopped = False
+
+        def discover_organization_id(self):
+            return "org-1"
+
+        def upload_object_store_file(self, **_kwargs):
+            return {"success": True}
+
+        def read_object_store_metadata(self, **_kwargs):
+            return {"success": True, "size": 42}
+
+        def read_project_file(self, **_kwargs):
+            return {"files": [{"name": "main.py", "content": "old"}]}
+
+        def update_project_file_content(self, **_kwargs):
+            return True
+
+        def create_compile(self, **_kwargs):
+            return {"success": True, "compileId": "C-1"}
+
+        def read_compile(self, **_kwargs):
+            return {"success": True, "state": "BuildSuccess", "logs": []}
+
+        def create_live_algorithm(self, **_kwargs):
+            return {"success": True, "deployId": "L-paper"}
+
+        def read_live_logs(self, **_kwargs):
+            return {"success": True, "logs": ["MarketPilot Object Store signal received."]}
+
+        def read_live_orders_page(self, **_kwargs):
+            return {"success": True, "orders": []}
+
+        def delete_object_store_file(self, **_kwargs):
+            return True
+
+        def stop_live_algorithm(self, **_kwargs):
+            self.stopped = True
+            return True
+
+    fake = FakeClient()
+    monkeypatch.setenv("MARKETPILOT_QC_OBJECT_STORE_SMOKE_ENABLED", "1")
+    monkeypatch.setenv("QC_PROJECT_ID", "32900381")
+    monkeypatch.setenv("QC_NODE_ID", "LN-paper")
+    monkeypatch.setenv("QC_VERSION_ID", "17838")
+    with patch.object(module, "QCApiClient", return_value=fake):
+        result = module.run_smoke(
+            command_label="object_store_signal_probe",
+            dry_run=False,
+            diagnose_only=False,
+            deploy=True,
+            cleanup=True,
+            file_name="main.py",
+            restore_original=True,
+            compile_polls=1,
+            compile_poll_seconds=0,
+            polls=1,
+            poll_seconds=0,
+        )
+
+    assert result["status"] == "object_store_delivery_receipt_or_rejection_observed"
+    assert result["stop_attempted"] is True
+    assert result["stop_success"] is True
+    assert fake.stopped is True
+
+
+def test_qc_object_store_smoke_keep_running_skips_auto_stop(monkeypatch):
+    module = _load_qc_object_store_smoke_module()
+
+    class FakeClient:
+        def discover_organization_id(self):
+            return "org-1"
+
+        def upload_object_store_file(self, **_kwargs):
+            return {"success": True}
+
+        def read_object_store_metadata(self, **_kwargs):
+            return {"success": True, "size": 42}
+
+        def read_project_file(self, **_kwargs):
+            return {"files": [{"name": "main.py", "content": "old"}]}
+
+        def update_project_file_content(self, **_kwargs):
+            return True
+
+        def create_compile(self, **_kwargs):
+            return {"success": True, "compileId": "C-1"}
+
+        def read_compile(self, **_kwargs):
+            return {"success": True, "state": "BuildSuccess", "logs": []}
+
+        def create_live_algorithm(self, **_kwargs):
+            return {"success": True, "deployId": "L-paper"}
+
+        def read_live_logs(self, **_kwargs):
+            return {"success": True, "logs": []}
+
+        def read_live_orders_page(self, **_kwargs):
+            return {"success": True, "orders": []}
+
+        def delete_object_store_file(self, **_kwargs):
+            return True
+
+        def stop_live_algorithm(self, **_kwargs):
+            raise AssertionError("stop should be skipped when keep-running is active")
+
+    monkeypatch.setenv("MARKETPILOT_QC_OBJECT_STORE_SMOKE_ENABLED", "1")
+    monkeypatch.setenv("QC_PROJECT_ID", "32900381")
+    monkeypatch.setenv("QC_NODE_ID", "LN-paper")
+    monkeypatch.setenv("QC_VERSION_ID", "17838")
+    with patch.object(module, "QCApiClient", return_value=FakeClient()):
+        result = module.run_smoke(
+            command_label="object_store_signal_probe",
+            dry_run=False,
+            diagnose_only=False,
+            deploy=True,
+            cleanup=True,
+            file_name="main.py",
+            restore_original=True,
+            compile_polls=1,
+            compile_poll_seconds=0,
+            polls=1,
+            poll_seconds=0,
+            stop_after_deploy=False,
+        )
+
+    assert result["status"] == "object_store_written_no_algorithm_receipt_observed"
+    assert result["stop_attempted"] is False
+
+
 def test_create_live_algorithm_hardcodes_paper_brokerage():
     client = _make_client_with_mocked_auth()
     fixture = _load_fixture("live_create_success.json")

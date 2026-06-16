@@ -362,3 +362,9 @@ during the smoke window. Record this status as
 `object_store_delivery_receipt_or_rejection_observed` and keep order/fill
 authority pending until `/live/orders/read` returns a tagged order, fill, or
 rejection.
+
+Phase 15-11 makes temporary Paper deployments safer: Object Store fallback
+smokes stop deployments by default after polling and expose `--keep-running`
+only for an explicit operator-approved next-open or market-hours observation.
+A short credentialed auto-stop check created a Paper deployment, cleaned the
+probe object, and returned `stop_success=true`.

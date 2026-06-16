@@ -113,6 +113,7 @@ def run_smoke(
     compile_poll_seconds: int,
     polls: int,
     poll_seconds: int,
+    stop_after_deploy: bool = True,
 ) -> dict[str, object]:
     _require_enabled()
     now = datetime.now(timezone.utc)
@@ -130,6 +131,7 @@ def run_smoke(
         "deploy": deploy,
         "diagnose_only": diagnose_only,
         "cleanup": cleanup,
+        "stop_after_deploy": stop_after_deploy,
         "environment": summarize_env(),
         "signal_preview": sanitize(signal),
     }
@@ -260,6 +262,11 @@ def run_smoke(
             project_id=project_id,
             key=key,
         )
+    if deploy and stop_after_deploy:
+        result["stop_attempted"] = True
+        result["stop_success"] = client.stop_live_algorithm(project_id=project_id)
+    elif deploy:
+        result["stop_attempted"] = False
     return result
 
 
@@ -449,6 +456,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--file-name", default="main.py")
     parser.add_argument("--no-restore-original", action="store_true")
     parser.add_argument("--no-cleanup", action="store_true")
+    parser.add_argument(
+        "--keep-running",
+        action="store_true",
+        help="Leave the temporary Paper deployment running for explicit next-open observation.",
+    )
     parser.add_argument("--compile-polls", type=int, default=12)
     parser.add_argument("--compile-poll-seconds", type=int, default=5)
     parser.add_argument("--polls", type=int, default=12)
@@ -467,6 +479,7 @@ def main(argv: list[str] | None = None) -> int:
         compile_poll_seconds=args.compile_poll_seconds,
         polls=args.polls,
         poll_seconds=args.poll_seconds,
+        stop_after_deploy=not args.keep_running,
     )
     print(json.dumps(sanitize(output), indent=2, default=str))
     return 0

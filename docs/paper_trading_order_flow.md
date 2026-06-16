@@ -189,3 +189,6 @@ and Object Store writes are externally verified:
 - The remaining external gap is post-receipt order authority: `/live/orders/read`
   returned 0 orders during the smoke window, and no fill/rejection evidence is
   claimed yet.
+- As of Phase 15-11, Object Store fallback smokes stop temporary Paper
+  deployments by default after polling. Use `--keep-running` only for an
+  explicit operator-approved next-open or market-hours observation window.
