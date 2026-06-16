@@ -74,6 +74,14 @@ class QuantConnectOrderObservation:
     parse_warnings: tuple[str, ...] = ()
 
 
+@dataclass(frozen=True)
+class QuantConnectOrderPollResult:
+    observed_count: int
+    audit_record_count: int
+    warning_count: int
+    observations: tuple[QuantConnectOrderObservation, ...]
+
+
 def deploy_paper_algorithm(
     *,
     project_id: int,
@@ -271,6 +279,73 @@ def parse_quantconnect_live_orders(
         return ()
 
     return tuple(parse_quantconnect_live_order(raw_order) for raw_order in orders)
+
+
+def poll_quantconnect_order_updates(
+    *,
+    project_id: int,
+    deploy_id: str,
+    audit_journal_path: str | Path,
+    correlation_id: str,
+    client: QCApiClient | None = None,
+    observed_at_utc: datetime | None = None,
+) -> QuantConnectOrderPollResult:
+    """Poll authoritative QuantConnect live orders and mirror evidence to JSONL."""
+
+    _assert_paper_only()
+    observed_at = _aware_utc(observed_at_utc or datetime.now(timezone.utc), "observed_at_utc")
+    api_client = client or QCApiClient()
+    raw_orders = api_client.read_live_orders(project_id=project_id, deploy_id=deploy_id)
+    observations = parse_quantconnect_live_orders(raw_orders)
+    journal = AppendOnlyJsonlAuditJournal(audit_journal_path)
+
+    audit_count = 0
+    for observation in observations:
+        _append_audit(
+            journal,
+            event_type=_audit_event_type_for_observation(observation),
+            timestamp=observed_at,
+            correlation_id=correlation_id,
+            payload=_audit_payload_for_observation(
+                observation,
+                project_id=project_id,
+                deploy_id=deploy_id,
+                correlation_id=correlation_id,
+                observed_at=observed_at,
+            ),
+        )
+        audit_count += 1
+
+    warning_count = sum(1 for observation in observations if observation.parse_warnings)
+    return QuantConnectOrderPollResult(
+        observed_count=len(observations),
+        audit_record_count=audit_count,
+        warning_count=warning_count,
+        observations=observations,
+    )
+
+
+def read_signal_order_fill_trace(
+    *,
+    audit_journal_path: str | Path,
+    signal_id: str | None = None,
+    idempotency_key: str | None = None,
+) -> tuple[dict[str, object], ...]:
+    """Read an ordered signal-to-order-to-fill chain from local audit evidence."""
+
+    if not (signal_id or idempotency_key):
+        raise ValueError("signal_id or idempotency_key is required.")
+    records = AppendOnlyJsonlAuditJournal(audit_journal_path).read_records()
+    filtered: list[dict[str, object]] = []
+    for record in records:
+        payload = record.get("payload", {})
+        if not isinstance(payload, Mapping):
+            continue
+        signal_matches = signal_id is not None and payload.get("signal_id") == signal_id
+        key_matches = idempotency_key is not None and payload.get("idempotency_key") == idempotency_key
+        if signal_matches or key_matches:
+            filtered.append(record)
+    return tuple(sorted(filtered, key=lambda record: str(record.get("timestamp", ""))))
 
 
 def submit_signal_command(
@@ -560,6 +635,53 @@ def _build_order_observation(
     )
 
 
+def _audit_event_type_for_observation(observation: QuantConnectOrderObservation) -> str:
+    if observation.lifecycle_state is OrderLifecycleState.REJECTED:
+        return "paper_order_rejected"
+    if (
+        observation.lifecycle_state in {OrderLifecycleState.PARTIALLY_FILLED, OrderLifecycleState.FILLED}
+        and observation.filled_quantity is not None
+    ):
+        return "paper_fill_observed"
+    return "paper_order_observed"
+
+
+def _audit_payload_for_observation(
+    observation: QuantConnectOrderObservation,
+    *,
+    project_id: int,
+    deploy_id: str,
+    correlation_id: str,
+    observed_at: datetime,
+) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "source_authority": "quantconnect",
+        "local_authority": False,
+        "paper_trading_only": True,
+        "correlation_id": correlation_id,
+        "project_id": project_id,
+        "deploy_id": deploy_id,
+        "quantconnect_order_id": observation.quantconnect_order_id,
+        "signal_id": observation.signal_id,
+        "idempotency_key": observation.idempotency_key,
+        "symbol": observation.symbol,
+        "status": observation.lifecycle_state.value if observation.lifecycle_state else "unknown",
+        "raw_status": observation.raw_status,
+        "quantity": observation.quantity,
+        "filled_quantity": observation.filled_quantity,
+        "remaining_quantity": observation.remaining_quantity,
+        "average_fill_price": observation.average_fill_price,
+        "submitted_at_utc": _optional_utc_iso(observation.submitted_at),
+        "last_fill_at_utc": _optional_utc_iso(observation.last_fill_at),
+        "observed_at_utc": _utc_iso(observed_at),
+        "rejection_reason": observation.rejection_reason,
+        "tag": observation.tag,
+        "parse_warnings": list(observation.parse_warnings),
+        "raw_payload": dict(observation.raw_payload),
+    }
+    return payload
+
+
 def _map_qc_status(raw_status: str) -> OrderLifecycleState | None:
     normalized = raw_status.strip().lower().replace("_", "").replace(" ", "")
     if normalized in {"new", "submitted", "submitpending", "updatesubmitted"}:
@@ -643,6 +765,12 @@ def _utc_iso(value: datetime) -> str:
     return _aware_utc(value, "timestamp").isoformat()
 
 
+def _optional_utc_iso(value: datetime | None) -> str | None:
+    if value is None:
+        return None
+    return _utc_iso(value)
+
+
 def _assert_paper_only() -> None:
     if PAPER_TRADING_ONLY is not True:
         raise RuntimeError("PAPER_TRADING_ONLY must be True for paper order flow.")
@@ -652,10 +780,13 @@ __all__ = [
     "PaperDeploymentResult",
     "PaperSignalSubmissionResult",
     "QuantConnectOrderObservation",
+    "QuantConnectOrderPollResult",
     "SyncGateDecision",
     "deploy_paper_algorithm",
     "evaluate_latest_sync_gate",
     "parse_quantconnect_live_order",
     "parse_quantconnect_live_orders",
+    "poll_quantconnect_order_updates",
+    "read_signal_order_fill_trace",
     "submit_signal_command",
 ]
