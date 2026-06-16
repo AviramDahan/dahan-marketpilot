@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -189,7 +190,24 @@ def test_validate_marketpilot_command_rejects_duplicate_before_order_placement()
 
 
 def _load_lean_main(monkeypatch):
+    class FakeSchedule:
+        def __init__(self):
+            self.calls = []
+
+        def on(self, date_rule, time_rule, callback):
+            self.calls.append((date_rule, time_rule, callback))
+
+    class FakeDateRules:
+        def every_day(self):
+            return "every_day"
+
+    class FakeTimeRules:
+        def every(self, interval):
+            return ("every", interval)
+
     class FakeQCAlgorithm:
+        parameter_values = {}
+
         def set_start_date(self, *args):
             self.start_date = args
 
@@ -206,6 +224,9 @@ def _load_lean_main(monkeypatch):
 
         def add_universe(self, selector):
             self.universe_selector = selector
+
+        def get_parameter(self, name):
+            return self.parameter_values.get(name, "")
 
         def debug(self, message):
             self.debug_messages = getattr(self, "debug_messages", [])
@@ -227,6 +248,9 @@ def _load_lean_main(monkeypatch):
     module = importlib.util.module_from_spec(spec)
     assert spec is not None and spec.loader is not None
     spec.loader.exec_module(module)
+    module.FakeSchedule = FakeSchedule
+    module.FakeDateRules = FakeDateRules
+    module.FakeTimeRules = FakeTimeRules
     return module
 
 
@@ -238,11 +262,32 @@ def _algorithm(monkeypatch):
     return algorithm
 
 
+def test_initialize_schedules_object_store_polling_when_key_parameter_exists(monkeypatch):
+    module = _load_lean_main(monkeypatch)
+    base = module.DahanMarketPilotRuntime.__mro__[1]
+    base.parameter_values = {
+        "marketpilot_object_store_signal_key": "123/marketpilot/signals/smoke.json"
+    }
+    algorithm = module.DahanMarketPilotRuntime()
+    algorithm.schedule = module.FakeSchedule()
+    algorithm.date_rules = module.FakeDateRules()
+    algorithm.time_rules = module.FakeTimeRules()
+
+    algorithm.initialize()
+
+    assert algorithm.marketpilot_object_store_signal_key == "123/marketpilot/signals/smoke.json"
+    assert len(algorithm.schedule.calls) == 1
+    assert algorithm.schedule.calls[0][0] == "every_day"
+    assert algorithm.schedule.calls[0][2] == algorithm.poll_marketpilot_object_store_signal
+    base.parameter_values = {}
+
+
 def test_initialize_creates_command_idempotency_and_order_event_evidence(monkeypatch):
     algorithm = _algorithm(monkeypatch)
 
     assert algorithm.marketpilot_seen_command_keys == set()
     assert algorithm.latest_command_receipt_evidence is None
+    assert algorithm.latest_object_store_receipt_evidence is None
     assert algorithm.latest_order_event_evidence is None
 
 
@@ -321,3 +366,75 @@ def test_on_order_event_records_sanitized_trace_evidence(monkeypatch):
         "idempotency_key": "order-intent-001",
     }
     assert "message" not in result
+
+
+class FakeObjectStore:
+    def __init__(self, payloads):
+        self.payloads = payloads
+        self.clear_called = False
+
+    def clear(self):
+        self.clear_called = True
+
+    def contains_key(self, key):
+        return key in self.payloads
+
+    def read(self, key):
+        return self.payloads[key]
+
+
+def test_object_store_signal_poll_accepts_fresh_payload_through_shared_validation(monkeypatch):
+    algorithm = _algorithm(monkeypatch)
+    key = "123/marketpilot/signals/smoke.json"
+    algorithm.marketpilot_object_store_signal_key = key
+    algorithm.object_store = FakeObjectStore({key: json.dumps(_payload(idempotency_key="object-store-001"))})
+
+    accepted = algorithm.poll_marketpilot_object_store_signal()
+
+    assert accepted is True
+    assert algorithm.object_store.clear_called is True
+    assert algorithm.latest_object_store_receipt_evidence == {
+        "received": True,
+        "key": key,
+        "payload_kind": "dict",
+        "has_command_type": True,
+    }
+    assert algorithm.market_orders == [
+        {"symbol": "MSFT", "quantity": 12, "tag": "mp:sig-001:object-store-001"}
+    ]
+    assert algorithm.poll_marketpilot_object_store_signal() is False
+    assert len(algorithm.market_orders) == 1
+
+
+def test_object_store_signal_poll_rejects_stale_without_order(monkeypatch):
+    algorithm = _algorithm(monkeypatch)
+    key = "123/marketpilot/signals/stale.json"
+    algorithm.marketpilot_object_store_signal_key = key
+    algorithm.object_store = FakeObjectStore(
+        {key: json.dumps(_payload(expires_at_utc="2026-06-16T14:29:59+00:00"))}
+    )
+
+    accepted = algorithm.poll_marketpilot_object_store_signal()
+
+    assert accepted is False
+    assert getattr(algorithm, "market_orders", []) == []
+    assert algorithm.latest_command_rejection_evidence["reason"] == "expired_signal"
+    assert algorithm.latest_command_rejection_evidence["source"] == "object_store"
+
+
+def test_object_store_signal_poll_rejects_malformed_json_once(monkeypatch):
+    algorithm = _algorithm(monkeypatch)
+    key = "123/marketpilot/signals/malformed.json"
+    algorithm.marketpilot_object_store_signal_key = key
+    algorithm.object_store = FakeObjectStore({key: "{not-json"})
+
+    accepted = algorithm.poll_marketpilot_object_store_signal()
+
+    assert accepted is False
+    assert getattr(algorithm, "market_orders", []) == []
+    assert algorithm.latest_object_store_receipt_evidence == {
+        "received": True,
+        "key": key,
+        "reason": "malformed_object_store_json",
+    }
+    assert algorithm.poll_marketpilot_object_store_signal() is False

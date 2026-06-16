@@ -52,6 +52,13 @@ through `poll_quantconnect_order_updates()`, which calls the `QCApiClient`
 10. `read_signal_order_fill_trace()` reconstructs the local evidence chain by
     `signal_id` or `idempotency_key` without mutating state.
 
+Phase 15-08 also implements a guarded Object Store signal-inbox fallback for
+diagnosis. When explicitly configured with a MarketPilot Object Store key, the
+LEAN adapter polls that key, clears the Object Store cache before read attempts,
+parses the JSON payload, and routes it into the same validation path as
+`on_command()`. Object Store delivery remains only a delivery mechanism; it is
+not order, fill, or portfolio authority.
+
 ## Stale And Duplicate Gates
 
 SAFE-05 is enforced twice:
@@ -91,6 +98,7 @@ may name required environment variables, but must never store or print values:
 - `QC_COMPILE_ID`
 - `QC_NODE_ID`
 - `QC_VERSION_ID`
+- `QC_ORGANIZATION_ID` (optional; the smoke can attempt `/account/read`)
 
 These values must point only to a simulated QuantConnect Paper Trading
 deployment. They must not identify a real-money brokerage account or any live
@@ -146,3 +154,18 @@ the Commands API accepted both immediate and delayed generic echo commands.
 However, `/live/logs/read` returned 0 logs and no echo marker. Phase 15 remains
 externally blocked until QuantConnect command dispatch or a supported fallback
 delivery path is proven.
+
+As of Phase 15-08, the Object Store fallback path is locally implemented and
+tested, but not externally proven:
+
+- `QCApiClient` includes narrow Object Store wrappers for account read, object
+  set/get/list/properties/delete.
+- Object Store writes/deletes are limited to
+  `{project_id}/marketpilot/signals/*.json`.
+- `scripts/qc_object_store_signal_smoke.py` refuses to run unless
+  `MARKETPILOT_QC_OBJECT_STORE_SMOKE_ENABLED=1`.
+- `lean/main.py` polls Object Store only when an explicit signal key is
+  configured and reuses the same MarketPilot validation gates as commands.
+- A credentialed Paper compile/deploy succeeded, but `/object/set` returned
+  `Organization not found`, so no algorithm receipt or order evidence is
+  claimed.

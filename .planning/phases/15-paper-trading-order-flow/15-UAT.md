@@ -17,6 +17,7 @@ SIMULATED PAPER TRADING ONLY - NOT FINANCIAL ADVICE.
 | Real QuantConnect paper read smoke | passed_external_read_only | On 2026-06-16T12:46:23Z, authenticated QuantConnect API reads verified project `32900381`, deploy `L-223eafd89aaac127343bb441bf96e423`, deployment status `running`, algorithm status `running`, equity `27027.03`, and successful `/live/orders/read` with 0 orders. |
 | Real QuantConnect paper command/order smoke | blocked_external_callback_not_verified | Phase 15-06 synced the callback-tolerant receiver, compiled successfully, deployed to Paper, and `/live/commands/create` returned success for `typed_order_command_probe`. However, no `on_command` debug log and no live order appeared after polling, so command callback/order execution is not externally verified. |
 | Phase 15-07 command-dispatch diagnosis tooling | blocked_external_dispatch_not_observed | Added a guarded no-order dispatch probe, official generic command payload alignment, and sanitized command receipt evidence. Credentialed external run compiled and deployed an echo probe, and command API returned success, but no dispatch marker appeared in live logs. |
+| Phase 15-08 Object Store fallback tooling | blocked_external_object_store_write_not_verified | Added guarded Object Store API wrappers, Object Store signal smoke runner, and LEAN Object Store polling through shared validation. External compile/deploy succeeded, but `/object/set` returned `Organization not found`; no algorithm receipt or order evidence is claimed. |
 | Phase 15 full pass / phase-complete | blocked_external_callback_not_verified | Offline tests, cloud sync, compile, live create, read-only smoke, and command API acceptance passed, but real `on_command` to order delivery is not externally verified. |
 
 ## Offline User Acceptance Checks
@@ -66,6 +67,8 @@ Environment/API check on 2026-06-16:
 | Phase 15-07 dispatch probe | blocked_external_dispatch_not_observed; no-order echo compile `677437f56a306fab73f489b921f92652-dbdb35fb652acd584047b1e67f1a13b0` returned `BuildSuccess`, deploy `L-2c24272bebaead4a441fadf048662324` returned `Running`, command API returned success, but 12 polls showed 0 logs and no marker |
 | Phase 15-07 official payload alignment | passed_offline; `typed_order_command_probe` now uses flat fields instead of a nested `parameters` envelope, while the default `marketpilot_signal` remains a generic no-`$type` payload |
 | Phase 15-07 delayed follow-up command | blocked_external_dispatch_not_observed; after waiting about 60 seconds, a second generic command to deploy `L-2c24272bebaead4a441fadf048662324` returned command API success, but 18 polls still showed 0 logs and no marker |
+| Phase 15-08 Object Store local fallback | passed_offline; wrappers are allowlisted, writes/deletes are namespace-limited to `32900381/marketpilot/signals/*.json`, the smoke runner dry-runs with redaction, and fake LEAN Object Store payloads reuse command validation |
+| Phase 15-08 Object Store external smoke | blocked_external_object_store_write_not_verified; compile `cc45d0b42ae58f274bd3b813432bcbcf-845d50c9f70c2df38cedff8fdf2e5eba` returned `BuildSuccess`, deploy `L-1d49f38582cfbf61646aa479f54fbaa7` returned `Running`, `/object/set` returned `Organization not found`, `/object/properties` returned `File not found`, 18 polls showed 0 logs and 0 orders, and the temporary deploy was stopped |
 
 Credentialed QuantConnect command delivery was accepted by the API, but no real
 external LEAN callback, order, fill, or rejection result is claimed by this UAT
@@ -79,11 +82,20 @@ MarketPilot order path was tested again. The echo probe also failed to produce
 observable command-dispatch logs despite successful deploy and command API
 acceptance.
 
+Phase 15-08 then tested a supported Object Store signal-inbox fallback. Local
+wrappers, smoke tooling, and LEAN polling are implemented and tested, and a
+credentialed Paper compile/deploy succeeded. However, the QuantConnect Object
+Store write itself returned `Organization not found` for the active
+organization id visible in both `/account/read`, `projects/read`, and the
+Organization UI URL. Because the object was not created, no algorithm receipt,
+order, fill, rejection, or portfolio-change evidence is claimed.
+
 ## Human Verification Gate
 
 Before Phase 15 can be marked fully passed, an operator must resolve why
 QuantConnect's accepted live command does not trigger observable `on_command`
-behavior in the Paper deployment, then rerun the smallest safe command smoke.
+behavior in the Paper deployment or why Object Store writes are unavailable for
+the active organization, then rerun the smallest safe delivery smoke.
 The resulting evidence must be sanitized and must include only safe identifiers,
 timestamps, paper-only status, command delivery status, and observed
 QuantConnect order/fill/rejection trace status. Secrets must never be recorded.

@@ -29,6 +29,7 @@ from marketpilot.qc_api import (
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "qc_api"
 QC_COMMAND_SMOKE = Path(__file__).resolve().parents[1] / "scripts" / "qc_command_smoke.py"
 QC_DISPATCH_PROBE = Path(__file__).resolve().parents[1] / "scripts" / "qc_command_dispatch_probe.py"
+QC_OBJECT_STORE_SMOKE = Path(__file__).resolve().parents[1] / "scripts" / "qc_object_store_signal_smoke.py"
 
 
 def _load_fixture(name: str) -> dict:
@@ -52,6 +53,14 @@ def _load_qc_command_smoke_module():
 
 def _load_qc_dispatch_probe_module():
     spec = importlib.util.spec_from_file_location("qc_dispatch_probe_test_module", QC_DISPATCH_PROBE)
+    module = importlib.util.module_from_spec(spec)
+    assert spec is not None and spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_qc_object_store_smoke_module():
+    spec = importlib.util.spec_from_file_location("qc_object_store_smoke_test_module", QC_OBJECT_STORE_SMOKE)
     module = importlib.util.module_from_spec(spec)
     assert spec is not None and spec.loader is not None
     spec.loader.exec_module(module)
@@ -111,6 +120,10 @@ def test_safety_gate_allows_read_endpoints():
     client._validate_endpoint("compile/read")
     client._validate_endpoint("files/read")
     client._validate_endpoint("files/update")
+    client._validate_endpoint("account/read")
+    client._validate_endpoint("object/get")
+    client._validate_endpoint("object/list")
+    client._validate_endpoint("object/properties")
 
 
 def test_safety_gate_blocks_paper_gated_when_constant_false():
@@ -138,6 +151,8 @@ def test_safety_gate_allows_paper_gated_when_constant_true():
     client._validate_endpoint("live/orders/read")
     client._validate_endpoint("live/update/stop")
     client._validate_endpoint("live/update/liquidate")
+    client._validate_endpoint("object/set")
+    client._validate_endpoint("object/delete")
 
 
 # ---------------------------------------------------------------------------
@@ -382,6 +397,90 @@ def test_project_file_and_compile_wrappers_use_official_payloads():
     )
 
 
+def test_object_store_wrappers_use_official_payloads_and_namespace():
+    client = _make_client_with_mocked_auth()
+    with patch.object(client, "_make_request", return_value={"success": True, "organizationId": "org-1"}) as mock_request:
+        account = client.read_account()
+        organization_id = client.discover_organization_id()
+        metadata = client.read_object_store_metadata(
+            organization_id="org-1",
+            key="99999/marketpilot/signals/smoke.json",
+        )
+        fetched = client.get_object_store_file(
+            organization_id="org-1",
+            key="99999/marketpilot/signals/smoke.json",
+        )
+        listed = client.list_object_store_files(
+            organization_id="org-1",
+            path="99999/marketpilot/signals",
+        )
+        deleted = client.delete_object_store_file(
+            organization_id="org-1",
+            project_id=99999,
+            key="99999/marketpilot/signals/smoke.json",
+        )
+
+    assert account["success"] is True
+    assert organization_id == "org-1"
+    assert metadata["success"] is True
+    assert fetched["success"] is True
+    assert listed["success"] is True
+    assert deleted is True
+    assert mock_request.call_args_list[0].args == ("account/read", {})
+    assert mock_request.call_args_list[1].args == ("account/read", {})
+    assert mock_request.call_args_list[2].args == (
+        "object/properties",
+        {"organizationId": "org-1", "key": "99999/marketpilot/signals/smoke.json"},
+    )
+    assert mock_request.call_args_list[3].args == (
+        "object/get",
+        {"organizationId": "org-1", "keys": ["99999/marketpilot/signals/smoke.json"]},
+    )
+    assert mock_request.call_args_list[4].args == (
+        "object/list",
+        {"organizationId": "org-1", "path": "99999/marketpilot/signals"},
+    )
+    assert mock_request.call_args_list[5].args == (
+        "object/delete",
+        {"organizationId": "org-1", "key": "99999/marketpilot/signals/smoke.json"},
+    )
+
+
+def test_object_store_upload_uses_multipart_object_data():
+    client = _make_client_with_mocked_auth()
+    with patch.object(client, "_make_file_request", return_value={"success": True}) as mock_file:
+        result = client.upload_object_store_file(
+            organization_id="org-1",
+            project_id=99999,
+            key="99999/marketpilot/signals/smoke.json",
+            content=b'{"paper_trading_only": true}',
+        )
+
+    assert result == {"success": True}
+    mock_file.assert_called_once_with(
+        "object/set",
+        data={"organizationId": "org-1", "key": "99999/marketpilot/signals/smoke.json"},
+        files={"objectData": b'{"paper_trading_only": true}'},
+    )
+
+
+def test_object_store_write_delete_rejects_non_marketpilot_namespace():
+    client = _make_client_with_mocked_auth()
+    with pytest.raises(QCSafetyError, match="Object Store writes/deletes"):
+        client.upload_object_store_file(
+            organization_id="org-1",
+            project_id=99999,
+            key="99999/other/path.json",
+            content=b"{}",
+        )
+    with pytest.raises(QCSafetyError, match="Object Store writes/deletes"):
+        client.delete_object_store_file(
+            organization_id="org-1",
+            project_id=99999,
+            key="88888/marketpilot/signals/smoke.json",
+        )
+
+
 def test_qc_command_smoke_refuses_without_enable_flag(monkeypatch):
     module = _load_qc_command_smoke_module()
     monkeypatch.delenv("MARKETPILOT_QC_COMMAND_SMOKE_ENABLED", raising=False)
@@ -484,6 +583,54 @@ def test_qc_dispatch_probe_builds_flat_typed_diagnostic_payload():
     assert payload["$type"] == "MarketPilotDispatchProbeCommand"
     assert payload["command_type"] == "marketpilot_dispatch_probe"
     assert "parameters" not in payload
+
+
+def test_qc_object_store_smoke_refuses_without_enable_flag(monkeypatch):
+    module = _load_qc_object_store_smoke_module()
+    monkeypatch.delenv("MARKETPILOT_QC_OBJECT_STORE_SMOKE_ENABLED", raising=False)
+
+    with pytest.raises(SystemExit, match="MARKETPILOT_QC_OBJECT_STORE_SMOKE_ENABLED"):
+        module.run_smoke(
+            command_label="object_store_signal_probe",
+            dry_run=True,
+            deploy=False,
+            cleanup=True,
+            file_name="main.py",
+            restore_original=True,
+            compile_polls=1,
+            compile_poll_seconds=0,
+            polls=1,
+            poll_seconds=0,
+        )
+
+
+def test_qc_object_store_smoke_dry_run_is_sanitized(monkeypatch):
+    module = _load_qc_object_store_smoke_module()
+    monkeypatch.setenv("MARKETPILOT_QC_OBJECT_STORE_SMOKE_ENABLED", "1")
+    monkeypatch.setenv("QUANTCONNECT_USER_ID", "507952")
+    monkeypatch.setenv("QUANTCONNECT_API_TOKEN", "SECRET-TOKEN-DO-NOT-PRINT")
+    monkeypatch.setenv("QC_PROJECT_ID", "32900381")
+
+    result = module.run_smoke(
+        command_label="object_store_signal_probe",
+        dry_run=True,
+        deploy=False,
+        cleanup=True,
+        file_name="main.py",
+        restore_original=True,
+        compile_polls=1,
+        compile_poll_seconds=0,
+        polls=1,
+        poll_seconds=0,
+    )
+
+    rendered = json.dumps(result)
+    assert result["status"] == "dry_run"
+    assert result["object_store_key"].startswith("32900381/marketpilot/signals/")
+    assert result["signal_preview"]["command_type"] == "marketpilot_signal"
+    assert result["signal_preview"]["paper_trading_only"] is True
+    assert result["environment"]["QUANTCONNECT_API_TOKEN"] == "configured_redacted"
+    assert "SECRET-TOKEN-DO-NOT-PRINT" not in rendered
 
 
 def test_create_live_algorithm_hardcodes_paper_brokerage():

@@ -281,6 +281,7 @@ variable names to be configured outside the repository and outside chat:
 - `QC_COMPILE_ID`
 - `QC_NODE_ID`
 - `QC_VERSION_ID`
+- `QC_ORGANIZATION_ID` (optional; discovered through `/account/read` when possible)
 
 If these are absent, record the smoke status as
 `blocked_external_not_verified`. Do not treat mocks, fake fills, or `not_run`
@@ -318,3 +319,18 @@ and `/live/commands/create` returned success for a no-order generic echo probe,
 but immediate and delayed `/live/logs/read` polling returned 0 logs and no
 `MARKETPILOT_DISPATCH_PROBE_RECEIVED` marker. Record this status as
 `blocked_external_dispatch_not_observed`.
+
+Phase 15-08 adds an Object Store fallback smoke. It is also disabled by
+default:
+
+```powershell
+$env:MARKETPILOT_QC_OBJECT_STORE_SMOKE_ENABLED="1"
+python scripts\qc_object_store_signal_smoke.py --dry-run --skip-deploy
+```
+
+Credentialed Phase 15-08 evidence: local Object Store wrappers and LEAN polling
+tests passed, and the injected-key Paper algorithm compiled and deployed
+successfully. The Object Store upload itself returned `Organization not found`
+for the active organization id, so no Object Store algorithm receipt, order,
+fill, or rejection evidence is claimed. Record this status as
+`blocked_external_object_store_write_not_verified`.

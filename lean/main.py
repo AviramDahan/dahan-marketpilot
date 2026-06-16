@@ -1,4 +1,5 @@
-from datetime import datetime, timezone
+import json
+from datetime import datetime, timedelta, timezone
 
 from AlgorithmImports import QCAlgorithm, Resolution
 
@@ -18,6 +19,8 @@ from marketpilot.timeframes import BarTimeframe
 class DahanMarketPilotRuntime(QCAlgorithm):
     """Thin QuantConnect adapter for the MarketPilot runtime bridge."""
 
+    MARKETPILOT_OBJECT_STORE_SIGNAL_KEY = ""
+
     def initialize(self):
         self.set_start_date(2026, 1, 1)
         self.set_end_date(2026, 1, 31)
@@ -28,12 +31,16 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         self.latest_dashboard_export_evidence = self.runtime_bridge.export_dashboard_evidence(None)
         self.marketpilot_seen_command_keys = set()
         self.latest_command_receipt_evidence = None
+        self.latest_object_store_receipt_evidence = None
         self.latest_order_event_evidence = None
         self.latest_command_rejection_evidence = None
+        self.marketpilot_object_store_signal_key = self._marketpilot_object_store_signal_key()
+        self.marketpilot_processed_object_store_keys = set()
 
         self.add_equity("SPY", Resolution.DAILY)
         self.add_equity("QQQ", Resolution.DAILY)
         self.add_universe(self.select_dynamic_universe)
+        self._schedule_marketpilot_object_store_polling()
 
         self.debug("SIMULATED PAPER TRADING ONLY - NOT FINANCIAL ADVICE")
 
@@ -70,11 +77,72 @@ class DahanMarketPilotRuntime(QCAlgorithm):
             "has_type": _has_safe_field(data, "$type", "type", "Type"),
         }
         self.debug("MarketPilot command received.")
+        return self._handle_marketpilot_payload(data, source="command")
+
+    def poll_marketpilot_object_store_signal(self):
+        key = str(getattr(self, "marketpilot_object_store_signal_key", "") or "").strip()
+        if not key:
+            return False
+        if key in self.marketpilot_processed_object_store_keys:
+            return False
+
+        object_store = getattr(self, "object_store", getattr(self, "ObjectStore", None))
+        if object_store is None:
+            self.latest_object_store_receipt_evidence = {
+                "received": False,
+                "key": key,
+                "reason": "object_store_unavailable",
+            }
+            return False
+
+        clearer = getattr(object_store, "clear", getattr(object_store, "Clear", None))
+        if callable(clearer):
+            clearer()
+
+        contains = getattr(object_store, "contains_key", getattr(object_store, "ContainsKey", None))
+        if callable(contains) and not contains(key):
+            return False
+
+        reader = getattr(object_store, "read", getattr(object_store, "Read", None))
+        if not callable(reader):
+            self.latest_object_store_receipt_evidence = {
+                "received": False,
+                "key": key,
+                "reason": "object_store_read_unavailable",
+            }
+            return False
+
+        raw_payload = reader(key)
+        try:
+            payload = json.loads(str(raw_payload))
+        except (TypeError, ValueError):
+            self.latest_object_store_receipt_evidence = {
+                "received": True,
+                "key": key,
+                "reason": "malformed_object_store_json",
+            }
+            self.marketpilot_processed_object_store_keys.add(key)
+            self.debug("MarketPilot Object Store signal rejected: malformed_object_store_json")
+            return False
+
+        self.latest_object_store_receipt_evidence = {
+            "received": True,
+            "key": key,
+            "payload_kind": type(payload).__name__,
+            "has_command_type": _has_safe_field(payload, "command_type", "CommandType"),
+        }
+        self.debug("MarketPilot Object Store signal received.")
+        accepted = self._handle_marketpilot_payload(payload, source="object_store")
+        self.marketpilot_processed_object_store_keys.add(key)
+        return accepted
+
+    def _handle_marketpilot_payload(self, data, *, source):
         normalized = normalize_marketpilot_command(data)
         if not normalized.accepted:
             self.latest_command_rejection_evidence = {
                 "accepted": False,
                 "reason": normalized.reason,
+                "source": source,
             }
             self.debug(f"MarketPilot command rejected: {normalized.reason}")
             return False
@@ -89,13 +157,14 @@ class DahanMarketPilotRuntime(QCAlgorithm):
                 "accepted": False,
                 "reason": validation.reason,
                 "symbol": validation.symbol,
+                "source": source,
             }
             self.debug(f"MarketPilot command rejected: {validation.reason}")
             return False
 
         self.market_order(validation.symbol, validation.quantity, tag=validation.tag)
         self.latest_command_rejection_evidence = None
-        self.debug(f"MarketPilot command accepted: {validation.symbol} {validation.quantity}")
+        self.debug(f"MarketPilot {source} accepted: {validation.symbol} {validation.quantity}")
         return True
 
     def on_order_event(self, order_event):
@@ -133,6 +202,32 @@ class DahanMarketPilotRuntime(QCAlgorithm):
             order = getter(order_id)
             return getattr(order, "tag", getattr(order, "Tag", None))
         return None
+
+    def _marketpilot_object_store_signal_key(self):
+        configured = str(getattr(self, "MARKETPILOT_OBJECT_STORE_SIGNAL_KEY", "") or "").strip()
+        if configured:
+            return configured
+        getter = getattr(self, "get_parameter", getattr(self, "GetParameter", None))
+        if callable(getter):
+            value = getter("marketpilot_object_store_signal_key")
+            return str(value or "").strip()
+        return ""
+
+    def _schedule_marketpilot_object_store_polling(self):
+        if not self.marketpilot_object_store_signal_key:
+            return False
+        schedule = getattr(self, "schedule", getattr(self, "Schedule", None))
+        date_rules = getattr(self, "date_rules", getattr(self, "DateRules", None))
+        time_rules = getattr(self, "time_rules", getattr(self, "TimeRules", None))
+        if schedule is None or date_rules is None or time_rules is None:
+            return False
+        on_method = getattr(schedule, "on", getattr(schedule, "On", None))
+        every_day = getattr(date_rules, "every_day", getattr(date_rules, "EveryDay", None))
+        every = getattr(time_rules, "every", getattr(time_rules, "Every", None))
+        if not callable(on_method) or not callable(every_day) or not callable(every):
+            return False
+        on_method(every_day(), every(timedelta(minutes=1)), self.poll_marketpilot_object_store_signal)
+        return True
 
 
 def _safe_attr(obj, *names):

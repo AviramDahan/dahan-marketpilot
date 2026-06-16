@@ -144,6 +144,10 @@ _ALLOWED_ENDPOINTS: frozenset[str] = frozenset(
         "compile/read",
         "files/read",
         "files/update",
+        "account/read",
+        "object/get",
+        "object/list",
+        "object/properties",
         "projects/read",
     }
 )
@@ -155,7 +159,13 @@ _PAPER_GATED_ENDPOINTS: frozenset[str] = frozenset(
         "live/orders/read",
         "live/update/stop",
         "live/update/liquidate",
+        "object/set",
+        "object/delete",
     }
+)
+
+_MARKETPILOT_OBJECT_STORE_RE = re.compile(
+    r"^[0-9]+/marketpilot/signals/[A-Za-z0-9_.=-]+\.json$"
 )
 
 # ---------------------------------------------------------------------------
@@ -273,6 +283,63 @@ class QCApiClient:
                 resp = self._session.post(
                     url, headers=headers, json=payload or {}, timeout=30
                 )
+        except requests.exceptions.Timeout as exc:
+            raise QCNetworkError(
+                f"Timeout calling {endpoint}", status_code=None
+            ) from exc
+        except requests.exceptions.ConnectionError as exc:
+            raise QCNetworkError(
+                f"Connection error calling {endpoint}", status_code=None
+            ) from exc
+
+        status = resp.status_code
+        if status == 401:
+            raise QCAuthenticationError(
+                "Authentication failed",
+                status_code=status,
+                response_body=resp.text,
+            )
+        if status == 429:
+            raise QCRateLimitError(
+                "Rate limited by QC API",
+                status_code=status,
+                response_body=resp.text,
+            )
+        if 500 <= status < 600:
+            raise QCServerError(
+                f"QC server error ({status})",
+                status_code=status,
+                response_body=resp.text,
+            )
+        if 400 <= status < 500:
+            raise QCClientError(
+                f"QC client error ({status})",
+                status_code=status,
+                response_body=resp.text,
+            )
+
+        return resp.json()
+
+    def _make_file_request(
+        self,
+        endpoint: str,
+        *,
+        data: Mapping[str, object],
+        files: Mapping[str, object],
+    ) -> dict:
+        """Execute an authenticated multipart request to the QC API."""
+        self._validate_endpoint(endpoint)
+
+        url = f"{self._config.base_url}/{endpoint}"
+        headers = self._get_auth_headers()
+        try:
+            resp = self._session.post(
+                url,
+                headers=headers,
+                data={str(k): str(v) for k, v in data.items()},
+                files=dict(files),
+                timeout=30,
+            )
         except requests.exceptions.Timeout as exc:
             raise QCNetworkError(
                 f"Timeout calling {endpoint}", status_code=None
@@ -566,6 +633,71 @@ class QCApiClient:
             },
         )
 
+    def read_account(self) -> dict:
+        """Read QuantConnect account status, including organization id."""
+        return self._make_request("account/read", {})
+
+    def discover_organization_id(self) -> str:
+        """Return organization id from env or `/account/read`."""
+        env_value = os.environ.get("QC_ORGANIZATION_ID", "").strip()
+        if env_value:
+            return env_value
+        response = self.read_account()
+        organization_id = str(
+            response.get("organizationId") or response.get("OrganizationId") or ""
+        ).strip()
+        if not organization_id:
+            raise QCClientError("QuantConnect account response did not include organizationId")
+        return organization_id
+
+    def upload_object_store_file(
+        self,
+        *,
+        organization_id: str,
+        project_id: int,
+        key: str,
+        content: bytes,
+    ) -> dict:
+        """Upload one namespaced MarketPilot Object Store file."""
+        _validate_marketpilot_object_store_key(project_id=project_id, key=key)
+        return self._make_file_request(
+            "object/set",
+            data={"organizationId": organization_id, "key": key},
+            files={"objectData": content},
+        )
+
+    def read_object_store_metadata(self, *, organization_id: str, key: str) -> dict:
+        """Read Object Store metadata for one key."""
+        return self._make_request(
+            "object/properties",
+            {"organizationId": organization_id, "key": key},
+        )
+
+    def get_object_store_file(self, *, organization_id: str, key: str) -> dict:
+        """Request a download URL for one Object Store key."""
+        return self._make_request(
+            "object/get",
+            {"organizationId": organization_id, "keys": [key]},
+        )
+
+    def list_object_store_files(self, *, organization_id: str, path: str) -> dict:
+        """List Object Store files under a path."""
+        return self._make_request(
+            "object/list",
+            {"organizationId": organization_id, "path": path},
+        )
+
+    def delete_object_store_file(
+        self, *, organization_id: str, project_id: int, key: str
+    ) -> bool:
+        """Delete one namespaced MarketPilot Object Store file."""
+        _validate_marketpilot_object_store_key(project_id=project_id, key=key)
+        response = self._make_request(
+            "object/delete",
+            {"organizationId": organization_id, "key": key},
+        )
+        return bool(response.get("success", False))
+
     def create_backtest(
         self, *, project_id: int, compile_id: str, backtest_name: str
     ) -> dict:
@@ -607,6 +739,16 @@ def _validate_paper_data_providers(
             )
         normalized[provider_name] = {"id": provider_id}
     return normalized
+
+
+def _validate_marketpilot_object_store_key(*, project_id: int, key: str) -> None:
+    """Permit writes/deletes only inside the MarketPilot signal namespace."""
+    expected_prefix = f"{project_id}/marketpilot/signals/"
+    if not key.startswith(expected_prefix) or _MARKETPILOT_OBJECT_STORE_RE.fullmatch(key) is None:
+        raise QCSafetyError(
+            "Object Store writes/deletes are limited to "
+            f"{expected_prefix}<safe-name>.json"
+        )
 
 
 def _decimal_from_quantconnect_value(value: object) -> Decimal:

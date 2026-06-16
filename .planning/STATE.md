@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Ready to execute Phase 15 Plan 08 Object Store fallback gap closure
-stopped_at: 15-08-PLAN.md ready: supported Object Store signal inbox fallback proof
-last_updated: "2026-06-16T18:25:00.000Z"
+status: Blocked 15-08 external Object Store write: QuantConnect returned Organization not found
+stopped_at: 15-08-SUMMARY.md checkpoint: blocked_external_object_store_write_not_verified
+last_updated: "2026-06-16T18:23:00.000Z"
 last_activity: 2026-06-16
 progress:
   total_phases: 5
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-06-15)
 
 Phase: 15
 Plan: 15-08-PLAN.md
-Status: Ready to execute Phase 15 Plan 08 Object Store fallback gap closure
+Status: Blocked 15-08 external Object Store write: QuantConnect returned Organization not found
 Last activity: 2026-06-16
 
 Progress: [███████░░░] 75%
@@ -206,6 +206,7 @@ Recent decisions affecting current work:
 - [Phase 15]: Plan 07 will isolate generic QuantConnect Commands dispatch with a no-order Python echo algorithm before changing MarketPilot receiver logic again; if dispatch fails externally, it will evaluate only supported paper-only fallback delivery paths.
 - [Phase 15]: Plan 07 execution added the no-order dispatch probe and official flat payload alignment. Credentialed external echo deploy succeeded and command API returned success, but no live log marker appeared after immediate and delayed polling.
 - [Phase 15]: Plan 08 will test a supported QuantConnect Object Store signal inbox fallback because generic Commands dispatch was accepted by the API but not observed by a no-order echo algorithm.
+- [Phase 15]: Plan 08 execution added Object Store wrappers, a guarded Object Store smoke, and LEAN Object Store polling through shared validation. Credentialed external compile/deploy succeeded, but `/object/set` returned `Organization not found`.
 - [Phase 15]: Plan 05 offline E2E tests prove local signal-command-LEAN-audit behavior only; mocks and fake fills are not real QuantConnect execution evidence.
 
 ### Pending Todos
@@ -224,7 +225,7 @@ Recent decisions affecting current work:
 - Exact QuantConnect API endpoints, Object Store behavior, notification APIs, Render deployment details, and Streamlit APIs must be re-verified during the relevant implementation phases.
 - Phase 5 execution should record the local Python version because the current shell has Python 3.10 while project metadata requires Python >=3.11 for strict/release validation.
 - Phase 9 must keep Render dashboard read-only and source Paper state from verified QuantConnect-approved paths.
-- Phase 15 Plan 07 external QuantConnect probe is partially verified through command API acceptance. Callback/order smoke remains blocked_external_dispatch_not_observed because even an isolated no-order echo algorithm did not produce observable `on_command` logs after `/live/commands/create`. Phase 15 Plan 08 is ready to test a supported Object Store delivery fallback.
+- Phase 15 Plan 07 external QuantConnect probe is partially verified through command API acceptance. Callback/order smoke remains blocked_external_dispatch_not_observed because even an isolated no-order echo algorithm did not produce observable `on_command` logs after `/live/commands/create`. Phase 15 Plan 08 tested a supported Object Store delivery fallback, but `/object/set` returned `Organization not found` for the active organization id.
 
 ## Deferred Items
 
@@ -237,6 +238,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-16T18:25:00.000Z
-Stopped at: 15-08-PLAN.md ready: supported Object Store signal inbox fallback proof
-Resume file: .planning/phases/15-paper-trading-order-flow/15-08-PLAN.md
+Last session: 2026-06-16T18:23:00.000Z
+Stopped at: 15-08-SUMMARY.md checkpoint: blocked_external_object_store_write_not_verified
+Resume file: .planning/phases/15-paper-trading-order-flow/15-08-SUMMARY.md
