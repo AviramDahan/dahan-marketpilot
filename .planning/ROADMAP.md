@@ -118,7 +118,7 @@ Plans:
 4. Stale signals triggered outside valid execution window are safely skipped with logged reason
 5. Duplicate deploy requests are rejected via idempotent keys; retry-safe operations throughout
 
-**Plans:** 4/7 plans complete, 2/7 externally partially verified or blocked at callback checkpoint, 1/7 planned for command-dispatch diagnosis
+**Plans:** 4/7 plans complete, 3/7 externally partially verified, blocked, or waiting on env-backed dispatch verification
 
 Plans:
 
@@ -128,7 +128,7 @@ Plans:
 - [x] 15-04-PLAN.md - Authoritative QC order/fill polling, audit JSONL mirror, and signal-order-fill trace queries
 - [ ] 15-05-PLAN.md - Offline E2E tests, docs, UAT/verification, QC sync/compile/deploy/command API verified; callback-to-order smoke still blocked
 - [ ] 15-06-PLAN.md - Gap closure: smoke helper and payload diagnostics complete; callback-to-order smoke still blocked
-- [ ] 15-07-PLAN.md - Gap closure: isolated QuantConnect command-dispatch diagnosis, official generic payload alignment, and supported fallback decision
+- [ ] 15-07-PLAN.md - Gap closure: isolated command-dispatch probe and official payload alignment complete; external probe not run because QC env vars were missing
 
 ---
 

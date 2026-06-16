@@ -8,8 +8,14 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from marketpilot.qc_api import QCApiClient
 
@@ -45,10 +51,7 @@ def build_marketpilot_signal_command(*, now_utc: datetime | None = None) -> dict
 
 def build_typed_order_command_probe(*, now_utc: datetime | None = None) -> dict[str, object]:
     command = build_marketpilot_signal_command(now_utc=now_utc)
-    return {
-        "$type": "MarketPilotSignalCommand",
-        "parameters": command,
-    }
+    return {"$type": "MarketPilotSignalCommand", **command}
 
 
 def build_command(label: str, *, now_utc: datetime | None = None) -> dict[str, object]:

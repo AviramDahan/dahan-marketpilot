@@ -92,6 +92,16 @@ def test_normalize_marketpilot_command_accepts_parameters_envelope():
     assert command.command.symbol == "SPY"
 
 
+def test_normalize_marketpilot_command_accepts_flat_typed_payload():
+    payload = {"$type": "MarketPilotSignalCommand", **_payload(symbol="SPY")}
+
+    command = normalize_marketpilot_command(payload)
+
+    assert command.accepted is True
+    assert command.command is not None
+    assert command.command.symbol == "SPY"
+
+
 def test_normalize_marketpilot_command_accepts_nested_marketpilot_signal_payload():
     payload = {"marketpilot_signal": _payload(symbol="QQQ")}
 
@@ -232,6 +242,7 @@ def test_initialize_creates_command_idempotency_and_order_event_evidence(monkeyp
     algorithm = _algorithm(monkeypatch)
 
     assert algorithm.marketpilot_seen_command_keys == set()
+    assert algorithm.latest_command_receipt_evidence is None
     assert algorithm.latest_order_event_evidence is None
 
 
@@ -245,6 +256,12 @@ def test_on_command_accepts_fresh_marketpilot_signal(monkeypatch):
         {"symbol": "MSFT", "quantity": 12, "tag": "mp:sig-001:order-intent-001"}
     ]
     assert algorithm.marketpilot_seen_command_keys == {"order-intent-001"}
+    assert algorithm.latest_command_receipt_evidence == {
+        "received": True,
+        "payload_kind": "dict",
+        "has_command_type": True,
+        "has_type": False,
+    }
 
 
 @pytest.mark.parametrize(

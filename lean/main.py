@@ -27,6 +27,7 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         self.latest_runtime_result = None
         self.latest_dashboard_export_evidence = self.runtime_bridge.export_dashboard_evidence(None)
         self.marketpilot_seen_command_keys = set()
+        self.latest_command_receipt_evidence = None
         self.latest_order_event_evidence = None
         self.latest_command_rejection_evidence = None
 
@@ -62,6 +63,12 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         return result
 
     def on_command(self, data):
+        self.latest_command_receipt_evidence = {
+            "received": True,
+            "payload_kind": type(data).__name__,
+            "has_command_type": _has_safe_field(data, "command_type", "CommandType"),
+            "has_type": _has_safe_field(data, "$type", "type", "Type"),
+        }
         self.debug("MarketPilot command received.")
         normalized = normalize_marketpilot_command(data)
         if not normalized.accepted:
@@ -133,3 +140,10 @@ def _safe_attr(obj, *names):
         if hasattr(obj, name):
             return getattr(obj, name)
     return None
+
+
+def _has_safe_field(obj, *names):
+    if isinstance(obj, dict):
+        lowered = {str(key).lower() for key in obj}
+        return any(name in obj or name.lower() in lowered for name in names)
+    return any(hasattr(obj, name) for name in names)

@@ -28,6 +28,7 @@ from marketpilot.qc_api import (
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "qc_api"
 QC_COMMAND_SMOKE = Path(__file__).resolve().parents[1] / "scripts" / "qc_command_smoke.py"
+QC_DISPATCH_PROBE = Path(__file__).resolve().parents[1] / "scripts" / "qc_command_dispatch_probe.py"
 
 
 def _load_fixture(name: str) -> dict:
@@ -43,6 +44,14 @@ def _make_client_with_mocked_auth() -> QCApiClient:
 
 def _load_qc_command_smoke_module():
     spec = importlib.util.spec_from_file_location("qc_command_smoke_test_module", QC_COMMAND_SMOKE)
+    module = importlib.util.module_from_spec(spec)
+    assert spec is not None and spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_qc_dispatch_probe_module():
+    spec = importlib.util.spec_from_file_location("qc_dispatch_probe_test_module", QC_DISPATCH_PROBE)
     module = importlib.util.module_from_spec(spec)
     assert spec is not None and spec.loader is not None
     spec.loader.exec_module(module)
@@ -98,6 +107,10 @@ def test_safety_gate_allows_read_endpoints():
     client._validate_endpoint("live/logs/read")
     client._validate_endpoint("authenticate")
     client._validate_endpoint("backtests/read")
+    client._validate_endpoint("compile/create")
+    client._validate_endpoint("compile/read")
+    client._validate_endpoint("files/read")
+    client._validate_endpoint("files/update")
 
 
 def test_safety_gate_blocks_paper_gated_when_constant_false():
@@ -335,6 +348,40 @@ def test_read_live_logs_uses_algorithm_id_payload():
     )
 
 
+def test_project_file_and_compile_wrappers_use_official_payloads():
+    client = _make_client_with_mocked_auth()
+    with patch.object(client, "_make_request", return_value={"success": True, "content": "old"}) as mock_request:
+        read = client.read_project_file(project_id=99999, name="main.py")
+        updated = client.update_project_file_content(
+            project_id=99999,
+            name="main.py",
+            content="print('probe')",
+            code_source_id="test",
+        )
+        created = client.create_compile(project_id=99999)
+        result = client.read_compile(project_id=99999, compile_id="C-1")
+
+    assert read == {"success": True, "content": "old"}
+    assert updated is True
+    assert created == {"success": True, "content": "old"}
+    assert result == {"success": True, "content": "old"}
+    assert mock_request.call_args_list[0].args == ("files/read", {"projectId": 99999, "name": "main.py"})
+    assert mock_request.call_args_list[1].args == (
+        "files/update",
+        {
+            "projectId": 99999,
+            "name": "main.py",
+            "content": "print('probe')",
+            "codeSourceId": "test",
+        },
+    )
+    assert mock_request.call_args_list[2].args == ("compile/create", {"projectId": 99999})
+    assert mock_request.call_args_list[3].args == (
+        "compile/read",
+        {"projectId": 99999, "compileId": "C-1"},
+    )
+
+
 def test_qc_command_smoke_refuses_without_enable_flag(monkeypatch):
     module = _load_qc_command_smoke_module()
     monkeypatch.delenv("MARKETPILOT_QC_COMMAND_SMOKE_ENABLED", raising=False)
@@ -376,8 +423,67 @@ def test_qc_command_smoke_builds_typed_probe_payload():
     payload = module.build_command("typed_order_command_probe")
 
     assert payload["$type"] == "MarketPilotSignalCommand"
-    assert payload["parameters"]["command_type"] == "marketpilot_signal"
-    assert payload["parameters"]["paper_trading_only"] is True
+    assert payload["command_type"] == "marketpilot_signal"
+    assert payload["paper_trading_only"] is True
+    assert "parameters" not in payload
+
+
+def test_qc_dispatch_probe_refuses_without_enable_flag(monkeypatch):
+    module = _load_qc_dispatch_probe_module()
+    monkeypatch.delenv("MARKETPILOT_QC_DISPATCH_PROBE_ENABLED", raising=False)
+
+    with pytest.raises(SystemExit, match="MARKETPILOT_QC_DISPATCH_PROBE_ENABLED"):
+        module.run_probe(
+            command_label="generic_echo",
+            dry_run=True,
+            file_name="main.py",
+            restore_original=True,
+            deploy=False,
+            polls=1,
+            poll_seconds=0,
+            compile_polls=1,
+            compile_poll_seconds=0,
+        )
+
+
+def test_qc_dispatch_probe_dry_run_is_sanitized_and_no_order(monkeypatch):
+    module = _load_qc_dispatch_probe_module()
+    monkeypatch.setenv("MARKETPILOT_QC_DISPATCH_PROBE_ENABLED", "1")
+    monkeypatch.setenv("QUANTCONNECT_USER_ID", "507952")
+    monkeypatch.setenv("QUANTCONNECT_API_TOKEN", "SECRET-TOKEN-DO-NOT-PRINT")
+    monkeypatch.setenv("QC_PROJECT_ID", "32900381")
+
+    result = module.run_probe(
+        command_label="generic_echo",
+        dry_run=True,
+        file_name="main.py",
+        restore_original=True,
+        deploy=False,
+        polls=1,
+        poll_seconds=0,
+        compile_polls=1,
+        compile_poll_seconds=0,
+    )
+
+    rendered = json.dumps(result)
+    assert result["status"] == "dry_run"
+    assert result["command_preview"]["command_type"] == "marketpilot_dispatch_probe"
+    assert "$type" not in result["command_preview"]
+    assert result["environment"]["QUANTCONNECT_API_TOKEN"] == "configured_redacted"
+    assert "SECRET-TOKEN-DO-NOT-PRINT" not in rendered
+    algorithm = module.build_echo_algorithm()
+    assert "market_order" not in algorithm
+    assert "MARKETPILOT_DISPATCH_PROBE_RECEIVED" in algorithm
+
+
+def test_qc_dispatch_probe_builds_flat_typed_diagnostic_payload():
+    module = _load_qc_dispatch_probe_module()
+
+    payload = module.build_command("flat_typed_echo")
+
+    assert payload["$type"] == "MarketPilotDispatchProbeCommand"
+    assert payload["command_type"] == "marketpilot_dispatch_probe"
+    assert "parameters" not in payload
 
 
 def test_create_live_algorithm_hardcodes_paper_brokerage():

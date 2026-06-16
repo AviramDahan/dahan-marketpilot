@@ -302,3 +302,18 @@ Current external evidence from 2026-06-16:
   values from output.
 - A typed command probe also returned command API success, but still produced 0
   callback logs and 0 live orders after 12 polls.
+- Phase 15-07 added `scripts/qc_command_dispatch_probe.py`, which refuses to
+  run unless `MARKETPILOT_QC_DISPATCH_PROBE_ENABLED=1`. It dry-runs without
+  network calls, generates a no-order Python echo algorithm, and tests generic
+  Commands API dispatch before MarketPilot order logic is tested again.
+- Run the dispatch probe dry-run with:
+
+```powershell
+$env:MARKETPILOT_QC_DISPATCH_PROBE_ENABLED="1"
+python scripts\qc_command_dispatch_probe.py --dry-run --skip-deploy
+```
+
+The credentialed dispatch probe requires real QC env vars in the current
+process. If they are absent, record the external status as
+`not_run_missing_env`; do not reuse token values from chat transcripts or
+commit them into scripts.

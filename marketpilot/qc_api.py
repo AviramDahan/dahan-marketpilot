@@ -140,6 +140,10 @@ _ALLOWED_ENDPOINTS: frozenset[str] = frozenset(
         "backtests/create",
         "backtests/read",
         "backtests/list",
+        "compile/create",
+        "compile/read",
+        "files/read",
+        "files/update",
         "projects/read",
     }
 )
@@ -515,6 +519,50 @@ class QCApiClient:
                 "algorithmId": deploy_id,
                 "start": start,
                 "end": end,
+            },
+        )
+
+    def read_project_file(self, *, project_id: int, name: str) -> dict:
+        """Read a single QuantConnect project file."""
+        return self._make_request(
+            "files/read",
+            {
+                "projectId": project_id,
+                "name": name,
+            },
+        )
+
+    def update_project_file_content(
+        self,
+        *,
+        project_id: int,
+        name: str,
+        content: str,
+        code_source_id: str = "Dahan MarketPilot Codex",
+    ) -> bool:
+        """Update one QuantConnect project file through the official API."""
+        response = self._make_request(
+            "files/update",
+            {
+                "projectId": project_id,
+                "name": name,
+                "content": content,
+                "codeSourceId": code_source_id,
+            },
+        )
+        return bool(response.get("success", False))
+
+    def create_compile(self, *, project_id: int) -> dict:
+        """Create a QuantConnect cloud compile job."""
+        return self._make_request("compile/create", {"projectId": project_id})
+
+    def read_compile(self, *, project_id: int, compile_id: str) -> dict:
+        """Read a QuantConnect cloud compile result."""
+        return self._make_request(
+            "compile/read",
+            {
+                "projectId": project_id,
+                "compileId": compile_id,
             },
         )
 

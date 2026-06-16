@@ -41,9 +41,10 @@ through `poll_quantconnect_order_updates()`, which calls the `QCApiClient`
 6. The command is delivered through `QCApiClient.create_live_command()` to a
    user-managed running QuantConnect paper deployment.
 7. `lean/main.py` receives the command in `DahanMarketPilotRuntime.on_command()`.
-   It validates command type, paper-only flags, schema, supported symbol shape,
-   integer positive quantity, expiry, and duplicate idempotency before placing
-   exactly one tagged LEAN paper `market_order()`.
+   It first records sanitized receipt evidence, then validates command type,
+   paper-only flags, schema, supported symbol shape, integer positive quantity,
+   expiry, and duplicate idempotency before placing exactly one tagged LEAN
+   paper `market_order()`.
 8. LEAN order tags use `mp:<signal_id>:<idempotency_key>` so later
    `/live/orders/read` evidence can be mapped back to the signal.
 9. `poll_quantconnect_order_updates()` mirrors QuantConnect order observations
@@ -125,3 +126,17 @@ command probes returned command API success, but `/live/logs/read` and
 `/live/orders/read` showed no `on_command` debug log and no live order during
 the smoke windows. API acceptance must still not be treated as callback
 execution, order submission, fill evidence, or portfolio change.
+
+As of Phase 15-07, the next diagnostic route is explicit:
+
+- `scripts/qc_command_dispatch_probe.py` tests a no-order Python echo algorithm
+  with a generic no-`$type` command payload, matching QuantConnect's documented
+  `on_command` dispatch semantics.
+- `scripts/qc_command_smoke.py` keeps `marketpilot_signal` as the default
+  generic payload and keeps typed payloads clearly labeled as diagnostics.
+- If the no-order echo probe does not log receipt after API acceptance, the
+  blocker is QuantConnect command dispatch or account/project behavior, not
+  MarketPilot order logic.
+- If the echo probe logs receipt, the next safe external proof is the
+  MarketPilot generic command smoke, with callback-to-order or
+  callback-to-rejection evidence recorded separately from API acceptance.
