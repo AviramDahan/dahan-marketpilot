@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from decimal import Decimal
 from time import time
+from typing import Any, Mapping
 
 import requests
 from tenacity import (
@@ -145,6 +146,8 @@ _ALLOWED_ENDPOINTS: frozenset[str] = frozenset(
 _PAPER_GATED_ENDPOINTS: frozenset[str] = frozenset(
     {
         "live/create",
+        "live/commands/create",
+        "live/orders/read",
         "live/update/stop",
         "live/update/liquidate",
     }
@@ -307,16 +310,40 @@ class QCApiClient:
     # ------------------------------------------------------------------
 
     def create_live_algorithm(
-        self, *, project_id: int, compile_id: str, node_id: str
+        self,
+        *,
+        project_id: int,
+        compile_id: str,
+        node_id: str,
+        version_id: str,
+        data_providers: Mapping[str, Mapping[str, object]],
     ) -> dict:
         """Deploy a live paper trading algorithm (paper brokerage hardcoded)."""
+        providers = _validate_paper_data_providers(data_providers)
         payload = {
+            "versionId": version_id,
             "projectId": project_id,
             "compileId": compile_id,
             "nodeId": node_id,
-            "brokerage": {"id": "QuantConnectBrokerage"},
+            "brokerage": {
+                "id": "QuantConnectBrokerage",
+                "environment": "live-paper",
+            },
+            "dataProviders": providers,
         }
         return self._make_request("live/create", payload)
+
+    def create_live_command(
+        self, *, project_id: int, command: Mapping[str, object]
+    ) -> bool:
+        """Deliver a command to a running paper algorithm.
+
+        A successful response only means QuantConnect accepted command delivery.
+        Order and fill status must be read from QuantConnect live orders.
+        """
+        payload = {"projectId": project_id, "command": dict(command)}
+        response = self._make_request("live/commands/create", payload)
+        return bool(response.get("success", False))
 
     def stop_live_algorithm(self, *, project_id: int) -> bool:
         """Stop a running live algorithm."""
@@ -433,25 +460,37 @@ class QCApiClient:
         self, *, project_id: int, deploy_id: str
     ) -> tuple[QuantConnectPaperOrder, ...]:
         """Read live orders and return typed order objects."""
-        response = self._make_request(
-            "live/read", {"projectId": project_id, "deployId": deploy_id}
+        response = self.read_live_orders_page(
+            project_id=project_id,
+            deploy_id=deploy_id,
+            start=0,
+            end=100,
         )
         raw_orders = response.get("orders", {})
         orders: list[QuantConnectPaperOrder] = []
         for _oid, o in raw_orders.items() if isinstance(raw_orders, dict) else enumerate(raw_orders):
             if isinstance(o, dict):
-                orders.append(
-                    QuantConnectPaperOrder(
-                        quantconnect_order_id=str(o.get("id", _oid)),
-                        symbol=o.get("symbol", {}).get("value", "UNKNOWN"),
-                        status=o.get("status", "unknown"),
-                        quantity=int(o.get("quantity", 0)),
-                        submitted_at=datetime.fromisoformat(
-                            o["createdTime"]
-                        ) if "createdTime" in o else datetime.now(timezone.utc),
-                    )
-                )
+                orders.append(_parse_live_order(_oid, o))
         return tuple(orders)
+
+    def read_live_orders_page(
+        self,
+        *,
+        project_id: int,
+        deploy_id: str,
+        start: int = 0,
+        end: int = 100,
+    ) -> dict:
+        """Read one official QuantConnect live orders page."""
+        return self._make_request(
+            "live/orders/read",
+            {
+                "projectId": project_id,
+                "algorithmId": deploy_id,
+                "start": start,
+                "end": end,
+            },
+        )
 
     def create_backtest(
         self, *, project_id: int, compile_id: str, backtest_name: str
@@ -470,3 +509,109 @@ class QCApiClient:
             "backtests/read",
             {"projectId": project_id, "backtestId": backtest_id},
         )
+
+
+def _validate_paper_data_providers(
+    data_providers: Mapping[str, Mapping[str, object]]
+) -> dict[str, dict[str, object]]:
+    """Allow only id-only QuantConnect paper data provider configuration."""
+    if not data_providers:
+        raise QCSafetyError("dataProviders must be explicit for live paper deployment")
+
+    normalized: dict[str, dict[str, object]] = {}
+    for name, config in data_providers.items():
+        provider_name = str(name).strip()
+        provider_id = str(config.get("id", "")).strip() if isinstance(config, Mapping) else ""
+        if provider_name != "QuantConnectBrokerage" or provider_id != "QuantConnectBrokerage":
+            raise QCSafetyError(
+                "Only QuantConnectBrokerage data provider is allowed for paper deployment"
+            )
+        extra_keys = set(config) - {"id"}
+        if extra_keys:
+            raise QCSafetyError(
+                "Data provider credentials or account settings are not allowed in paper deployment payloads"
+            )
+        normalized[provider_name] = {"id": provider_id}
+    return normalized
+
+
+def _parse_live_order(order_key: object, payload: Mapping[str, Any]) -> QuantConnectPaperOrder:
+    tag = _first_string(payload, "tag", "Tag", "orderTag", "OrderTag")
+    signal_id, idempotency_key = _parse_marketpilot_order_tag(tag)
+    quantity = _to_int(payload.get("quantity", payload.get("Quantity", 0)))
+    filled_quantity = _to_int(
+        payload.get(
+            "quantityFilled",
+            payload.get("filledQuantity", payload.get("fillQuantity", payload.get("QuantityFilled", 0))),
+        )
+    )
+    remaining_quantity = _to_int(
+        payload.get(
+            "remainingQuantity",
+            payload.get("quantityRemaining", max(quantity - filled_quantity, 0)),
+        )
+    )
+    raw_status = str(payload.get("status", payload.get("Status", "unknown")))
+    return QuantConnectPaperOrder(
+        quantconnect_order_id=str(payload.get("id", payload.get("orderId", order_key))),
+        symbol=_extract_symbol(payload.get("symbol", payload.get("Symbol"))),
+        status=raw_status,
+        quantity=quantity,
+        submitted_at=_parse_qc_datetime(
+            _first_string(payload, "createdTime", "CreatedTime", "time", "Time")
+        ),
+        idempotency_key=idempotency_key,
+        signal_id=signal_id,
+        raw_status=raw_status,
+        filled_quantity=filled_quantity,
+        remaining_quantity=remaining_quantity,
+        average_fill_price=_first_string(
+            payload, "averageFillPrice", "AverageFillPrice", "fillPrice", "price"
+        ),
+        tag=tag,
+        rejection_reason=_first_string(
+            payload, "message", "Message", "rejectionReason", "RejectionReason"
+        ),
+        raw_payload=dict(payload),
+    )
+
+
+def _parse_marketpilot_order_tag(tag: str | None) -> tuple[str | None, str | None]:
+    if not tag:
+        return None, None
+    parts = tag.split(":", 2)
+    if len(parts) == 3 and parts[0] == "mp":
+        return parts[1] or None, parts[2] or None
+    return None, None
+
+
+def _extract_symbol(value: object) -> str:
+    if isinstance(value, Mapping):
+        return str(value.get("value", value.get("Value", "UNKNOWN")))
+    if value is None:
+        return "UNKNOWN"
+    return str(value)
+
+
+def _first_string(payload: Mapping[str, Any], *keys: str) -> str | None:
+    for key in keys:
+        value = payload.get(key)
+        if value is not None:
+            return str(value)
+    return None
+
+
+def _to_int(value: object) -> int:
+    if value is None or value == "":
+        return 0
+    return int(Decimal(str(value)))
+
+
+def _parse_qc_datetime(value: str | None) -> datetime:
+    if not value:
+        return datetime.now(timezone.utc)
+    normalized = value.replace("Z", "+00:00")
+    parsed = datetime.fromisoformat(normalized)
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed

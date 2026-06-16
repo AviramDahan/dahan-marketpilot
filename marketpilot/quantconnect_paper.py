@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
+from typing import Any
 
 
 QUANTCONNECT_PAPER_BROKERAGE = "QuantConnect Paper Trading"
@@ -52,12 +53,30 @@ class QuantConnectPaperOrder:
     quantity: int
     submitted_at: datetime
     idempotency_key: str | None = None
+    signal_id: str | None = None
+    raw_status: str | None = None
+    filled_quantity: int = 0
+    remaining_quantity: int = 0
+    average_fill_price: str | None = None
+    tag: str | None = None
+    rejection_reason: str | None = None
+    raw_payload: dict[str, Any] = field(default_factory=dict)
     order_role: str = "entry"
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "quantconnect_order_id", self.quantconnect_order_id.strip())
         object.__setattr__(self, "symbol", self.symbol.strip().upper())
         object.__setattr__(self, "status", self.status.strip().lower())
+        if self.raw_status is None:
+            object.__setattr__(self, "raw_status", self.status)
+        if self.tag is not None:
+            object.__setattr__(self, "tag", self.tag.strip())
+        if self.signal_id is not None:
+            object.__setattr__(self, "signal_id", self.signal_id.strip())
+        if self.idempotency_key is not None:
+            object.__setattr__(self, "idempotency_key", self.idempotency_key.strip())
+        if self.rejection_reason is not None:
+            object.__setattr__(self, "rejection_reason", self.rejection_reason.strip())
         object.__setattr__(self, "order_role", self.order_role.strip().lower())
         if not self.quantconnect_order_id:
             raise ValueError("quantconnect_order_id is required after QuantConnect submission.")
