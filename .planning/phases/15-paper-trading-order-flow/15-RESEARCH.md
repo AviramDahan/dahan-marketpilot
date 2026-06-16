@@ -409,7 +409,22 @@ def on_order_event(self, order_event):
 | A2 | Duplicate deploy/signal attempts can happen during network retries or manual reruns. | Common Pitfalls | Idempotency ledger could be more conservative than needed, but duplicate prevention is a success criterion. |
 | A3 | QuantConnect terminology can confuse live-paper and real-money paths for developers. | Common Pitfalls | Documentation emphasis may be excessive, but safety constraints justify it. |
 
-## Open Questions
+## Open Questions (RESOLVED AS EXECUTION GATES)
+
+These questions are not left as planner ambiguity. They are resolved as Phase 15
+execution and acceptance gates:
+
+- Exact `/live/orders/read` response fields for tags, rejection reasons, and
+  partial fill quantities must be captured as sanitized fixtures or manually
+  recorded during the credentialed QuantConnect paper smoke check before FT-01,
+  FT-03, and FT-04 can be marked externally verified.
+- `/live/create` account-specific brokerage/data-provider payload must be
+  implemented from the currently documented request shape and verified with
+  operator-provided credentials before PTD-01 can be marked externally verified.
+- If the credentialed smoke check cannot be run, Phase 15 may record offline
+  implementation as passed, but the running-QuantConnect delivery goal remains
+  `blocked_external_not_verified`; `not_run` is not acceptable proof of PTD-01
+  or PTD-02.
 
 1. **Exact live-orders response shape for tags and rejection messages**
    - What we know: `/live/orders/read` exists and returns live algorithm orders within a requested range. [CITED: https://www.quantconnect.com/docs/v2/cloud-platform/api-reference/live-management/read-live-algorithm/orders]
