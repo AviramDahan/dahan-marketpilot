@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Executed 15-10 Object Store receipt observed; order authority pending
-stopped_at: 15-10-SUMMARY.md checkpoint: object_store_delivery_receipt_or_rejection_observed
-last_updated: "2026-06-16T22:31:00.000Z"
+status: Planning 15-11 deployment auto-stop and order-authority follow-up
+stopped_at: 15-11-PLAN.md created after receipt/order-event evidence
+last_updated: "2026-06-16T22:36:00.000Z"
 last_activity: 2026-06-16
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 18
+  total_plans: 19
   completed_plans: 12
   percent: 71
 ---
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-06-15)
 
 Phase: 15
 Plan: 15-09-PLAN.md
-Status: Executed 15-10 Object Store receipt observed; order authority pending
+Status: Planning 15-11 deployment auto-stop and order-authority follow-up
 Last activity: 2026-06-16
 
 Progress: [███████░░░] 71%
@@ -210,6 +210,7 @@ Recent decisions affecting current work:
 - [Phase 15]: Plan 09 will make Object Store write access a fail-fast preflight before compile/deploy and classify persistent `Organization not found` as an external permission/paid-tier blocker.
 - [Phase 15]: Plan 09 execution added diagnose-only Object Store preflight and fixed multipart Object Store uploads. Credentialed diagnose-only returned `object_store_write_available`; full fallback smoke wrote the object, compiled, deployed, restored files, cleaned up, and stopped deployment, but observed no receipt marker, logs, or tagged orders.
 - [Phase 15]: Plan 10 corrected `/live/logs/read` pagination from `start`/`end` to official `startLine`/`endLine`. Credentialed Object Store fallback smoke then observed receipt, acceptance, and a QuantConnect Paper `Submitted` order event in logs; `/live/orders/read` returned 0 orders during the smoke window, so order/fill authority remains pending.
+- [Phase 15]: Plan 11 will make Object Store fallback smokes stop temporary Paper deployments by default and require an explicit keep-running override for next-open order/fill observation.
 - [Phase 15]: Plan 05 offline E2E tests prove local signal-command-LEAN-audit behavior only; mocks and fake fills are not real QuantConnect execution evidence.
 
 ### Pending Todos

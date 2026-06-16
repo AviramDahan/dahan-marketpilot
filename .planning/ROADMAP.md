@@ -118,7 +118,7 @@ Plans:
 4. Stale signals triggered outside valid execution window are safely skipped with logged reason
 5. Duplicate deploy requests are rejected via idempotent keys; retry-safe operations throughout
 
-**Plans:** 4/10 plans complete, 6/10 externally partially verified or blocked at order-authority checkpoint
+**Plans:** 4/11 plans complete, 7/11 externally partially verified or blocked at order-authority checkpoint
 
 Plans:
 
@@ -132,6 +132,7 @@ Plans:
 - [ ] 15-08-PLAN.md - Gap closure: Object Store signal inbox implemented locally; first external `/object/set` failed before multipart fix
 - [ ] 15-09-PLAN.md - Gap closure: Object Store preflight/diagnose-only implemented; multipart upload fixed and external write now passes, but no algorithm receipt observed
 - [ ] 15-10-PLAN.md - Gap closure: live-log API pagination corrected; Object Store receipt and submitted paper order event observed, `/live/orders/read` still pending
+- [ ] 15-11-PLAN.md - Gap closure: auto-stop temporary Paper deployments and document explicit next-open order-authority follow-up
 
 ---
 
