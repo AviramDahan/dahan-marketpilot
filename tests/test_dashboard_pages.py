@@ -14,7 +14,7 @@ from dashboard.models import (
     DashboardSourceMetadata,
 )
 from dashboard.pages import PAGE_REGISTRY, PageKind, render_page
-from dashboard.pages.overview import build_overview
+from dashboard.pages.overview import HoldingRow, SyncPortfolioView, build_overview, build_sync_portfolio_view
 
 
 EXPECTED_PAGE_ORDER = (
@@ -113,6 +113,12 @@ def test_overview_renders_operational_state_from_typed_snapshot():
     overview = build_overview(_available_snapshot())
     text = "\n".join(overview.lines)
 
+    assert isinstance(overview.sync_portfolio, SyncPortfolioView)
+    assert overview.lines[0] == "Portfolio data fresh - last update: 14:00:00 ET"
+    assert "Cash: $100,000.00 | Equity: $101,250.50 | Unrealized P&L: $125.00" in text
+    assert "Holdings: 1 (MSFT)" in text
+    assert "Last sync: 14:00:00 ET | Last poll: 14:01:00 ET | Errors: 0" in text
+    assert "Source: QuantConnect (authoritative)" in text
     assert "SIMULATED PAPER TRADING ONLY - NOT FINANCIAL ADVICE" in text
     assert "QuantConnect source: quantconnect" in text
     assert "Paper mode: paper-only" in text
@@ -152,6 +158,78 @@ def test_overview_keeps_degraded_states_visible():
     assert "stale" in stale_text
     assert "error" in stale_text
     assert "QuantConnect unavailable" in stale_text
+
+
+def test_sync_portfolio_view_maps_freshness_and_holding_rows():
+    view = build_sync_portfolio_view(_available_snapshot())
+
+    assert view.freshness_level == "fresh"
+    assert view.freshness_label.endswith("14:00:00 ET")
+    assert view.cash == "$100,000.00"
+    assert view.equity == "$101,250.50"
+    assert view.unrealized_pnl == "$125.00"
+    assert view.holdings == (
+        HoldingRow(
+            symbol="MSFT",
+            quantity="10",
+            avg_price="$400.00",
+            market_price="$412.50",
+            pnl_pct="+3.12%",
+        ),
+    )
+    assert "QuantConnect" in view.authority_label
+    assert "authoritative" in view.authority_label
+
+
+def test_sync_portfolio_view_preserves_stale_and_error_levels_with_et_time():
+    base = _available_snapshot()
+
+    stale_snapshot = DashboardSnapshot(
+        source_metadata=DashboardSourceMetadata(
+            source=base.source_metadata.source,
+            source_timestamp=base.source_metadata.source_timestamp,
+            cache_timestamp=base.source_metadata.cache_timestamp,
+            freshness_status=DashboardFreshnessStatus.STALE,
+            authority=DashboardAuthority.AUTHORITATIVE,
+        ),
+        portfolio=base.portfolio,
+    )
+    stale_view = build_sync_portfolio_view(stale_snapshot)
+
+    assert stale_view.freshness_level == "stale"
+    assert stale_view.freshness_label == "Portfolio data stale (>10 min) - last update: 14:00:00 ET"
+
+    error_snapshot = DashboardSnapshot(
+        source_metadata=DashboardSourceMetadata(
+            source=base.source_metadata.source,
+            source_timestamp=base.source_metadata.source_timestamp,
+            cache_timestamp=base.source_metadata.cache_timestamp,
+            freshness_status=DashboardFreshnessStatus.ERROR,
+            authority=DashboardAuthority.AUTHORITATIVE,
+        ),
+        portfolio=DashboardPortfolioSection(
+            status=DashboardSectionStatus.ERROR,
+            cash=base.portfolio.cash,
+            equity=base.portfolio.equity,
+            holdings=base.portfolio.holdings,
+        ),
+    )
+    error_view = build_sync_portfolio_view(error_snapshot)
+
+    assert error_view.freshness_level == "error"
+    assert error_view.freshness_label == "Portfolio data error (>30 min) - last update: 14:00:00 ET"
+
+
+def test_sync_portfolio_view_uses_unavailable_state_without_fabricating_values():
+    snapshot = DashboardDataClient.not_configured(missing=("dashboard_data_source",))
+    view = build_sync_portfolio_view(snapshot)
+
+    assert view.freshness_level == "unavailable"
+    assert view.cash is None
+    assert view.equity is None
+    assert view.unrealized_pnl is None
+    assert view.holdings is None
+    assert "not available" in view.sync_status_label
 
 
 def test_unknown_pages_render_safe_not_available():
