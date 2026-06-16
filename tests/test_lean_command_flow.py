@@ -163,6 +163,7 @@ def _load_lean_main(monkeypatch):
 def _algorithm(monkeypatch):
     module = _load_lean_main(monkeypatch)
     algorithm = module.DahanMarketPilotRuntime()
+    algorithm.time = NOW
     algorithm.initialize()
     return algorithm
 
