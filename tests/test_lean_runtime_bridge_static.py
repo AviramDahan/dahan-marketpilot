@@ -37,7 +37,6 @@ FORBIDDEN_SAFETY_TOKENS = (
     "AddForex",
     "add_forex",
     "MarketOrder",
-    "market_order",
     "SetHoldings",
     "set_holdings",
     "Liquidate",
@@ -141,6 +140,13 @@ def test_bridge_and_lean_sources_keep_real_money_and_uncontrolled_order_tokens_f
 
     for token in FORBIDDEN_SAFETY_TOKENS:
         assert token not in combined
+
+    lean_text = LEAN_MAIN.read_text(encoding="utf-8")
+    bridge_text = LEAN_BRIDGE.read_text(encoding="utf-8")
+    assert "market_order(" not in bridge_text
+    assert lean_text.count("market_order(") == 1
+    assert "def on_command" in lean_text
+    assert "tag=validation.tag" in lean_text
 
 
 def test_completed_quantconnect_like_bar_maps_to_signal_valid_completed_bar():

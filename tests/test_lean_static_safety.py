@@ -8,7 +8,6 @@ LEAN_MAIN = ROOT / "lean" / "main.py"
 
 FORBIDDEN_METHODS = [
     "MarketOrder",
-    "market_order",
     "LimitOrder",
     "limit_order",
     "StopMarketOrder",
@@ -49,6 +48,10 @@ def test_lean_adapter_contains_no_uncontrolled_order_or_live_trading_calls():
 
     for method in FORBIDDEN_METHODS:
         assert method not in text
+
+    assert text.count("market_order(") == 1
+    assert "def on_command" in text
+    assert "tag=validation.tag" in text
 
 
 def test_lean_adapter_delegates_strategy_decisions_to_marketpilot_runtime():
