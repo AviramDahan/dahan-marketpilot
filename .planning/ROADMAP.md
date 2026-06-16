@@ -1,27 +1,27 @@
-# Roadmap: Dahan MarketPilot
+﻿# Roadmap: Dahan MarketPilot
 
 ## Milestones
 
-- ✅ **v1.0 Paper Trading Research Platform** — Phases 1-10.1 (shipped 2026-06-15)
-- 🔄 **v1.1 QuantConnect Live Paper Trading** — Phases 13-17 (active)
+- âœ… **v1.0 Paper Trading Research Platform** â€” Phases 1-10.1 (shipped 2026-06-15)
+- ðŸ”„ **v1.1 QuantConnect Live Paper Trading** â€” Phases 13-17 (active)
 
 ## Phases
 
 <details>
-<summary>✅ v1.0 Paper Trading Research Platform (12 phases, 53 plans) — SHIPPED 2026-06-15</summary>
+<summary>âœ… v1.0 Paper Trading Research Platform (12 phases, 53 plans) â€” SHIPPED 2026-06-15</summary>
 
-- [x] Phase 1: Foundation and Safety (4/4 plans) — completed 2026-06-12
-- [x] Phase 2: QuantConnect Foundation and Universe (4/4 plans) — completed 2026-06-13
-- [x] Phase 3: Trend Pullback (3/3 plans) — completed 2026-06-13
-- [x] Phase 4: Volume Breakout (4/4 plans) — completed 2026-06-13
-- [x] Phase 4.1: Multi-Timeframe Signal Foundation (4/4 plans) — completed 2026-06-14
-- [x] Phase 5: Relative Strength and Unified Scoring (3/3 plans) — completed 2026-06-14
-- [x] Phase 6: Portfolio Risk and Order Lifecycle (5/5 plans) — completed 2026-06-14
-- [x] Phase 7: Backtesting and Validation (5/5 plans) — completed 2026-06-14
-- [x] Phase 8: QuantConnect Paper Trading and Telegram (4/4 plans) — completed 2026-06-14
-- [x] Phase 9: Render Dashboard (8/8 plans) — completed 2026-06-15
-- [x] Phase 10: CI/CD, Security and Release (4/4 plans) — completed 2026-06-15
-- [x] Phase 10.1: Close gap: runtime orchestrator (5/5 plans) — completed 2026-06-15
+- [x] Phase 1: Foundation and Safety (4/4 plans) â€” completed 2026-06-12
+- [x] Phase 2: QuantConnect Foundation and Universe (4/4 plans) â€” completed 2026-06-13
+- [x] Phase 3: Trend Pullback (3/3 plans) â€” completed 2026-06-13
+- [x] Phase 4: Volume Breakout (4/4 plans) â€” completed 2026-06-13
+- [x] Phase 4.1: Multi-Timeframe Signal Foundation (4/4 plans) â€” completed 2026-06-14
+- [x] Phase 5: Relative Strength and Unified Scoring (3/3 plans) â€” completed 2026-06-14
+- [x] Phase 6: Portfolio Risk and Order Lifecycle (5/5 plans) â€” completed 2026-06-14
+- [x] Phase 7: Backtesting and Validation (5/5 plans) â€” completed 2026-06-14
+- [x] Phase 8: QuantConnect Paper Trading and Telegram (4/4 plans) â€” completed 2026-06-14
+- [x] Phase 9: Render Dashboard (8/8 plans) â€” completed 2026-06-15
+- [x] Phase 10: CI/CD, Security and Release (4/4 plans) â€” completed 2026-06-15
+- [x] Phase 10.1: Close gap: runtime orchestrator (5/5 plans) â€” completed 2026-06-15
 
 Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
@@ -29,18 +29,18 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
 ### v1.1 QuantConnect Live Paper Trading
 
-- [x] **Phase 13: QC API Client & Safety Foundation** — Authenticated API client with defense-in-depth paper-only safety (completed 2026-06-15)
-- [ ] **Phase 14: Data Sync & Dashboard Integration** — Reliable portfolio sync from QC with freshness-aware dashboard display
-- [ ] **Phase 15: Paper Trading & Order Flow** — Signal delivery to live algorithm with full fill tracking and audit trail
-- [ ] **Phase 16: Production Scheduler** — Autonomous market-hours pipeline execution with fault tolerance
-- [ ] **Phase 17: MTF Backtest Validation** — Automated comparative backtesting with regression detection
+- [x] **Phase 13: QC API Client & Safety Foundation** â€” Authenticated API client with defense-in-depth paper-only safety (completed 2026-06-15)
+- [ ] **Phase 14: Data Sync & Dashboard Integration** â€” Reliable portfolio sync from QC with freshness-aware dashboard display
+- [ ] **Phase 15: Paper Trading & Order Flow** â€” Signal delivery to live algorithm with full fill tracking and audit trail
+- [ ] **Phase 16: Production Scheduler** â€” Autonomous market-hours pipeline execution with fault tolerance
+- [ ] **Phase 17: MTF Backtest Validation** â€” Automated comparative backtesting with regression detection
 
 ## Overview
 
 | Phase | Name | Goal | Requirements | Plans (est.) |
 |-------|------|------|--------------|--------------|
 | 13 | QC API Client & Safety Foundation | 4/4 | Complete   | 2026-06-15 |
-| 14 | Data Sync & Dashboard Integration | 1/4 | In Progress|  |
+| 14 | Data Sync & Dashboard Integration | 3/4 | In Progress|  |
 | 15 | Paper Trading & Order Flow | Deliver signals to running algorithm; track fills with audit traceability | PTD-01..05, FT-01..04, SAFE-05 | 5 |
 | 16 | Production Scheduler | Run pipeline autonomously on NYSE schedule with fault tolerance | SCHED-01..06, SAFE-03 | 4 |
 | 17 | MTF Backtest Validation | Validate strategy modes through automated comparative backtests | MTF-01..05 | 3 |
@@ -66,10 +66,10 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
 Plans:
 
-- [x] 13-01-PLAN.md — Dependencies and pre-commit hooks (detect-secrets, PAPER_TRADING_ONLY guard)
-- [x] 13-02-PLAN.md — QCApiClient core (HMAC auth, safety gate, retry, credential redaction)
-- [x] 13-03-PLAN.md — Typed endpoint wrappers (7 methods for live/backtest APIs)
-- [x] 13-04-PLAN.md — Test suite with fixtures and meta-tests
+- [x] 13-01-PLAN.md â€” Dependencies and pre-commit hooks (detect-secrets, PAPER_TRADING_ONLY guard)
+- [x] 13-02-PLAN.md â€” QCApiClient core (HMAC auth, safety gate, retry, credential redaction)
+- [x] 13-03-PLAN.md â€” Typed endpoint wrappers (7 methods for live/backtest APIs)
+- [x] 13-04-PLAN.md â€” Test suite with fixtures and meta-tests
 
 ---
 
@@ -89,13 +89,13 @@ Plans:
 4. All timestamps are stored UTC internally and converted to ET only at display and market-hours-check boundaries
 5. Dashboard never shows fabricated data; sync status, last sync time, and portfolio freshness indicator are always visible
 
-**Plans:** 1/4 plans executed
+**Plans:** 3/4 plans executed
 
 Plans:
-- [x] 14-01-PLAN.md — Sync module & JSONL persistence (poll → reconcile → atomic persist → alert)
-- [ ] 14-02-PLAN.md — Dashboard data layer (3-state freshness + sync_jsonl loader)
-- [ ] 14-03-PLAN.md — Dashboard display (freshness banner, metrics, holdings, sync status)
-- [ ] 14-04-PLAN.md — Test suite (sync module + dashboard loader + regression)
+- [x] 14-01-PLAN.md â€” Sync module & JSONL persistence (poll â†’ reconcile â†’ atomic persist â†’ alert)
+- [x] 14-02-PLAN.md â€” Dashboard data layer (3-state freshness + sync_jsonl loader)
+- [x] 14-03-PLAN.md â€” Dashboard display (freshness banner, metrics, holdings, sync status)
+- [ ] 14-04-PLAN.md â€” Test suite (sync module + dashboard loader + regression)
 
 **UI hint**: yes
 
@@ -206,11 +206,11 @@ Plans:
 | MTF-04 | 17 | Pending |
 | MTF-05 | 17 | Pending |
 
-**Coverage:** 41/41 requirements mapped ✓ (8 categories, 0 orphans)
+**Coverage:** 41/41 requirements mapped âœ“ (8 categories, 0 orphans)
 
 ## Progress
 
 | Milestone | Phases | Plans | Status | Shipped |
 |-----------|--------|-------|--------|---------|
 | v1.0 | 12 | 53 | Complete | 2026-06-15 |
-| v1.1 | 5 | ~21 est. | Active | — |
+| v1.1 | 5 | ~21 est. | Active | â€” |

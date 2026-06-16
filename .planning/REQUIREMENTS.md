@@ -51,11 +51,11 @@
 
 ## Dashboard Integration
 
-- [ ] **DASH-01**: Dashboard data refreshes approximately every 5 minutes during market hours; less frequently outside hours
-- [ ] **DASH-02**: Data older than 10 minutes displays visible stale-data warning with original source timestamp
-- [ ] **DASH-03**: Data older than 30 minutes displays strong stale/error state
-- [ ] **DASH-04**: Dashboard never fabricates missing data; QC remains authoritative source
-- [ ] **DASH-05**: Dashboard displays sync status, last sync time, and portfolio freshness indicator
+- [x] **DASH-01**: Dashboard data refreshes approximately every 5 minutes during market hours; less frequently outside hours
+- [x] **DASH-02**: Data older than 10 minutes displays visible stale-data warning with original source timestamp
+- [x] **DASH-03**: Data older than 30 minutes displays strong stale/error state
+- [x] **DASH-04**: Dashboard never fabricates missing data; QC remains authoritative source
+- [x] **DASH-05**: Dashboard displays sync status, last sync time, and portfolio freshness indicator
 
 ## Safety & Operations
 
@@ -119,11 +119,11 @@
 | MTF-03 | 17 | Pending |
 | MTF-04 | 17 | Pending |
 | MTF-05 | 17 | Pending |
-| DASH-01 | 14 | Pending |
-| DASH-02 | 14 | Pending |
-| DASH-03 | 14 | Pending |
-| DASH-04 | 14 | Pending |
-| DASH-05 | 14 | Pending |
+| DASH-01 | 14 | Complete |
+| DASH-02 | 14 | Complete |
+| DASH-03 | 14 | Complete |
+| DASH-04 | 14 | Complete |
+| DASH-05 | 14 | Complete |
 | SAFE-01 | 13 | Pending |
 | SAFE-02 | 13 | Pending |
 | SAFE-03 | 16 | Pending |

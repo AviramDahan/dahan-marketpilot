@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
 status: in-progress
-stopped_at: Completed 14-02-PLAN.md
-last_updated: "2026-06-16T00:01:36.666Z"
-last_activity: 2026-06-16 -- Completed Phase 14 Plan 02 dashboard data layer
+stopped_at: Completed 14-04-PLAN.md
+last_updated: "2026-06-16T00:14:33.562Z"
+last_activity: 2026-06-16 -- Completed Phase 14 Plan 03 dashboard display
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 8
-  completed_plans: 6
-  percent: 75
+  completed_plans: 8
+  percent: 40
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-15)
 
 **Core value:** The system must provide an auditable paper-only swing-trading workflow where every signal, backtest, paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
-**Current focus:** v1.1 — QuantConnect Live Paper Trading. Roadmap defined (5 phases, 41 requirements). Ready for Phase 13 planning.
+**Current focus:** v1.1 â€” QuantConnect Live Paper Trading. Roadmap defined (5 phases, 41 requirements). Ready for Phase 13 planning.
 
 ## Current Position
 
-Phase: 14 — IN PROGRESS
-Plan: 03 next
-Status: Phase 14 Plans 01-02 complete — 2/4 plans executed
-Last activity: 2026-06-16 -- Completed Phase 14 Plan 02 dashboard data layer
+Phase: 14 â€” IN PROGRESS
+Plan: 04 next
+Status: in-progress
+Last activity: 2026-06-16 -- Completed Phase 14 Plan 03 dashboard display
 
-Progress: [████████░░] 75%
+Progress: [â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ] 100%
 
 ## Performance Metrics
 
@@ -106,6 +106,8 @@ Progress: [████████░░] 75%
 | Phase 10.1 P04 | 8min | 3 tasks | 4 files |
 | Phase 10.1 P05 | - | 3 tasks | 11 files |
 | Phase 14 P01 | 70min | 2 tasks | 3 files |
+| Phase 14 P03 | 5min | 2 tasks | 2 files |
+| Phase 14-data-sync-dashboard-integration P04 | 10min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -164,18 +166,23 @@ Recent decisions affecting current work:
 - [Phase 08]: Phase 8 Plan 04: Regime alerts emit only on actual previous/current state transitions; unchanged states produce no alert.
 - [Phase 08]: Phase 8 Plan 04: Daily summaries are scheduled end-of-day notification artifacts with Paper mode, counts, warnings, and QuantConnect authority labels, not portfolio authority.
 - [Phase 08]: Phase 8 Plan 04: Telegram delivery results explicitly record `controls_safety_logic=false` and `delivery_required_for_safety=false`.
-- [Phase 10.1]: Phase 10.1 Plan 01: Runtime orchestration contracts are pure MarketPilot dataclasses; LEAN/API objects stay at adapter boundaries. — Preserves paper-only safety and keeps QuantConnect-specific objects in later adapter plans.
-- [Phase 10.1]: Phase 10.1 Plan 01: Runtime results default to paper-only audit evidence and cannot claim executed QuantConnect orders or fills without QuantConnect-authoritative state. — Prevents fake execution, fake fills, and local mirror authority.
-- [Phase 10.1]: Phase 10.1 Plan 01: Setup registry includes implemented independent setup evaluators only and does not enable Combined Swing. — Keeps Plan 10.1-01 scoped to existing setup evidence and avoids adding new strategy behavior.
-- [Phase 10.1]: Phase 10.1 Plan 02: Runtime paper intent readiness requires validation, paper mode, QuantConnect reconciliation, QuantConnect-authoritative portfolio input, risk acceptance, and idempotency evidence. — Preserves paper-only safety and prevents score/ranking evidence from becoming an order instruction.
-- [Phase 10.1]: Phase 10.1 Plan 02: Scoring and BUY_CANDIDATE classification remain evidence only and do not submit orders or bypass risk/reconciliation gates. — Keeps high scores, classifications, and setup evidence separate from execution authority.
-- [Phase 10.1]: Phase 10.1 Plan 02: Reconciliation mismatch or missing QuantConnect snapshot blocks new entries, preserves exit obligations, and emits system events that do not control safety logic through delivery. — Maintains QuantConnect source-of-truth behavior while keeping notification transport non-authoritative.
-- [Phase 10.1]: LEAN runtime integration is adapter-only; setup, scoring, ranking, risk, reconciliation, paper eligibility, and notification decisions remain delegated to marketpilot.runtime_orchestrator. — Keeps QCAlgorithm-specific objects at the edge and avoids duplicating strategy logic in lean/main.py.
-- [Phase 10.1]: Dynamic universe hooks are allowed only through audited bridge wiring. — The old blanket add_universe ban was too broad for INT-02, while bridge static tests keep broker, uncontrolled order, credential, borrowing-style, and unsupported asset paths forbidden.
-- [Phase 10.1]: Dashboard/Object Store export and external QuantConnect execution remain not_run evidence in Plan 10.1-03. — No operator-run QuantConnect credentials or external execution occurred during this plan.
+- [Phase 10.1]: Phase 10.1 Plan 01: Runtime orchestration contracts are pure MarketPilot dataclasses; LEAN/API objects stay at adapter boundaries. â€” Preserves paper-only safety and keeps QuantConnect-specific objects in later adapter plans.
+- [Phase 10.1]: Phase 10.1 Plan 01: Runtime results default to paper-only audit evidence and cannot claim executed QuantConnect orders or fills without QuantConnect-authoritative state. â€” Prevents fake execution, fake fills, and local mirror authority.
+- [Phase 10.1]: Phase 10.1 Plan 01: Setup registry includes implemented independent setup evaluators only and does not enable Combined Swing. â€” Keeps Plan 10.1-01 scoped to existing setup evidence and avoids adding new strategy behavior.
+- [Phase 10.1]: Phase 10.1 Plan 02: Runtime paper intent readiness requires validation, paper mode, QuantConnect reconciliation, QuantConnect-authoritative portfolio input, risk acceptance, and idempotency evidence. â€” Preserves paper-only safety and prevents score/ranking evidence from becoming an order instruction.
+- [Phase 10.1]: Phase 10.1 Plan 02: Scoring and BUY_CANDIDATE classification remain evidence only and do not submit orders or bypass risk/reconciliation gates. â€” Keeps high scores, classifications, and setup evidence separate from execution authority.
+- [Phase 10.1]: Phase 10.1 Plan 02: Reconciliation mismatch or missing QuantConnect snapshot blocks new entries, preserves exit obligations, and emits system events that do not control safety logic through delivery. â€” Maintains QuantConnect source-of-truth behavior while keeping notification transport non-authoritative.
+- [Phase 10.1]: LEAN runtime integration is adapter-only; setup, scoring, ranking, risk, reconciliation, paper eligibility, and notification decisions remain delegated to marketpilot.runtime_orchestrator. â€” Keeps QCAlgorithm-specific objects at the edge and avoids duplicating strategy logic in lean/main.py.
+- [Phase 10.1]: Dynamic universe hooks are allowed only through audited bridge wiring. â€” The old blanket add_universe ban was too broad for INT-02, while bridge static tests keep broker, uncontrolled order, credential, borrowing-style, and unsupported asset paths forbidden.
+- [Phase 10.1]: Dashboard/Object Store export and external QuantConnect execution remain not_run evidence in Plan 10.1-03. â€” No operator-run QuantConnect credentials or external execution occurred during this plan.
 - [Phase 14]: Plan 01 sync remains a single-cycle callable module; scheduling stays deferred to Phase 16.
 - [Phase 14]: Plan 01 local JSONL records are audit/display mirrors only; QuantConnect remains authoritative for Paper portfolio state.
 - [Phase 14]: Plan 01 discrepancy handling emits a high-severity system-domain event but never auto-corrects local or QuantConnect state.
+- [Phase 14]: Plan 03: Overview converts UTC source/cache timestamps to ET only at the display boundary with zoneinfo.ZoneInfo('America/New_York').
+- [Phase 14]: Plan 03: Missing dashboard portfolio values remain unavailable; the overview derives unrealized P&L only from present QuantConnect holding rows.
+- [Phase 14]: Plan 03: SyncPortfolioView exposes freshness_level for banner rendering while preserving the existing read-only line-based overview contract.
+- [Phase 14]: Phase 14 Plan 04: Dashboard sync_jsonl tests stay independent of marketpilot.sync and verify only the JSONL file contract consumed by dashboard.data.
+- [Phase 14]: Phase 14 Plan 04: Sync tests patch QCApiClient and reconcile_quantconnect_state boundaries directly so no real QuantConnect API call can occur.
 
 ### Pending Todos
 
@@ -205,6 +212,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-16T00:01:36.656Z
-Stopped at: Completed 14-02-PLAN.md
+Last session: 2026-06-16T00:13:21.304Z
+Stopped at: Completed 14-04-PLAN.md
 Resume file: None
