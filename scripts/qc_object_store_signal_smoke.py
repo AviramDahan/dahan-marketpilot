@@ -214,7 +214,13 @@ def run_smoke(
     for index in range(polls):
         if index:
             time.sleep(poll_seconds)
-        logs = client.read_live_logs(project_id=project_id, deploy_id=deploy_id)
+        logs = client.read_live_logs(
+            project_id=project_id,
+            deploy_id=deploy_id,
+            start_line=0,
+            end_line=250,
+            deployment_logs=True,
+        )
         orders = client.read_live_orders_page(
             project_id=project_id,
             deploy_id=deploy_id,

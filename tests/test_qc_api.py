@@ -391,16 +391,24 @@ def test_read_live_orders_returns_tuple_of_orders():
 def test_read_live_logs_uses_algorithm_id_payload():
     client = _make_client_with_mocked_auth()
     with patch.object(client, "_make_request", return_value={"success": True, "LiveLogs": []}) as mock_request:
-        result = client.read_live_logs(project_id=99999, deploy_id="L-paper", start=5, end=15)
+        result = client.read_live_logs(
+            project_id=99999,
+            deploy_id="L-paper",
+            start_line=5,
+            end_line=15,
+            deployment_logs=True,
+        )
 
     assert result == {"success": True, "LiveLogs": []}
     mock_request.assert_called_once_with(
         "live/logs/read",
         {
+            "format": "json",
             "projectId": 99999,
             "algorithmId": "L-paper",
-            "start": 5,
-            "end": 15,
+            "startLine": 5,
+            "endLine": 15,
+            "deploymentLogs": True,
         },
     )
 

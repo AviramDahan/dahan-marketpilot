@@ -577,17 +577,20 @@ class QCApiClient:
         *,
         project_id: int,
         deploy_id: str,
-        start: int = 0,
-        end: int = 100,
+        start_line: int = 0,
+        end_line: int = 250,
+        deployment_logs: bool = True,
     ) -> dict:
         """Read QuantConnect live logs for a running paper algorithm."""
         return self._make_request(
             "live/logs/read",
             {
+                "format": "json",
                 "projectId": project_id,
                 "algorithmId": deploy_id,
-                "start": start,
-                "end": end,
+                "startLine": start_line,
+                "endLine": end_line,
+                "deploymentLogs": deployment_logs,
             },
         )
 

@@ -350,5 +350,15 @@ not compile, deploy, send commands, poll logs, or poll orders.
 Full Phase 15-09 fallback smoke then wrote the signal object, compiled to
 `BuildSuccess`, deployed a Paper algorithm, restored `main.py`, cleaned up the
 object, and stopped the deployment. Eighteen polls observed 0 logs, 0 tagged
-orders, and no receipt marker. Record this status as
-`object_store_written_no_algorithm_receipt_observed`.
+orders, and no receipt marker. This exposed a local log-read request shape gap.
+
+Phase 15-10 corrected `/live/logs/read` to use the official `startLine`,
+`endLine`, and `deploymentLogs` fields. The rerun wrote the signal object,
+compiled to `BuildSuccess`, deployed a Paper algorithm, restored `main.py`,
+cleaned up the object, and stopped the deployment. Live logs showed the Object
+Store receipt marker, Object Store acceptance marker, and a QuantConnect Paper
+order event with status `Submitted`; `/live/orders/read` returned 0 orders
+during the smoke window. Record this status as
+`object_store_delivery_receipt_or_rejection_observed` and keep order/fill
+authority pending until `/live/orders/read` returns a tagged order, fill, or
+rejection.

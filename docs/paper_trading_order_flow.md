@@ -181,5 +181,11 @@ and Object Store writes are externally verified:
 - Credentialed diagnose-only returned `object_store_write_available`.
 - A full fallback smoke wrote the object, compiled, deployed, restored the
   project file, cleaned up the object, and stopped the Paper deployment.
-- The remaining external gap is algorithm receipt: polling observed no live
-  logs, receipt marker, or tagged order after the successful object write.
+- Phase 15-10 fixed live-log pagination by using QuantConnect's official
+  `startLine`/`endLine` fields with `deploymentLogs=true`.
+- The corrected full fallback smoke observed `MarketPilot Object Store signal
+  received.`, `MarketPilot object_store accepted: SPY 1`, and a QuantConnect
+  Paper `Submitted` order event in live logs.
+- The remaining external gap is post-receipt order authority: `/live/orders/read`
+  returned 0 orders during the smoke window, and no fill/rejection evidence is
+  claimed yet.
