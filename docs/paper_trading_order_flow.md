@@ -156,7 +156,7 @@ externally blocked until QuantConnect command dispatch or a supported fallback
 delivery path is proven.
 
 As of Phase 15-08, the Object Store fallback path is locally implemented and
-tested, but not externally proven:
+tested:
 
 - `QCApiClient` includes narrow Object Store wrappers for account read, object
   set/get/list/properties/delete.
@@ -166,16 +166,20 @@ tested, but not externally proven:
   `MARKETPILOT_QC_OBJECT_STORE_SMOKE_ENABLED=1`.
 - `lean/main.py` polls Object Store only when an explicit signal key is
   configured and reuses the same MarketPilot validation gates as commands.
-- A credentialed Paper compile/deploy succeeded, but `/object/set` returned
-  `Organization not found`, so no algorithm receipt or order evidence is
-  claimed.
+- The initial credentialed Paper compile/deploy succeeded, but `/object/set`
+  returned `Organization not found` because multipart uploads inherited a JSON
+  `Content-Type`.
 
-As of Phase 15-09, the Object Store smoke performs a fail-fast write preflight:
+As of Phase 15-09, the Object Store smoke performs a fail-fast write preflight
+and Object Store writes are externally verified:
 
 - `--diagnose-only` tests `/object/set`, `/object/properties`, and cleanup
   without compile, deploy, command dispatch, logs polling, or orders polling.
 - A failed Object Store write skips Paper deployment entirely.
-- Persistent `Organization not found` is recorded as
-  `blocked_external_object_store_permission_or_paid_tier_required`.
-- Operator-side QuantConnect organization permission or paid-tier remediation
-  is required before the full Object Store fallback can prove delivery.
+- `QCApiClient` sets JSON `Content-Type` only on JSON requests and lets
+  `requests` construct multipart `Content-Type` for `/object/set`.
+- Credentialed diagnose-only returned `object_store_write_available`.
+- A full fallback smoke wrote the object, compiled, deployed, restored the
+  project file, cleaned up the object, and stopped the Paper deployment.
+- The remaining external gap is algorithm receipt: polling observed no live
+  logs, receipt marker, or tagged order after the successful object write.

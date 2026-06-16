@@ -18,8 +18,9 @@ SIMULATED PAPER TRADING ONLY - NOT FINANCIAL ADVICE.
 | Real QuantConnect paper command/order smoke | blocked_external_callback_not_verified | Phase 15-06 synced the callback-tolerant receiver, compiled successfully, deployed to Paper, and `/live/commands/create` returned success for `typed_order_command_probe`. However, no `on_command` debug log and no live order appeared after polling, so command callback/order execution is not externally verified. |
 | Phase 15-07 command-dispatch diagnosis tooling | blocked_external_dispatch_not_observed | Added a guarded no-order dispatch probe, official generic command payload alignment, and sanitized command receipt evidence. Credentialed external run compiled and deployed an echo probe, and command API returned success, but no dispatch marker appeared in live logs. |
 | Phase 15-08 Object Store fallback tooling | blocked_external_object_store_write_not_verified | Added guarded Object Store API wrappers, Object Store signal smoke runner, and LEAN Object Store polling through shared validation. External compile/deploy succeeded, but `/object/set` returned `Organization not found`; no algorithm receipt or order evidence is claimed. |
-| Phase 15-09 Object Store preflight diagnostics | blocked_external_object_store_permission_or_paid_tier_required | Reordered the Object Store smoke so `/object/set` runs before compile/deploy and added `--diagnose-only`. Credentialed diagnose-only returned `Organization not found` and performed no compile/deploy/order polling. |
-| Phase 15 full pass / phase-complete | blocked_external_callback_not_verified | Offline tests, cloud sync, compile, live create, read-only smoke, and command API acceptance passed, but real `on_command` to order delivery is not externally verified. |
+| Phase 15-09 Object Store preflight diagnostics | passed_external_object_store_write | Reordered the Object Store smoke so `/object/set` runs before compile/deploy and added `--diagnose-only`. After fixing multipart uploads to avoid a JSON `Content-Type`, credentialed diagnose-only returned `success=true`, metadata was readable, and cleanup succeeded without compile/deploy/order polling. |
+| Phase 15-09 full Object Store fallback smoke | object_store_written_no_algorithm_receipt_observed | Full fallback smoke wrote the signal object, compiled successfully, deployed Paper algorithm `L-35940c556bcc768d5ca186f28d868441`, restored `main.py`, cleaned up the object, and stopped the temporary deployment. Eighteen polls showed 0 live logs, 0 tagged orders, and no receipt marker. |
+| Phase 15 full pass / phase-complete | object_store_written_no_algorithm_receipt_observed | Offline tests, cloud sync, compile, live create, read-only smoke, command API acceptance, and Object Store write are verified, but real command/Object Store signal receipt to order delivery is not externally verified. |
 
 ## Offline User Acceptance Checks
 
@@ -70,7 +71,8 @@ Environment/API check on 2026-06-16:
 | Phase 15-07 delayed follow-up command | blocked_external_dispatch_not_observed; after waiting about 60 seconds, a second generic command to deploy `L-2c24272bebaead4a441fadf048662324` returned command API success, but 18 polls still showed 0 logs and no marker |
 | Phase 15-08 Object Store local fallback | passed_offline; wrappers are allowlisted, writes/deletes are namespace-limited to `32900381/marketpilot/signals/*.json`, the smoke runner dry-runs with redaction, and fake LEAN Object Store payloads reuse command validation |
 | Phase 15-08 Object Store external smoke | blocked_external_object_store_write_not_verified; compile `cc45d0b42ae58f274bd3b813432bcbcf-845d50c9f70c2df38cedff8fdf2e5eba` returned `BuildSuccess`, deploy `L-1d49f38582cfbf61646aa479f54fbaa7` returned `Running`, `/object/set` returned `Organization not found`, `/object/properties` returned `File not found`, 18 polls showed 0 logs and 0 orders, and the temporary deploy was stopped |
-| Phase 15-09 Object Store diagnose-only smoke | blocked_external_object_store_permission_or_paid_tier_required; project `32900381`, organization `ed947707222a7b9aeb5de9d0974e5994`, `/object/set` returned `Organization not found`, `/object/properties` returned `File not found`, and no compile/deploy/order polling was performed |
+| Phase 15-09 Object Store diagnose-only smoke | passed_external_object_store_write; project `32900381`, organization `ed947707222a7b9aeb5de9d0974e5994`, `/object/set` returned `success=true`, `/object/properties` returned JSON metadata for key `32900381/marketpilot/signals/object-store-smoke-20260616221505.json`, cleanup succeeded, and no compile/deploy/order polling was performed |
+| Phase 15-09 full Object Store fallback smoke | object_store_written_no_algorithm_receipt_observed; key `32900381/marketpilot/signals/object-store-smoke-20260616221527.json` was written, compile `462cdc22a9803673f0b85cbe82d09db0-4e5dd314ca2c676616079f237105ca84` reached `BuildSuccess`, Paper deploy `L-35940c556bcc768d5ca186f28d868441` reached `Running`, object cleanup succeeded, the deployment was stopped, and 18 polls showed 0 logs, 0 tagged orders, and no receipt marker |
 
 Credentialed QuantConnect command delivery was accepted by the API, but no real
 external LEAN callback, order, fill, or rejection result is claimed by this UAT
@@ -92,19 +94,21 @@ organization id visible in both `/account/read`, `projects/read`, and the
 Organization UI URL. Because the object was not created, no algorithm receipt,
 order, fill, rejection, or portfolio-change evidence is claimed.
 
-Phase 15-09 narrowed this into a prerequisite blocker: the Object Store smoke
-now writes the probe object before any Paper compile/deploy, and
-`--diagnose-only` can test Object Store access without starting an algorithm.
-The credentialed diagnose-only run still returned `Organization not found`, so
-operator-side QuantConnect organization permission or paid-tier remediation is
-required before rerunning the full fallback smoke.
+Phase 15-09 narrowed this into a prerequisite check: the Object Store smoke now
+writes the probe object before any Paper compile/deploy, and `--diagnose-only`
+can test Object Store access without starting an algorithm. After the API client
+stopped applying JSON `Content-Type` to multipart uploads, the credentialed
+diagnose-only run returned `object_store_write_available`. The full fallback
+smoke wrote the object, compiled, deployed, and cleaned up successfully, but no
+receipt marker, logs, or tagged order appeared during 18 polls.
 
 ## Human Verification Gate
 
 Before Phase 15 can be marked fully passed, an operator must resolve why
 QuantConnect's accepted live command does not trigger observable `on_command`
-behavior in the Paper deployment or why Object Store writes are unavailable for
-the active organization, then rerun the smallest safe delivery smoke.
+behavior in the Paper deployment and why the deployed Object Store polling path
+does not emit a receipt marker after a successful external object write, then
+rerun the smallest safe delivery smoke.
 The resulting evidence must be sanitized and must include only safe identifiers,
 timestamps, paper-only status, command delivery status, and observed
 QuantConnect order/fill/rejection trace status. Secrets must never be recorded.

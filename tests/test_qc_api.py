@@ -211,6 +211,48 @@ def test_no_retry_on_400_client_error():
             assert mock_post.call_count == 1
 
 
+def test_json_post_sets_json_content_type_per_request():
+    client = _make_client_with_mocked_auth()
+    with patch.object(client, "_get_auth_headers", return_value={"Authorization": "Basic x", "Timestamp": "1"}):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"success": True}
+        with patch.object(client._session, "post", return_value=mock_resp) as mock_post:
+            result = client._make_request("live/read", {"projectId": 99999})
+
+    assert result == {"success": True}
+    call_kwargs = mock_post.call_args.kwargs
+    assert call_kwargs["headers"]["Content-Type"] == "application/json"
+    assert call_kwargs["json"] == {"projectId": 99999}
+
+
+def test_file_post_allows_requests_to_build_multipart_content_type():
+    client = _make_client_with_mocked_auth()
+    with patch.object(client, "_get_auth_headers", return_value={"Authorization": "Basic x", "Timestamp": "1"}):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"success": True}
+        with patch.object(client._session, "post", return_value=mock_resp) as mock_post:
+            result = client._make_file_request(
+                "object/set",
+                data={
+                    "organizationId": "org-1",
+                    "key": "99999/marketpilot/signals/smoke.json",
+                },
+                files={"objectData": b'{"paper_trading_only": true}'},
+            )
+
+    assert result == {"success": True}
+    call_kwargs = mock_post.call_args.kwargs
+    assert call_kwargs["headers"] == {"Authorization": "Basic x", "Timestamp": "1"}
+    assert "Content-Type" not in call_kwargs["headers"]
+    assert call_kwargs["data"] == {
+        "organizationId": "org-1",
+        "key": "99999/marketpilot/signals/smoke.json",
+    }
+    assert call_kwargs["files"] == {"objectData": b'{"paper_trading_only": true}'}
+
+
 def test_retry_on_network_error():
     client = _make_client_with_mocked_auth()
     import requests as req

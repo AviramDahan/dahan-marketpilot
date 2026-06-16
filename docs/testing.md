@@ -330,10 +330,9 @@ python scripts\qc_object_store_signal_smoke.py --dry-run --skip-deploy
 
 Credentialed Phase 15-08 evidence: local Object Store wrappers and LEAN polling
 tests passed, and the injected-key Paper algorithm compiled and deployed
-successfully. The Object Store upload itself returned `Organization not found`
-for the active organization id, so no Object Store algorithm receipt, order,
-fill, or rejection evidence is claimed. Record this status as
-`blocked_external_object_store_write_not_verified`.
+successfully. The first Object Store upload attempt returned `Organization not
+found` because the multipart request inherited a JSON `Content-Type`; Phase
+15-09 corrected this at the API client layer.
 
 Phase 15-09 adds a safer Object Store preflight. Use diagnose-only before any
 full fallback smoke:
@@ -344,8 +343,12 @@ python scripts\qc_object_store_signal_smoke.py --diagnose-only --skip-deploy
 ```
 
 Credentialed Phase 15-09 evidence: diagnose-only returned
-`blocked_external_object_store_permission_or_paid_tier_required` with
-`Organization not found` from `/object/set`. The run did not compile, deploy,
-send commands, poll logs, or poll orders. Resolve QuantConnect organization
-Object Store permission or paid-tier access before rerunning the full Object
-Store fallback smoke.
+`object_store_write_available`; `/object/set` returned `success=true`,
+`/object/properties` returned JSON metadata, and cleanup succeeded. The run did
+not compile, deploy, send commands, poll logs, or poll orders.
+
+Full Phase 15-09 fallback smoke then wrote the signal object, compiled to
+`BuildSuccess`, deployed a Paper algorithm, restored `main.py`, cleaned up the
+object, and stopped the deployment. Eighteen polls observed 0 logs, 0 tagged
+orders, and no receipt marker. Record this status as
+`object_store_written_no_algorithm_receipt_observed`.

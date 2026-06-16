@@ -197,7 +197,6 @@ class QCApiClient:
 
         self._config = config
         self._session = requests.Session()
-        self._session.headers.update({"Content-Type": "application/json"})
         _logger.addFilter(CredentialRedactionFilter())
         self._validate_credentials()
 
@@ -281,7 +280,10 @@ class QCApiClient:
                 resp = self._session.get(url, headers=headers, timeout=30)
             else:
                 resp = self._session.post(
-                    url, headers=headers, json=payload or {}, timeout=30
+                    url,
+                    headers={**headers, "Content-Type": "application/json"},
+                    json=payload or {},
+                    timeout=30,
                 )
         except requests.exceptions.Timeout as exc:
             raise QCNetworkError(

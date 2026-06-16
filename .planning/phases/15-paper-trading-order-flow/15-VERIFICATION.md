@@ -14,11 +14,11 @@ during polling. Phase 15-07 added an isolated no-order dispatch probe and
 aligned the MarketPilot smoke payload with the official generic `on_command`
 contract. The credentialed external probe compiled and deployed successfully,
 but still observed no generic command dispatch marker in live logs. Phase 15-08
-implemented a supported Object Store signal-inbox fallback, but the
-credentialed external Object Store write returned `Organization not found`
-before algorithm receipt could be tested. Phase 15-09 made that write a
-fail-fast preflight and confirmed the blocker persists without compiling or
-deploying a new Paper algorithm.
+implemented a supported Object Store signal-inbox fallback. Phase 15-09 added a
+fail-fast Object Store preflight and then fixed the API client to avoid sending
+a JSON `Content-Type` on multipart uploads. Object Store writes now pass
+externally, but the deployed algorithm still produced no receipt marker, logs,
+or tagged order during polling.
 
 Offline tests do not prove real QuantConnect execution. Mocked command delivery,
 mocked live orders, fake LEAN objects, and fake fills are not external evidence.
@@ -35,17 +35,18 @@ mocked live orders, fake LEAN objects, and fake fills are not external evidence.
 | Phase 15-06 gap smoke command | blocked_external_callback_not_verified | synced callback-tolerant receiver, compile `54a09ada5318ca08dfd15e3ac7ec12ad-b1d7a4c2bb865f244914254e68bd0b07` was `BuildSuccess`; deploy `L-bd51091b63e10262fac1b2ca8b877f49` was `Running`; `typed_order_command_probe` returned `command_api_success=true`; 12 polls showed 0 logs and 0 orders |
 | Phase 15-07 no-order dispatch probe | blocked_external_dispatch_not_observed | `qc_command_dispatch_probe.py` refuses by default, dry-run redacts secrets, produces a no-order Python echo algorithm, and builds official generic command payloads. External compile `677437f56a306fab73f489b921f92652-dbdb35fb652acd584047b1e67f1a13b0` was `BuildSuccess`; deploy `L-2c24272bebaead4a441fadf048662324` was `Running`; command API returned success; 12 immediate polls plus 18 delayed polls showed 0 logs and no marker. |
 | Phase 15-08 Object Store fallback smoke | blocked_external_object_store_write_not_verified | `qc_object_store_signal_smoke.py` refuses by default, dry-run redacts secrets, writes only namespaced `marketpilot/signals/*.json` probe objects, and deploys an injected-key Paper algorithm when requested. External compile `cc45d0b42ae58f274bd3b813432bcbcf-845d50c9f70c2df38cedff8fdf2e5eba` was `BuildSuccess`; deploy `L-1d49f38582cfbf61646aa479f54fbaa7` was `Running`; `/object/set` returned `Organization not found`; 18 polls showed 0 logs and 0 orders; the temporary deploy was stopped. |
-| Phase 15-09 Object Store diagnose-only smoke | blocked_external_object_store_permission_or_paid_tier_required | `qc_object_store_signal_smoke.py --diagnose-only` now performs `/object/set` before any compile/deploy. Credentialed diagnose-only used project `32900381`, organization `ed947707222a7b9aeb5de9d0974e5994`, and key `32900381/marketpilot/signals/object-store-smoke-20260616182725.json`; `/object/set` returned `Organization not found`, `/object/properties` returned `File not found`, and no compile/deploy/order polling was performed. |
+| Phase 15-09 Object Store diagnose-only smoke | passed_external_object_store_write | `qc_object_store_signal_smoke.py --diagnose-only` performs `/object/set` before any compile/deploy. After removing the session-level JSON content type from multipart uploads, credentialed diagnose-only used project `32900381`, organization `ed947707222a7b9aeb5de9d0974e5994`, and key `32900381/marketpilot/signals/object-store-smoke-20260616221505.json`; `/object/set` returned `success=true`, `/object/properties` returned JSON metadata, cleanup succeeded, and no compile/deploy/order polling was performed. |
+| Phase 15-09 full Object Store fallback smoke | object_store_written_no_algorithm_receipt_observed | Full fallback smoke wrote key `32900381/marketpilot/signals/object-store-smoke-20260616221527.json`, compiled `462cdc22a9803673f0b85cbe82d09db0-4e5dd314ca2c676616079f237105ca84` to `BuildSuccess`, deployed Paper algorithm `L-35940c556bcc768d5ca186f28d868441`, restored `main.py`, cleaned up the object, and stopped the temporary deployment. Eighteen polls observed 0 live logs, 0 tagged orders, and no receipt marker. |
 
 ## Requirement Evidence Matrix
 
 | Requirement | Offline Evidence | External QuantConnect Evidence | Status |
 |-------------|------------------|--------------------------------|--------|
 | PTD-01 | `deploy_paper_algorithm()` tests cover live-paper payload and deployment idempotency. | `/live/create` created Paper deployment `L-6e97706430e5dfec3e6615282153ad47` from successful compile. | passed_external |
-| PTD-02 | E2E test covers `submit_signal_command()` to mocked `create_live_command()` and fake LEAN `on_command`; Phase 15-08 adds fake LEAN Object Store payload polling through the same validation path. | `/live/commands/create` returned `success=true` for plain, typed, and no-order generic echo probes, but no `on_command` debug/order/marker evidence appeared. Object Store fallback is locally implemented, but fail-fast `/object/set` preflight returns `Organization not found`. | blocked_external_object_store_permission_or_paid_tier_required |
+| PTD-02 | E2E test covers `submit_signal_command()` to mocked `create_live_command()` and fake LEAN `on_command`; Phase 15-08 adds fake LEAN Object Store payload polling through the same validation path. | `/live/commands/create` returned `success=true` for plain, typed, and no-order generic echo probes, but no `on_command` debug/order/marker evidence appeared. Object Store writes now pass externally, but the deployed algorithm produced no receipt marker, logs, or tagged order. | object_store_written_no_algorithm_receipt_observed |
 | PTD-03 | `tests/test_qc_api.py` covers paper-gated stop/liquidate wrapper behavior. | not required for 15-05 smoke, no external stop/liquidate run. | passed_offline_only |
 | PTD-04 | Unit and E2E tests reject duplicate deploy/signal idempotency keys before API calls. | not run externally. | passed_offline_only |
-| PTD-05 | `tests/test_lean_command_flow.py` and E2E tests prove fake LEAN command and Object Store payload acceptance create one tagged paper order path; `lean/main.py` records sanitized command/Object Store receipt evidence before parsing. | Phase 15 receiver code compiled and deployed, including Object Store polling, but callback/order behavior was not observed because Commands dispatch was not observable and Object Store write preflight failed before receipt. | blocked_external_object_store_permission_or_paid_tier_required |
+| PTD-05 | `tests/test_lean_command_flow.py` and E2E tests prove fake LEAN command and Object Store payload acceptance create one tagged paper order path; `lean/main.py` records sanitized command/Object Store receipt evidence before parsing. | Phase 15 receiver code compiled and deployed, including Object Store polling, but callback/order behavior was not observed because Commands dispatch was not observable and Object Store receipt was not observed after a successful external write. | object_store_written_no_algorithm_receipt_observed |
 | FT-01 | `poll_quantconnect_order_updates()` tests poll fake `read_live_orders()` and map tags to signal ids. | `/live/orders/read` succeeded externally with 0 orders; no tagged command/order trace exists yet. | partial_external_verified_read_only |
 | FT-02 | Audit JSONL tests prove QC-derived fill records append with `source_authority=quantconnect` and `local_authority=false`. | `/live/read` and `/live/orders/read` shape verified externally; no real fill evidence exists yet. | partial_external_verified_read_only |
 | FT-03 | Offline tests cover partial fills and rejected orders with reasons from mocked QC payloads. | no real order/fill/rejection exists yet. | passed_offline_only_until_external_callback_smoke |
@@ -99,10 +100,11 @@ polling showed 0 logs and 0 orders.
 Phase 15-09 made Object Store write availability a preflight. The smoke now
 stops before compile/deploy when `/object/set` is unavailable, and
 `--diagnose-only` verifies the prerequisite without touching live algorithms.
-The credentialed diagnose-only run returned
-`blocked_external_object_store_permission_or_paid_tier_required`; no compile,
-deploy, command dispatch, log polling, order polling, or cleanup was needed
-because the probe object was not created.
+After fixing multipart uploads to avoid the inherited JSON content type,
+credentialed diagnose-only returned `object_store_write_available`. The full
+fallback smoke then wrote the signal object, compiled, deployed, restored the
+project file, cleaned up the object, and stopped the temporary deployment, but
+18 polls still showed 0 live logs, 0 tagged orders, and no receipt marker.
 
 ## Secret Handling
 
@@ -114,6 +116,7 @@ variable names only.
 Account-specific `/live/create`, `/live/read`, `/live/orders/read`, compile,
 file sync, command API acceptance, and Object Store fallback code paths are now
 locally verified. A no-order generic Python echo algorithm failed to produce
-observable command-dispatch logs, and the Object Store API write preflight
-failed with `Organization not found`. QuantConnect organization permission or
-paid-tier remediation is required before Phase 15 can be marked fully passed.
+observable command-dispatch logs. Object Store writes are now externally
+verified, but the deployed algorithm did not produce an Object Store receipt
+marker, logs, or tagged order. The remaining risk is runtime receipt visibility
+or Object Store read semantics inside the deployed LEAN algorithm.
