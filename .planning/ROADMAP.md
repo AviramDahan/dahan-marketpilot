@@ -118,7 +118,15 @@ Plans:
 4. Stale signals triggered outside valid execution window are safely skipped with logged reason
 5. Duplicate deploy requests are rejected via idempotent keys; retry-safe operations throughout
 
-**Plans**: TBD
+**Plans:** 5 plans
+
+Plans:
+
+- [ ] 15-01-PLAN.md - QC API paper deployment, command, stop/liquidate, and live-orders wrappers
+- [ ] 15-02-PLAN.md - Signal command builder, deployment idempotency, pre-submit sync gate, and stale-window skips
+- [ ] 15-03-PLAN.md - LEAN `on_command` receiver, internal stale/duplicate safety gates, and tagged paper orders
+- [ ] 15-04-PLAN.md - Authoritative QC order/fill polling, audit JSONL mirror, and signal-order-fill trace queries
+- [ ] 15-05-PLAN.md - Offline E2E tests, docs, UAT/verification, and credentialed paper smoke checkpoint
 
 ---
 
