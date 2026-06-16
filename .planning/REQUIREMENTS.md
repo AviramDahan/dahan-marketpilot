@@ -57,6 +57,35 @@
 - [x] **DASH-04**: Dashboard never fabricates missing data; QC remains authoritative source
 - [x] **DASH-05**: Dashboard displays sync status, last sync time, and portfolio freshness indicator
 
+## Production Integration & Dashboard Go-Live
+
+- [ ] **PROD-01**: One production runtime runner connects the complete pipeline from data sync through setup evaluation, scoring, ranking, risk decision, Paper order intent, reconciliation, audit, notification, and dashboard export
+- [ ] **PROD-02**: Streamlit dashboard is deployed as a Render Web Service with a working password-protected URL
+- [ ] **PROD-03**: Autonomous scheduler is deployed as a Render Background Worker and does not depend on the local computer being on
+- [ ] **PROD-04**: Worker and dashboard use durable shared production data transport/storage; dashboard production mode must not use `data_source_kind=none`
+- [ ] **PROD-05**: Dashboard uses a real production data source for portfolio, signals, orders, fills, activity, and system-health data
+- [ ] **PROD-06**: Dashboard supports controlled auto-refresh without fabricating missing data or hiding stale/error states
+- [ ] **PROD-07**: Runtime notification events are connected to real Telegram delivery while preserving delivery-failure isolation from safety logic
+- [ ] **PROD-08**: Production secrets are configured securely outside the repo for QuantConnect, Telegram, Render, dashboard auth, and any shared storage
+- [ ] **PROD-09**: Deployed system continues operating while the local computer is off
+- [ ] **PROD-10**: Render deployment documentation and operator runbook cover dashboard URL, worker status, logs, restarts, secrets, and rollback
+
+## End-to-End UAT & Operational Burn-in
+
+- [ ] **UAT-01**: Deployed flow proves signal -> scoring -> risk decision -> Paper order -> authoritative order result -> fill -> sync -> dashboard -> Telegram
+- [ ] **UAT-02**: Scheduler heartbeat and missed-run monitoring are externally verified
+- [ ] **UAT-03**: Restart and redeployment recovery are externally verified
+- [ ] **UAT-04**: Duplicate-run prevention is externally verified
+- [ ] **UAT-05**: Stale-data handling is externally verified
+- [ ] **UAT-06**: Temporary QuantConnect failure handling is externally verified
+- [ ] **UAT-07**: Telegram delivery failure handling is externally verified without changing safety decisions
+- [ ] **UAT-08**: Burn-in covers multiple consecutive real US market sessions
+- [ ] **UAT-09**: Final operational-readiness report proves v1.1 is a working deployed product, not only code, tests, plans, or documentation
+
+## Operations & Milestone Governance
+
+- [ ] **OPS-01**: v1.1 is not marked complete until Phase 15 order/fill/rejection authority, Phase 16 scheduler, Phase 16.1 deployed product, and Phase 16.2 burn-in are externally verified
+
 ## Safety & Operations
 
 - [ ] **SAFE-01**: PAPER_TRADING_ONLY remains hardcoded constant (not env var); runtime startup assertion validates; pre-commit hook rejects False
@@ -64,6 +93,8 @@
 - [ ] **SAFE-03**: All existing v1.0 tests (433) pass unchanged after v1.1 implementation; new modules use lazy imports
 - [x] **SAFE-04**: All timestamps stored as UTC internally; convert to ET only at display and market-hours-check boundaries
 - [x] **SAFE-05**: Execution window guards skip stale signals if triggered outside valid execution window
+- [ ] **SAFE-06**: Phase 15's remaining `/live/orders/read` order/fill/rejection verification must not be bypassed, faked, or marked complete outside a valid market-hours or next-open observation
+- [ ] **SAFE-07**: Future milestones after v1.1 require explicit user approval; do not create v1.2 or add unrelated strategies/features during v1.1 production-readiness work
 
 ---
 
@@ -114,6 +145,26 @@
 | SCHED-04 | 16 | Pending |
 | SCHED-05 | 16 | Pending |
 | SCHED-06 | 16 | Pending |
+| PROD-01 | 16.1 | Pending |
+| PROD-02 | 16.1 | Pending |
+| PROD-03 | 16.1 | Pending |
+| PROD-04 | 16.1 | Pending |
+| PROD-05 | 16.1 | Pending |
+| PROD-06 | 16.1 | Pending |
+| PROD-07 | 16.1 | Pending |
+| PROD-08 | 16.1 | Pending |
+| PROD-09 | 16.1 | Pending |
+| PROD-10 | 16.1 | Pending |
+| UAT-01 | 16.2 | Pending |
+| UAT-02 | 16.2 | Pending |
+| UAT-03 | 16.2 | Pending |
+| UAT-04 | 16.2 | Pending |
+| UAT-05 | 16.2 | Pending |
+| UAT-06 | 16.2 | Pending |
+| UAT-07 | 16.2 | Pending |
+| UAT-08 | 16.2 | Pending |
+| UAT-09 | 16.2 | Pending |
+| OPS-01 | 16.2 | Pending |
 | MTF-01 | 17 | Pending |
 | MTF-02 | 17 | Pending |
 | MTF-03 | 17 | Pending |
@@ -129,8 +180,10 @@
 | SAFE-03 | 16 | Pending |
 | SAFE-04 | 14 | Complete |
 | SAFE-05 | 15 | Complete |
+| SAFE-06 | 16.1 | Pending |
+| SAFE-07 | 16.1 | Pending |
 
 ---
 
-**Total:** 36 requirements across 8 categories
+**Total:** 60 requirements across 11 categories
 **Closes v1.0 gaps:** QC-02 (via API-01..05, PTD-01..05), QC-04 (via SYNC-01..06), BT-MTF-01 (via MTF-01..05)
