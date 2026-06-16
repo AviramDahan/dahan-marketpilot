@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: planning
-stopped_at: Phase 15 planned - ready for 15-01-PLAN.md
-last_updated: "2026-06-16T09:50:55.0356215+03:00"
+status: Completed 15-01; ready for 15-02-PLAN.md
+stopped_at: Completed 15-01-PLAN.md
+last_updated: "2026-06-16T07:18:44.917Z"
 last_activity: 2026-06-16
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 13
-  completed_plans: 8
-  percent: 40
+  completed_plans: 9
+  percent: 69
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-15)
 
 **Core value:** The system must provide an auditable paper-only swing-trading workflow where every signal, backtest, paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
-**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 14 complete; Phase 15 planning is next.
+**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 15 is in progress.
 
 ## Current Position
 
 Phase: 15
-Plan: Not started
-Status: Phase 15 planned - 5 plans ready for execution
+Plan: 15-02-PLAN.md
+Status: Completed 15-01; ready for 15-02-PLAN.md
 Last activity: 2026-06-16
 
-Progress: 40% complete for v1.1; Phase 15 is planned and not yet executed.
+Progress: [███████░░░] 69% complete for v1.1; Phase 15 is in progress with 1/5 plans complete.
 
 ## Performance Metrics
 
@@ -108,6 +108,7 @@ Progress: 40% complete for v1.1; Phase 15 is planned and not yet executed.
 | Phase 14 P01 | 70min | 2 tasks | 3 files |
 | Phase 14 P03 | 5min | 2 tasks | 2 files |
 | Phase 14-data-sync-dashboard-integration P04 | 10min | 3 tasks | 2 files |
+| Phase 15 P01 | 56min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -183,6 +184,8 @@ Recent decisions affecting current work:
 - [Phase 14]: Plan 03: SyncPortfolioView exposes freshness_level for banner rendering while preserving the existing read-only line-based overview contract.
 - [Phase 14]: Phase 14 Plan 04: Dashboard sync_jsonl tests stay independent of marketpilot.sync and verify only the JSONL file contract consumed by dashboard.data.
 - [Phase 14]: Phase 14 Plan 04: Sync tests patch QCApiClient and reconcile_quantconnect_state boundaries directly so no real QuantConnect API call can occur.
+- [Phase 15]: QuantConnect command API success is command-delivery success only; order and fill authority comes from /live/orders/read. — Prevents local command delivery from being misread as an executed order or fill, preserving QuantConnect source-of-truth semantics.
+- [Phase 15]: Paper deployment payloads are hardcoded to QuantConnectBrokerage live-paper with id-only QuantConnect dataProviders and no real brokerage credential path. — Maintains simulated-paper-only safety while matching official QuantConnect live create payload requirements.
 
 ### Pending Todos
 
@@ -212,6 +215,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-16T00:13:21.304Z
-Stopped at: Completed 14-04-PLAN.md
+Last session: 2026-06-16T07:18:22.085Z
+Stopped at: Completed 15-01-PLAN.md
 Resume file: None

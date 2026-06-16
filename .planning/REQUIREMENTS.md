@@ -10,15 +10,15 @@
 
 ## Paper Trading Deployment
 
-- [ ] **PTD-01**: System can deploy a paper trading algorithm to QC Cloud via API with hardcoded paper-only configuration
-- [ ] **PTD-02**: System delivers signals to running algorithm via Commands API (real-time push, no redeployment)
-- [ ] **PTD-03**: System can stop and liquidate a running paper algorithm via API
+- [x] **PTD-01**: System can deploy a paper trading algorithm to QC Cloud via API with hardcoded paper-only configuration
+- [x] **PTD-02**: System delivers signals to running algorithm via Commands API (real-time push, no redeployment)
+- [x] **PTD-03**: System can stop and liquidate a running paper algorithm via API
 - [ ] **PTD-04**: Deployment uses idempotent keys; duplicate deploy requests are safely rejected
 - [ ] **PTD-05**: Algorithm receives signal commands and translates them to paper orders within LEAN (orders never placed externally)
 
 ## Fill Tracking & Order Flow
 
-- [ ] **FT-01**: System polls QC /live/orders/read and maps fills to local signal IDs
+- [x] **FT-01**: System polls QC /live/orders/read and maps fills to local signal IDs
 - [ ] **FT-02**: Fill events update local audit journal (append-only JSONL) while QC remains authoritative
 - [ ] **FT-03**: Partial fills and order rejections are tracked with reasons
 - [ ] **FT-04**: Signal-to-order-to-fill chain is fully traceable in audit log
@@ -93,12 +93,12 @@
 | API-03 | 13 | Pending |
 | API-04 | 13 | Pending |
 | API-05 | 13 | Pending |
-| PTD-01 | 15 | Pending |
-| PTD-02 | 15 | Pending |
-| PTD-03 | 15 | Pending |
+| PTD-01 | 15 | Complete |
+| PTD-02 | 15 | Complete |
+| PTD-03 | 15 | Complete |
 | PTD-04 | 15 | Pending |
 | PTD-05 | 15 | Pending |
-| FT-01 | 15 | Pending |
+| FT-01 | 15 | Complete |
 | FT-02 | 15 | Pending |
 | FT-03 | 15 | Pending |
 | FT-04 | 15 | Pending |
