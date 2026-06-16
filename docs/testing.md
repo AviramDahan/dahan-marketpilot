@@ -251,3 +251,37 @@ external checks:
 Unexecuted external checks are not passed checks. Missing QuantConnect,
 Telegram, Render, broker, dashboard, operator-confirmation, or package
 prerequisites must be recorded as `skipped` or `not_run`.
+
+## Phase 15 Paper Order Flow Tests
+
+Phase 15 tests are deterministic and offline unless explicitly labeled as a
+credentialed QuantConnect paper smoke check. Offline tests use fake
+QuantConnect clients, fake sync JSONL records, fake LEAN runtime objects, and
+temporary audit files. They do not prove real QuantConnect execution.
+
+Run the targeted Phase 15 order-flow regression command with:
+
+```powershell
+pytest tests/test_paper_order_flow_e2e.py tests/test_paper_order_flow.py tests/test_lean_command_flow.py tests/test_qc_api.py tests/test_sync.py -q
+```
+
+When local Python satisfies the project version requirement, also run:
+
+```powershell
+pytest -q
+```
+
+Credentialed paper smoke verification requires the following environment
+variable names to be configured outside the repository and outside chat:
+
+- `QUANTCONNECT_USER_ID`
+- `QUANTCONNECT_API_TOKEN`
+- `QC_PROJECT_ID`
+- `QC_DEPLOY_ID`
+- `QC_COMPILE_ID`
+- `QC_NODE_ID`
+- `QC_VERSION_ID`
+
+If these are absent, record the smoke status as
+`blocked_external_not_verified`. Do not treat mocks, fake fills, or `not_run`
+as real QuantConnect evidence.
