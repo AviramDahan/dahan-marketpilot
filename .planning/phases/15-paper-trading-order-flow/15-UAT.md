@@ -15,8 +15,8 @@ SIMULATED PAPER TRADING ONLY - NOT FINANCIAL ADVICE.
 | Targeted Phase 15 and sync regression command | passed_offline | `pytest tests/test_paper_order_flow_e2e.py tests/test_paper_order_flow.py tests/test_lean_command_flow.py tests/test_qc_api.py tests/test_sync.py -q` passed during Task 2. |
 | Full local pytest suite | passed_with_version_caveat | `pytest -q` passed under local Python 3.10.10; project metadata requires Python >=3.11 for strict/release verification. |
 | Real QuantConnect paper read smoke | passed_external_read_only | On 2026-06-16T12:46:23Z, authenticated QuantConnect API reads verified project `32900381`, deploy `L-223eafd89aaac127343bb441bf96e423`, deployment status `running`, algorithm status `running`, equity `27027.03`, and successful `/live/orders/read` with 0 orders. |
-| Real QuantConnect paper command/order smoke | blocked_external_command_not_verified | The running QuantConnect project still contains the earlier benchmark-only shell, not the Phase 15 LEAN command receiver. No external paper command, order, fill, or rejection evidence was produced. |
-| Phase 15 full pass / phase-complete | blocked_external_command_not_verified | Offline tests and external read-only smoke passed, but real command-to-order delivery is not externally verified. |
+| Real QuantConnect paper command/order smoke | blocked_external_callback_not_verified | Phase 15 code was synced to QuantConnect, compiled successfully, deployed to Paper, and `/live/commands/create` returned success. However, no `on_command` debug log and no live order appeared after polling, so command callback/order execution is not externally verified. |
+| Phase 15 full pass / phase-complete | blocked_external_callback_not_verified | Offline tests, cloud sync, compile, live create, read-only smoke, and command API acceptance passed, but real `on_command` to order delivery is not externally verified. |
 
 ## Offline User Acceptance Checks
 
@@ -36,7 +36,7 @@ SIMULATED PAPER TRADING ONLY - NOT FINANCIAL ADVICE.
 
 ## External QuantConnect Smoke Status
 
-Status: `partial_external_verified_read_only`
+Status: `partial_external_verified_command_api_only`
 
 Environment/API check on 2026-06-16:
 
@@ -52,22 +52,25 @@ Environment/API check on 2026-06-16:
 | `/live/list` | passed; deployment visible as Paper `Running` |
 | `/live/read` | passed; parsed snapshot status `running`, equity `27027.03` |
 | `/live/orders/read` | passed; success true, 0 orders |
+| Phase 15 cloud file sync | passed; `main.py` plus 28 `marketpilot/` files present in QC project |
+| Cloud compile | passed; compile `76fe4ebdce72ca35574db67ad60b0433-9fbcc5e87d8c7d73346eda85b8851386`, `BuildSuccess` |
+| Paper deployment create | passed; deploy `L-6e97706430e5dfec3e6615282153ad47`, status `Running` |
+| `/live/commands/create` | passed; API returned `success=true` for a `marketpilot_signal` smoke command |
+| `on_command` debug/order evidence | blocked; no `MarketPilot command received` log and no order after polling `/live/logs/read` and `/live/orders/read` |
 
-No credentialed QuantConnect paper command was sent, and no real external
-command delivery, order, fill, or rejection result is claimed by this UAT
+Credentialed QuantConnect command delivery was accepted by the API, but no real
+external LEAN callback, order, fill, or rejection result is claimed by this UAT
 record. Mocks and fake fills are local regression evidence only.
 
-The currently running QuantConnect algorithm is the earlier benchmark-only
-shell, so it cannot verify Phase 15 `marketpilot_signal` command handling until
-the Phase 15 LEAN receiver code is synced, compiled, and deployed to a paper
-node.
+The current blocker is narrower than initial setup: QuantConnect accepts the
+command request, but the generic Python `on_command` receiver did not produce
+debug or order evidence during the smoke window.
 
 ## Human Verification Gate
 
-Before Phase 15 can be marked fully passed, an operator must sync the current
-Phase 15 LEAN command receiver code to QuantConnect, compile it, deploy it to
-a simulated paper node, and run the smallest safe command smoke against that
-deployment. The resulting evidence must be sanitized and must include only safe
-identifiers, timestamps, paper-only status, command delivery status, and
-observed QuantConnect order/fill/rejection trace status. Secrets must never be
-recorded.
+Before Phase 15 can be marked fully passed, an operator must resolve why
+QuantConnect's accepted live command does not trigger observable `on_command`
+behavior in the Paper deployment, then rerun the smallest safe command smoke.
+The resulting evidence must be sanitized and must include only safe identifiers,
+timestamps, paper-only status, command delivery status, and observed
+QuantConnect order/fill/rejection trace status. Secrets must never be recorded.

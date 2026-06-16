@@ -62,12 +62,14 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         return result
 
     def on_command(self, data):
+        self.debug("MarketPilot command received.")
         normalized = normalize_marketpilot_command(data)
         if not normalized.accepted:
             self.latest_command_rejection_evidence = {
                 "accepted": False,
                 "reason": normalized.reason,
             }
+            self.debug(f"MarketPilot command rejected: {normalized.reason}")
             return False
 
         validation = validate_marketpilot_command(
@@ -81,10 +83,12 @@ class DahanMarketPilotRuntime(QCAlgorithm):
                 "reason": validation.reason,
                 "symbol": validation.symbol,
             }
+            self.debug(f"MarketPilot command rejected: {validation.reason}")
             return False
 
         self.market_order(validation.symbol, validation.quantity, tag=validation.tag)
         self.latest_command_rejection_evidence = None
+        self.debug(f"MarketPilot command accepted: {validation.symbol} {validation.quantity}")
         return True
 
     def on_order_event(self, order_event):

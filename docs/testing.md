@@ -292,6 +292,8 @@ Current external evidence from 2026-06-16:
   passed against the user-managed Paper deployment for project `32900381`.
 - The deployment was read as `running`, with equity `27027.03` and 0 live
   orders.
-- Command-to-order smoke remains blocked until the current Phase 15 LEAN
-  command receiver code is synced, compiled, and deployed to QuantConnect
-  Paper.
+- Follow-up smoke synced Phase 15 files to QuantConnect, compiled successfully,
+  created a new Paper deployment, and received `success=true` from
+  `/live/commands/create`.
+- Callback-to-order smoke remains blocked because no `on_command` debug log or
+  live order appeared after polling `/live/logs/read` and `/live/orders/read`.
