@@ -30,7 +30,7 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 ### v1.1 QuantConnect Live Paper Trading
 
 - [x] **Phase 13: QC API Client & Safety Foundation** â€” Authenticated API client with defense-in-depth paper-only safety (completed 2026-06-15)
-- [ ] **Phase 14: Data Sync & Dashboard Integration** â€” Reliable portfolio sync from QC with freshness-aware dashboard display
+- [x] **Phase 14: Data Sync & Dashboard Integration** â€” Reliable portfolio sync from QC with freshness-aware dashboard display (completed 2026-06-16)
 - [ ] **Phase 15: Paper Trading & Order Flow** â€” Signal delivery to live algorithm with full fill tracking and audit trail
 - [ ] **Phase 16: Production Scheduler** â€” Autonomous market-hours pipeline execution with fault tolerance
 - [ ] **Phase 17: MTF Backtest Validation** â€” Automated comparative backtesting with regression detection
@@ -40,7 +40,7 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 | Phase | Name | Goal | Requirements | Plans (est.) |
 |-------|------|------|--------------|--------------|
 | 13 | QC API Client & Safety Foundation | 4/4 | Complete   | 2026-06-15 |
-| 14 | Data Sync & Dashboard Integration | 3/4 | In Progress|  |
+| 14 | Data Sync & Dashboard Integration | 4/4 | Complete | 2026-06-16 |
 | 15 | Paper Trading & Order Flow | Deliver signals to running algorithm; track fills with audit traceability | PTD-01..05, FT-01..04, SAFE-05 | 5 |
 | 16 | Production Scheduler | Run pipeline autonomously on NYSE schedule with fault tolerance | SCHED-01..06, SAFE-03 | 4 |
 | 17 | MTF Backtest Validation | Validate strategy modes through automated comparative backtests | MTF-01..05 | 3 |
@@ -89,13 +89,13 @@ Plans:
 4. All timestamps are stored UTC internally and converted to ET only at display and market-hours-check boundaries
 5. Dashboard never shows fabricated data; sync status, last sync time, and portfolio freshness indicator are always visible
 
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans executed
 
 Plans:
 - [x] 14-01-PLAN.md â€” Sync module & JSONL persistence (poll â†’ reconcile â†’ atomic persist â†’ alert)
 - [x] 14-02-PLAN.md â€” Dashboard data layer (3-state freshness + sync_jsonl loader)
 - [x] 14-03-PLAN.md â€” Dashboard display (freshness banner, metrics, holdings, sync status)
-- [ ] 14-04-PLAN.md â€” Test suite (sync module + dashboard loader + regression)
+- [x] 14-04-PLAN.md â€” Test suite (sync module + dashboard loader + regression)
 
 **UI hint**: yes
 
