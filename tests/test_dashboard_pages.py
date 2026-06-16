@@ -130,6 +130,13 @@ def test_overview_renders_operational_state_from_typed_snapshot():
     assert "System warnings: all_clear" in text
 
 
+def test_overview_page_view_exposes_color_banner_metadata():
+    view = render_page("overview", _available_snapshot())
+
+    assert view.freshness_level == "fresh"
+    assert view.freshness_banner == "Portfolio data fresh - last update: 14:00:00 ET"
+
+
 def test_overview_keeps_degraded_states_visible():
     snapshot = DashboardDataClient.not_configured(missing=("QUANTCONNECT_API_TOKEN",))
     overview = build_overview(snapshot)

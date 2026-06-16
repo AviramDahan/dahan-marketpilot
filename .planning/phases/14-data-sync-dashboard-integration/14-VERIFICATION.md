@@ -1,20 +1,18 @@
 ---
 phase: 14-data-sync-dashboard-integration
 verified: 2026-06-16T06:23:04Z
-status: gaps_found
-score: 11/12 must-haves verified
+reverified: 2026-06-16T06:36:00Z
+status: passed
+score: 12/12 must-haves verified
 overrides_applied: 0
-gaps:
+gaps: []
+closed_gaps:
   - truth: "Dashboard displays color-coded freshness banner (green/yellow/red)"
-    status: failed
-    reason: "Overview builds freshness_level values, but the Streamlit renderer only iterates PageView.lines and renders every line with st.write(), so no color-coded banner is actually wired to the UI."
-    artifacts:
-      - path: "dashboard/pages/overview.py"
-        issue: "SyncPortfolioView.freshness_level is produced, but render_page returns only lines and drops sync_portfolio metadata."
-      - path: "dashboard/app.py"
-        issue: "Overview lines are rendered with st.write(), with no st.success/st.warning/st.error mapping."
-    missing:
-      - "Wire overview freshness_level/status into the Streamlit rendering layer using distinct success/warning/error/info rendering, or otherwise implement a real color-coded visual state."
+    status: fixed
+    evidence:
+      - "dashboard/pages/__init__.py now preserves overview freshness_banner and freshness_level on PageView."
+      - "dashboard/app.py render_page_view() maps fresh/stale/error/unavailable to st.success/st.warning/st.error/st.info."
+      - "tests/test_dashboard_app_rendering.py verifies color-coded rendering and prevents duplicate plain st.write banner output."
 deferred:
   - truth: "Dashboard data refreshes approximately every 5 minutes during market hours"
     addressed_in: "Phase 16"
@@ -25,8 +23,9 @@ deferred:
 
 **Phase Goal:** Portfolio state from QC Cloud is reliably synchronized and displayed with freshness guarantees on the read-only dashboard
 **Verified:** 2026-06-16T06:23:04Z
-**Status:** gaps_found
-**Re-verification:** No - initial verification
+**Re-verified:** 2026-06-16T06:36:00Z
+**Status:** passed
+**Re-verification:** Yes - color-coded freshness banner gap closed
 
 ## Goal Achievement
 
@@ -43,11 +42,11 @@ deferred:
 | 7 | Missing, empty, and corrupt JSONL are degraded states, not crashes or fabricated data | VERIFIED | Missing/empty return `sync_no_data` at `dashboard/data.py:236`; parse failures return `sync_parse_error` at `data.py:247`; tests cover missing, empty, corrupt, and no-fabrication at `tests/test_dashboard_sync_loader.py:69`, `78`, `90`, and `162`. |
 | 8 | Freshness evaluates FRESH/STALE/ERROR from UTC-aware `source_timestamp` | VERIFIED | `dashboard/models.py:40` has FRESH/STALE/ERROR/UNKNOWN; `dashboard/data.py:365` evaluates age against `stale_warning_seconds` and `stale_error_seconds`; tests cover 5m, 15m, 45m, 600s, and 1800s at `tests/test_dashboard_sync_loader.py:102` through `147`. |
 | 9 | Overview renders freshness, portfolio metrics, holdings summary, sync status, and QuantConnect authority labels with UTC-to-ET conversion at display boundary and no file I/O | VERIFIED | `dashboard/pages/overview.py:14` defines `ZoneInfo("America/New_York")`; `overview.py:99` renders freshness labels; `overview.py:129` emits metrics/holdings/sync/authority lines; `overview.py:218` converts timestamps to ET. `rg` found no file I/O or `marketpilot.sync` import in this module. |
-| 10 | Dashboard displays color-coded freshness banner (green/yellow/red) | FAILED | `dashboard/pages/overview.py:29` carries `freshness_level`, but `dashboard/pages/__init__.py:48` returns only `overview.lines`, and `dashboard/app.py:48` renders all lines with `st.write`. No `st.success`, `st.warning`, or `st.error` mapping exists for the banner. |
-| 11 | Tests cover planned sync/dashboard requirements and full pytest passes | VERIFIED | `tests/test_sync.py` has 18 sync tests; `tests/test_dashboard_sync_loader.py` has 12 loader tests; `pytest tests/test_sync.py tests/test_dashboard_sync_loader.py -q --tb=short` passed; `pytest --collect-only -q` collected 500 tests; `pytest --tb=short -q` passed. |
+| 10 | Dashboard displays color-coded freshness banner (green/yellow/red) | VERIFIED | `dashboard/pages/__init__.py` preserves `freshness_banner` and `freshness_level` on `PageView`; `dashboard/app.py` maps fresh/stale/error/unavailable to `st.success`/`st.warning`/`st.error`/`st.info`; `tests/test_dashboard_app_rendering.py` verifies colored rendering and avoids duplicate plain `st.write` banner output. |
+| 11 | Tests cover planned sync/dashboard requirements and full pytest passes | VERIFIED | `tests/test_sync.py` has 18 sync tests; `tests/test_dashboard_sync_loader.py` has 12 loader tests; `tests/test_dashboard_app_rendering.py` covers color-coded Streamlit rendering; `pytest tests/test_dashboard_app_rendering.py tests/test_dashboard_pages.py -q --tb=short` passed; `pytest --tb=short -q` passed. |
 | 12 | Paper-only, QuantConnect authority, no auto-correction, read-only dashboard, and no-secret rules remain intact | VERIFIED | `sync.py:145` enforces `PAPER_TRADING_ONLY`; `dashboard/data.py:320` sets `DashboardAuthority.AUTHORITATIVE`; `dashboard/config.py:59` and `61` reject non-read-only/manual-order dashboard config; CLI reads only non-secret `QC_PROJECT_ID` and `QC_DEPLOY_ID`; tests cover read-only and safety rules. |
 
-**Score:** 11/12 truths verified
+**Score:** 12/12 truths verified
 
 ### Deferred Items
 
@@ -65,7 +64,8 @@ Items not yet met but explicitly addressed in later milestone phases.
 | `marketpilot/__main__.py` | Package CLI entrypoint for manual sync | VERIFIED | Delegates to `marketpilot.sync._main`; `python -m marketpilot --help` succeeds. |
 | `dashboard/models.py` | `DashboardFreshnessStatus.ERROR` | VERIFIED | Enum includes FRESH, STALE, ERROR, UNKNOWN. |
 | `dashboard/data.py` | `sync_jsonl` loader and UTC freshness evaluation | VERIFIED | Dispatch, last-line reader, degraded states, source metadata, and section statuses are present and tested. |
-| `dashboard/pages/overview.py` | Sync portfolio view labels, metrics, holdings, sync status, authority, ET conversion | PARTIAL | Pure view builder exists and is tested, but color-coded UI rendering is not wired. |
+| `dashboard/pages/overview.py` | Sync portfolio view labels, metrics, holdings, sync status, authority, ET conversion | VERIFIED | Pure view builder exists and is tested; `PageView` carries banner metadata into the Streamlit renderer. |
+| `dashboard/app.py` | Color-coded freshness banner rendering | VERIFIED | `render_page_view()` maps freshness levels to Streamlit success/warning/error/info calls. |
 | `tests/test_sync.py` | Sync module unit tests | VERIFIED | 18 tests covering JSONL, generation, safety, API error, thresholds, alert event creation, no auto-correction, UTC timestamps. |
 | `tests/test_dashboard_sync_loader.py` | Dashboard sync loader tests | VERIFIED | 12 tests covering dispatch, degraded states, freshness boundaries, authority, no fabrication, UTC parsing. |
 
@@ -78,7 +78,7 @@ Items not yet met but explicitly addressed in later milestone phases.
 | `marketpilot/sync.py` | `marketpilot/notification_events.py` | `event_for_system_incident()` | WIRED | Direct call at `sync.py:271`; event payload includes `SYNC_DISCREPANCY` and `auto_correct: False`. |
 | `marketpilot/sync.py` | `data/portfolio_sync.jsonl` | `DEFAULT_JSONL_PATH` and `atomic_jsonl_append()` | WIRED | Default path at `sync.py:27`; CLI default at `sync.py:243`; persistence at `sync.py:155` and `170`. |
 | `dashboard/data.py` | sync JSONL file | `_read_last_sync_jsonl_record()` | WIRED | Dispatch at `data.py:186`; last-line read at `data.py:274`. |
-| `dashboard/pages/overview.py` | `dashboard/data.py`/`models.py` | `DashboardSnapshot` and `DashboardFreshnessStatus` | PARTIAL | View builder consumes snapshot and freshness status, but Streamlit app drops `SyncPortfolioView.freshness_level` and renders all lines uniformly. |
+| `dashboard/pages/overview.py` | `dashboard/data.py`/`models.py` | `DashboardSnapshot` and `DashboardFreshnessStatus` | WIRED | View builder consumes snapshot and freshness status; `render_page()` carries banner metadata to `dashboard/app.py` for color-coded rendering. |
 
 ### Data-Flow Trace (Level 4)
 
@@ -87,7 +87,7 @@ Items not yet met but explicitly addressed in later milestone phases.
 | `marketpilot/sync.py` | `snapshot` | `QCApiClient.read_live_algorithm(project_id, deploy_id)` | Yes, typed `QuantConnectPaperSnapshot` from QC API client; tests mock boundary only | FLOWING |
 | `marketpilot/sync.py` | JSONL record | `snapshot`, `decision`, `_next_generation()` | Yes; persisted through `atomic_jsonl_append` | FLOWING |
 | `dashboard/data.py` | `record` | Latest JSONL line from configured `data_source_path` | Yes when JSONL is valid; degraded snapshot otherwise | FLOWING |
-| `dashboard/pages/overview.py` | `SyncPortfolioView` | `DashboardSnapshot` from data layer | Yes for labels/metrics; color metadata not carried into Streamlit renderer | PARTIAL |
+| `dashboard/pages/overview.py` | `SyncPortfolioView` | `DashboardSnapshot` from data layer | Yes for labels/metrics and color metadata carried into Streamlit renderer | FLOWING |
 
 ### Behavioral Spot-Checks
 
@@ -99,6 +99,7 @@ Items not yet met but explicitly addressed in later milestone phases.
 | Missing CLI config fails without credentials | `QC_PROJECT_ID='' QC_DEPLOY_ID='' python -m marketpilot sync` | Exit 1 with missing `QC_PROJECT_ID`; no credentials printed | PASS |
 | Sync/dashboard focused tests | `pytest tests/test_sync.py tests/test_dashboard_sync_loader.py -q --tb=short` | 30 passed | PASS |
 | Full test suite | `pytest --tb=short -q` | Exit 0, full suite passed | PASS |
+| Color-coded banner rendering | `pytest tests/test_dashboard_app_rendering.py tests/test_dashboard_pages.py -q --tb=short` | 17 passed | PASS |
 | Test collection count | `pytest --collect-only -q` | 500 tests collected | PASS |
 | End-to-end JSONL to overview view | Inline Python temp JSONL -> `load_dashboard_snapshot` -> `build_overview` | Produced stale freshness, ET times, metrics, sync status, authority label | PASS |
 
@@ -120,9 +121,9 @@ Items not yet met but explicitly addressed in later milestone phases.
 | SYNC-06 | 14-01, 14-04 | Local records carry TTL/freshness for downstream consumers | SATISFIED | `source_timestamp` is persisted; dashboard computes FRESH/STALE/ERROR from it. |
 | DASH-01 | 14-02, 14-04 | Dashboard refresh cadence | DEFERRED | Data source supports fresh reads; autonomous 5-minute scheduling is explicitly Phase 16. |
 | DASH-02 | 14-02, 14-04 | >10 minute stale warning | SATISFIED | STALE state and labels/tests at 15 minutes and 600s boundary. |
-| DASH-03 | 14-02, 14-04 | >30 minute strong error state | SATISFIED | ERROR status and labels/tests at 45 minutes and 1800s boundary; color-coded visual missing is tracked as separate gap. |
+| DASH-03 | 14-02, 14-04 | >30 minute strong error state | SATISFIED | ERROR status and labels/tests at 45 minutes and 1800s boundary; error state is rendered with `st.error`. |
 | DASH-04 | 14-02, 14-04 | Never fabricate missing data; QC authoritative | SATISFIED | Missing/empty/corrupt degraded states and `DashboardAuthority.AUTHORITATIVE`; no-fabrication tests pass. |
-| DASH-05 | 14-03, 14-04 | Sync status, last sync time, portfolio freshness indicator | PARTIAL | Text labels are present and tested; color-coded banner rendering is not wired. |
+| DASH-05 | 14-03, 14-04 | Sync status, last sync time, portfolio freshness indicator | SATISFIED | Text labels are present and tested; color-coded banner rendering is wired and tested. |
 | SAFE-04 | 14-01, 14-02, 14-03, 14-04 | Store UTC internally, convert to ET at display boundary | SATISFIED | Sync records serialize UTC; dashboard loader normalizes to UTC; overview converts to ET. |
 
 ### Anti-Patterns Found
@@ -130,7 +131,7 @@ Items not yet met but explicitly addressed in later milestone phases.
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
 | `dashboard/data.py` | 540 | `return {}` in `_mapping()` | INFO | Helper default for legacy local JSON parsing; not a user-visible stub and not used to fabricate sync data. |
-| `dashboard/app.py` | 48 | Uniform `st.write()` for all overview lines | BLOCKER | Prevents planned color-coded freshness banner from being visually represented. |
+| `dashboard/app.py` | 22 | `render_page_view()` maps freshness banner to Streamlit status calls | RESOLVED | Fresh/stale/error/unavailable render through success/warning/error/info before remaining lines are written. |
 
 ### Human Verification Required
 
@@ -138,7 +139,7 @@ None for this verification decision. Visual color coding is not routed to human 
 
 ### Gaps Summary
 
-Phase 14 substantially delivers the sync producer, JSONL boundary, dashboard loader, freshness evaluation, overview labels, safety constraints, and regression tests. The blocking gap is narrower: the planned color-coded freshness banner is not wired into the actual Streamlit rendering path. `SyncPortfolioView.freshness_level` exists, but `render_page()` discards it and `dashboard/app.py` renders every overview line with `st.write()`.
+Phase 14 delivers the sync producer, JSONL boundary, dashboard loader, freshness evaluation, color-coded overview banner, overview labels, safety constraints, and regression tests. The previously blocking banner gap is closed by preserving overview banner metadata in `PageView` and rendering it through Streamlit status calls.
 
 The approximately 5-minute market-hours cadence is not treated as a Phase 14 blocker because the phase context explicitly defines sync as a single-cycle callable and assigns scheduling to Phase 16.
 
@@ -152,6 +153,8 @@ python -m marketpilot sync  # with QC_PROJECT_ID/QC_DEPLOY_ID empty
 pytest tests/test_sync.py tests/test_dashboard_sync_loader.py -q --tb=short
 pytest --collect-only -q
 pytest --tb=short -q
+pytest tests/test_dashboard_app_rendering.py tests/test_dashboard_pages.py -q --tb=short
+rg "st\.success|st\.warning|st\.error|freshness_banner|freshness_level" dashboard tests -n
 rg checks for sync wiring, JSONL atomic writes, dashboard sync_jsonl dispatch, overview ET conversion, read-only/no-secret/no-autocorrect constraints
 gsd-tools query roadmap.get-phase 14 --raw
 gsd-tools query verify.artifacts/key-links ...  # returned parser errors for must_haves despite PLAN content; manual verification used instead
@@ -161,9 +164,10 @@ gsd-tools query verify.artifacts/key-links ...  # returned parser errors for mus
 
 - Real QuantConnect API behavior was not exercised; tests intentionally mock `QCApiClient` to stay offline and credential-free.
 - `SYNC_DISCREPANCY` verification confirms creation of the transport-neutral system event. Telegram delivery itself remains governed by the existing notification delivery service and was not invoked by this sync cycle.
-- The current dashboard displays text labels for stale/error states, but not the planned color-coded visual treatment.
+- Real dashboard visual appearance should still be checked manually in Streamlit before release, but the code path now uses distinct Streamlit status renderers for freshness levels.
 
 ---
 
 _Verified: 2026-06-16T06:23:04Z_
+_Re-verified: 2026-06-16T06:36:00Z_
 _Verifier: the agent (gsd-verifier)_

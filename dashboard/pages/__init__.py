@@ -25,6 +25,8 @@ class PageView:
     title: str
     status: DashboardSectionStatus
     lines: tuple[str, ...]
+    freshness_banner: str | None = None
+    freshness_level: str | None = None
 
 
 PAGE_REGISTRY: tuple[PageMetadata, ...] = (
@@ -51,6 +53,12 @@ def render_page(slug: str, snapshot: DashboardSnapshot) -> PageView:
             title="Overview",
             status=DashboardSectionStatus.AVAILABLE,
             lines=overview.lines,
+            freshness_banner=overview.sync_portfolio.freshness_label
+            if overview.sync_portfolio is not None
+            else None,
+            freshness_level=overview.sync_portfolio.freshness_level
+            if overview.sync_portfolio is not None
+            else None,
         )
     if normalized == "positions":
         from dashboard.pages.positions import build_positions
