@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Blocked 15-09 external Object Store permission or paid-tier required
-stopped_at: 15-09-SUMMARY.md checkpoint: blocked_external_object_store_permission_or_paid_tier_required
-last_updated: "2026-06-16T18:31:00.000Z"
+status: Planning 15-10 live-log pagination and Object Store receipt gap
+stopped_at: 15-10-PLAN.md created after object_store_written_no_algorithm_receipt_observed
+last_updated: "2026-06-16T22:25:00.000Z"
 last_activity: 2026-06-16
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 17
+  total_plans: 18
   completed_plans: 12
   percent: 71
 ---
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-06-15)
 
 Phase: 15
 Plan: 15-09-PLAN.md
-Status: Blocked 15-09 external Object Store permission or paid-tier required
+Status: Planning 15-10 live-log pagination and Object Store receipt gap
 Last activity: 2026-06-16
 
 Progress: [███████░░░] 71%
@@ -208,7 +208,8 @@ Recent decisions affecting current work:
 - [Phase 15]: Plan 08 will test a supported QuantConnect Object Store signal inbox fallback because generic Commands dispatch was accepted by the API but not observed by a no-order echo algorithm.
 - [Phase 15]: Plan 08 execution added Object Store wrappers, a guarded Object Store smoke, and LEAN Object Store polling through shared validation. Credentialed external compile/deploy succeeded, but `/object/set` returned `Organization not found`.
 - [Phase 15]: Plan 09 will make Object Store write access a fail-fast preflight before compile/deploy and classify persistent `Organization not found` as an external permission/paid-tier blocker.
-- [Phase 15]: Plan 09 execution added diagnose-only Object Store preflight. Credentialed diagnose-only returned `blocked_external_object_store_permission_or_paid_tier_required` without compile/deploy/order polling.
+- [Phase 15]: Plan 09 execution added diagnose-only Object Store preflight and fixed multipart Object Store uploads. Credentialed diagnose-only returned `object_store_write_available`; full fallback smoke wrote the object, compiled, deployed, restored files, cleaned up, and stopped deployment, but observed no receipt marker, logs, or tagged orders.
+- [Phase 15]: Plan 10 will correct `/live/logs/read` pagination from `start`/`end` to official `startLine`/`endLine`, then rerun the Object Store fallback smoke before changing LEAN receipt logic.
 - [Phase 15]: Plan 05 offline E2E tests prove local signal-command-LEAN-audit behavior only; mocks and fake fills are not real QuantConnect execution evidence.
 
 ### Pending Todos

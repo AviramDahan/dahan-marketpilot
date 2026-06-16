@@ -118,7 +118,7 @@ Plans:
 4. Stale signals triggered outside valid execution window are safely skipped with logged reason
 5. Duplicate deploy requests are rejected via idempotent keys; retry-safe operations throughout
 
-**Plans:** 4/9 plans complete, 5/9 externally partially verified or blocked at delivery-path checkpoint
+**Plans:** 4/10 plans complete, 6/10 externally partially verified or blocked at delivery-path checkpoint
 
 Plans:
 
@@ -129,8 +129,9 @@ Plans:
 - [ ] 15-05-PLAN.md - Offline E2E tests, docs, UAT/verification, QC sync/compile/deploy/command API verified; callback-to-order smoke still blocked
 - [ ] 15-06-PLAN.md - Gap closure: smoke helper and payload diagnostics complete; callback-to-order smoke still blocked
 - [ ] 15-07-PLAN.md - Gap closure: isolated command-dispatch probe deployed successfully, but generic command marker was not observed in logs
-- [ ] 15-08-PLAN.md - Gap closure: Object Store signal inbox implemented locally; external `/object/set` blocked with `Organization not found`
-- [ ] 15-09-PLAN.md - Gap closure: Object Store preflight/diagnose-only implemented; QC organization permission/paid-tier blocker persists
+- [ ] 15-08-PLAN.md - Gap closure: Object Store signal inbox implemented locally; first external `/object/set` failed before multipart fix
+- [ ] 15-09-PLAN.md - Gap closure: Object Store preflight/diagnose-only implemented; multipart upload fixed and external write now passes, but no algorithm receipt observed
+- [ ] 15-10-PLAN.md - Gap closure: correct live-log API pagination and rerun Object Store fallback receipt smoke
 
 ---
 
