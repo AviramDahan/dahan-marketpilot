@@ -34,12 +34,12 @@
 
 ## Production Scheduler
 
-- [ ] **SCHED-01**: APScheduler runs in Render Background Worker, triggers pipeline on US market schedule (ET timezone, DST-aware)
-- [ ] **SCHED-02**: Scheduler prevents overlapping runs via file lock; idempotent execution with unique signal IDs
-- [ ] **SCHED-03**: GitHub Actions monitors scheduler heartbeat only; sends failure alerts if heartbeat missed; never runs scans, signals, or QC commands
-- [ ] **SCHED-04**: Scheduler job graph is dependency-aware; upstream failure skips downstream jobs
-- [ ] **SCHED-05**: Each run is self-contained, catch-up capable, and logs start/end/duration to JSONL audit journal
-- [ ] **SCHED-06**: No new database introduced; audit state uses append-only JSONL; QC remains source of truth
+- [x] **SCHED-01**: APScheduler runs in Render Background Worker, triggers pipeline on US market schedule (ET timezone, DST-aware)
+- [x] **SCHED-02**: Scheduler prevents overlapping runs via file lock; idempotent execution with unique signal IDs
+- [x] **SCHED-03**: GitHub Actions monitors scheduler heartbeat only; sends failure alerts if heartbeat missed; never runs scans, signals, or QC commands
+- [x] **SCHED-04**: Scheduler job graph is dependency-aware; upstream failure skips downstream jobs
+- [x] **SCHED-05**: Each run is self-contained, catch-up capable, and logs start/end/duration to JSONL audit journal
+- [x] **SCHED-06**: No new database introduced; audit state uses append-only JSONL; QC remains source of truth
 
 ## MTF Backtest Validation
 
@@ -90,7 +90,7 @@
 
 - [ ] **SAFE-01**: PAPER_TRADING_ONLY remains hardcoded constant (not env var); runtime startup assertion validates; pre-commit hook rejects False
 - [ ] **SAFE-02**: No code path accepts live brokerage credentials; defense-in-depth across all layers
-- [ ] **SAFE-03**: All existing v1.0 tests (433) pass unchanged after v1.1 implementation; new modules use lazy imports
+- [x] **SAFE-03**: All existing v1.0 tests (433) pass unchanged after v1.1 implementation; new modules use lazy imports
 - [x] **SAFE-04**: All timestamps stored as UTC internally; convert to ET only at display and market-hours-check boundaries
 - [x] **SAFE-05**: Execution window guards skip stale signals if triggered outside valid execution window
 - [ ] **SAFE-06**: Phase 15's remaining `/live/orders/read` order/fill/rejection verification must not be bypassed, faked, or marked complete outside a valid market-hours or next-open observation
@@ -139,12 +139,12 @@
 | SYNC-04 | 14 | Complete |
 | SYNC-05 | 14 | Complete |
 | SYNC-06 | 14 | Complete |
-| SCHED-01 | 16 | Pending |
-| SCHED-02 | 16 | Pending |
-| SCHED-03 | 16 | Pending |
-| SCHED-04 | 16 | Pending |
-| SCHED-05 | 16 | Pending |
-| SCHED-06 | 16 | Pending |
+| SCHED-01 | 16 | Complete |
+| SCHED-02 | 16 | Complete |
+| SCHED-03 | 16 | Complete |
+| SCHED-04 | 16 | Complete |
+| SCHED-05 | 16 | Complete |
+| SCHED-06 | 16 | Complete |
 | PROD-01 | 16.1 | Pending |
 | PROD-02 | 16.1 | Pending |
 | PROD-03 | 16.1 | Pending |
@@ -177,7 +177,7 @@
 | DASH-05 | 14 | Complete |
 | SAFE-01 | 13 | Pending |
 | SAFE-02 | 13 | Pending |
-| SAFE-03 | 16 | Pending |
+| SAFE-03 | 16 | Complete |
 | SAFE-04 | 14 | Complete |
 | SAFE-05 | 15 | Complete |
 | SAFE-06 | 16.1 | Pending |

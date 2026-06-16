@@ -32,7 +32,7 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 - [x] **Phase 13: QC API Client & Safety Foundation** â€” Authenticated API client with defense-in-depth paper-only safety (completed 2026-06-15)
 - [x] **Phase 14: Data Sync & Dashboard Integration** â€” Reliable portfolio sync from QC with freshness-aware dashboard display (completed 2026-06-16)
 - [ ] **Phase 15: Paper Trading & Order Flow** â€” Signal delivery to live algorithm with full fill tracking and audit trail
-- [ ] **Phase 16: Production Scheduler** â€” Autonomous market-hours pipeline execution with fault tolerance
+- [x] **Phase 16: Production Scheduler** â€” Autonomous market-hours pipeline execution with fault tolerance (local implementation complete 2026-06-17; deployed product gates remain Phase 16.1/16.2)
 - [ ] **Phase 16.1: Production Integration & Dashboard Go-Live** â€” Deployed personal autonomous Paper Trading product with dashboard, worker, durable data transport, Telegram, and secrets configured
 - [ ] **Phase 16.2: End-to-End UAT & Operational Burn-in** â€” Multi-session deployed-system proof under real QuantConnect Paper Trading conditions
 - [ ] **Phase 17: MTF Backtest Validation** â€” Automated comparative backtesting with regression detection
@@ -44,7 +44,7 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 | 13 | QC API Client & Safety Foundation | 4/4 | Complete   | 2026-06-15 |
 | 14 | Data Sync & Dashboard Integration | 4/4 | Complete    | 2026-06-16 |
 | 15 | Paper Trading & Order Flow | Deliver signals to running algorithm; track fills with audit traceability | PTD-01..05, FT-01..04, SAFE-05 | 4/11 executed plus external order-authority gate pending |
-| 16 | Production Scheduler | Run pipeline autonomously on NYSE schedule with fault tolerance | SCHED-01..06, SAFE-03 | 4 |
+| 16 | Production Scheduler | Run pipeline autonomously on NYSE schedule with fault tolerance | SCHED-01..06, SAFE-03 | 5/5 complete |
 | 16.1 | Production Integration & Dashboard Go-Live | Deploy a working personal autonomous Paper Trading product on Render with real dashboard data and Telegram delivery | PROD-01..10, SAFE-06..07 | TBD |
 | 16.2 | End-to-End UAT & Operational Burn-in | Prove the deployed product operates continuously across real market sessions | UAT-01..09, OPS-01 | TBD |
 | 17 | MTF Backtest Validation | Validate strategy modes through automated comparative backtests | MTF-01..05 | 3 |
@@ -156,19 +156,25 @@ Plans:
 4. All 433+ existing v1.0 tests pass unchanged after full v1.1 implementation (lazy imports, optional params)
 5. GitHub Actions monitors heartbeat and sends failure alert if scheduled run is missed
 
-**Plans**: 5 plans planned across 4 execution waves. Planning artifacts exist; execution has not started.
+**Plans**: 5/5 plans complete across 4 execution waves. Local implementation and full regression passed; deployed product verification remains Phase 16.1/16.2.
 
 **Execution Waves:**
 
 - Wave 1:
-  - [ ] 16-01-PLAN.md - Scheduler clock, APScheduler configuration, and NYSE/ET market-session guard
-  - [ ] 16-02-PLAN.md - Production runtime runner and dependency-aware job graph
+  - [x] 16-01-PLAN.md - Scheduler clock, APScheduler configuration, and NYSE/ET market-session guard
+  - [x] 16-02-PLAN.md - Production runtime runner and dependency-aware job graph
 - Wave 2:
-  - [ ] 16-03-PLAN.md - Durable lock, run ledger, idempotent retries, and conservative catch-up
+  - [x] 16-03-PLAN.md - Durable lock, run ledger, idempotent retries, and conservative catch-up
 - Wave 3:
-  - [ ] 16-04-PLAN.md - Heartbeat, system-health records, and monitor-only GitHub Actions missed-run check
+  - [x] 16-04-PLAN.md - Heartbeat, system-health records, and monitor-only GitHub Actions missed-run check
 - Wave 4:
-  - [ ] 16-05-PLAN.md - Render Background Worker boundary, Phase 16.1 interfaces, docs, and regression gate
+  - [x] 16-05-PLAN.md - Render Background Worker boundary, Phase 16.1 interfaces, docs, and regression gate
+
+**External Gates Still Open:**
+
+- Phase 15 authoritative `/live/orders/read` order/fill/rejection evidence remains pending until the next valid US market-hours or next-open observation window.
+- Phase 16.1 must verify deployed dashboard, durable shared data, real Telegram delivery, secure secrets, and operation while the local computer is off.
+- Phase 16.2 must verify multi-session operational burn-in.
 
 ---
 
@@ -268,13 +274,13 @@ Plans:
 | FT-03 | 15 | Pending |
 | FT-04 | 15 | Pending |
 | SAFE-05 | 15 | Pending |
-| SCHED-01 | 16 | Pending |
-| SCHED-02 | 16 | Pending |
-| SCHED-03 | 16 | Pending |
-| SCHED-04 | 16 | Pending |
-| SCHED-05 | 16 | Pending |
-| SCHED-06 | 16 | Pending |
-| SAFE-03 | 16 | Pending |
+| SCHED-01 | 16 | Complete |
+| SCHED-02 | 16 | Complete |
+| SCHED-03 | 16 | Complete |
+| SCHED-04 | 16 | Complete |
+| SCHED-05 | 16 | Complete |
+| SCHED-06 | 16 | Complete |
+| SAFE-03 | 16 | Complete |
 | PROD-01 | 16.1 | Pending |
 | PROD-02 | 16.1 | Pending |
 | PROD-03 | 16.1 | Pending |
