@@ -16,10 +16,15 @@ SECRET_ENV_NAMES = {
 
 
 def _render_service() -> dict[str, object]:
+    return _service_by_name("dahan-marketpilot-dashboard")
+
+
+def _service_by_name(name: str) -> dict[str, object]:
     loaded = yaml.safe_load((ROOT / "render.yaml").read_text(encoding="utf-8"))
     services = loaded["services"]
-    assert len(services) == 1
-    return services[0]
+    matches = [service for service in services if service.get("name") == name]
+    assert len(matches) == 1
+    return matches[0]
 
 
 def test_render_blueprint_starts_streamlit_on_render_port():
@@ -44,10 +49,34 @@ def test_render_blueprint_uses_python_311_and_secret_references_only():
         assert "value" not in env_vars[name]
 
 
+def test_render_blueprint_defines_scheduler_background_worker():
+    service = _service_by_name("dahan-marketpilot-scheduler")
+    env_vars = {item["key"]: item for item in service["envVars"]}
+
+    assert service["type"] == "worker"
+    assert service["runtime"] == "python"
+    assert service["buildCommand"] == "pip install -r requirements.txt"
+    assert service["startCommand"] == "python -m marketpilot.production_runner scheduler"
+    assert env_vars["PYTHON_VERSION"]["value"].startswith("3.11.")
+    assert env_vars["MARKETPILOT_ENV"]["value"] == "paper"
+    for name in {
+        "QUANTCONNECT_USER_ID",
+        "QUANTCONNECT_API_TOKEN",
+        "QUANTCONNECT_PROJECT_ID",
+        "QUANTCONNECT_LIVE_DEPLOY_ID",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID",
+    }:
+        assert env_vars[name]["sync"] is False
+        assert "value" not in env_vars[name]
+
+
 def test_runtime_dependencies_are_limited_to_approved_packages():
     requirements = (ROOT / "requirements.txt").read_text(encoding="utf-8")
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
+    assert "APScheduler>=3.10,<4" in requirements
+    assert '"APScheduler>=3.10,<4"' in pyproject
     assert "PyYAML>=6.0.2" in requirements
     assert "streamlit>=1.51,<2" in requirements
     assert "streamlit>=1.51,<2" in pyproject

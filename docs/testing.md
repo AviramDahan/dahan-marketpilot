@@ -368,3 +368,44 @@ smokes stop deployments by default after polling and expose `--keep-running`
 only for an explicit operator-approved next-open or market-hours observation.
 A short credentialed auto-stop check created a Paper deployment, cleaned the
 probe object, and returned `stop_success=true`.
+
+## Phase 16 Production Scheduler Tests
+
+Phase 16 tests are deterministic and offline. They verify the autonomous
+scheduler boundaries without requiring QuantConnect, Telegram, Render,
+internet access, live market data, or the local computer to be part of
+production operation.
+
+Run the targeted Phase 16 suite with:
+
+```powershell
+python -m pytest tests/test_scheduler_calendar.py tests/test_scheduler_jobs.py tests/test_scheduler_lock.py tests/test_scheduler_storage.py tests/test_scheduler_health.py tests/test_production_runner.py tests/test_production_scheduler_regression.py -q
+```
+
+Current Phase 16 suites:
+
+- `tests/test_scheduler_calendar.py`
+- `tests/test_scheduler_jobs.py`
+- `tests/test_scheduler_lock.py`
+- `tests/test_scheduler_storage.py`
+- `tests/test_scheduler_health.py`
+- `tests/test_production_runner.py`
+- `tests/test_production_scheduler_regression.py`
+
+These tests cover:
+
+- APScheduler configuration boundary and NYSE/ET DST-aware market eligibility.
+- Weekend, holiday, early-close, and stale catch-up skips.
+- Dependency-aware job graph behavior.
+- Durable lease lock overlap prevention.
+- Append-only scheduler ledger and stable idempotency keys.
+- Heartbeat freshness evaluation and monitor-only failure status.
+- Production runtime runner composition through existing sync, runtime,
+  paper signal, order-poll, dashboard-export, and notification boundaries.
+
+The GitHub Actions heartbeat workflow is monitor-only. It must never run scans,
+signals, QuantConnect commands, or order code.
+
+Phase 16 does not close the Phase 15 `/live/orders/read` authority gate.
+Authoritative external order/fill/rejection verification still requires a
+valid US market-hours or next-open observation window.
