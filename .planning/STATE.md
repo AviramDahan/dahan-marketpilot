@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Completed 15-04; ready for 15-05-PLAN.md
-stopped_at: Completed 15-04-PLAN.md
-last_updated: "2026-06-16T11:59:30Z"
+status: Blocked 15-05 Task 3: external QuantConnect paper smoke not verified
+stopped_at: 15-05-PLAN.md Task 3 checkpoint: blocked_external_not_verified
+last_updated: "2026-06-16T12:19:33.834Z"
 last_activity: 2026-06-16
 progress:
   total_phases: 5
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-06-15)
 
 Phase: 15
 Plan: 15-05-PLAN.md
-Status: Completed 15-04; ready for 15-05-PLAN.md
+Status: Blocked 15-05 Task 3: external QuantConnect paper smoke not verified
 Last activity: 2026-06-16
 
 Progress: [█████████░] 92%
@@ -112,6 +112,7 @@ Progress: [█████████░] 92%
 | Phase 15 P02 | 14min | 2 tasks | 4 files |
 | Phase 15 P03 | 9min | 2 tasks | 6 files |
 | Phase 15 P04 | 10min | 2 tasks | 3 files |
+| Phase 15 P05 | 9min | 2/3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -198,6 +199,8 @@ Recent decisions affecting current work:
 - [Phase 15]: Plan 04 preserves unknown QuantConnect live-order statuses as raw evidence with parse warnings instead of inventing local meanings.
 - [Phase 15]: Plan 04 emits fill audit records only when QuantConnect provides fill quantity evidence; local code does not infer fills from status alone.
 - [Phase 15]: Plan 04 trace queries read append-only audit records by signal_id or idempotency_key without becoming order or portfolio authority.
+- [Phase 15]: Plan 05 remains blocked_external_not_verified for PTD-01/PTD-02 external evidence and running-QuantConnect delivery until a credentialed paper-only smoke run records sanitized evidence.
+- [Phase 15]: Plan 05 offline E2E tests prove local signal-command-LEAN-audit behavior only; mocks and fake fills are not real QuantConnect execution evidence.
 
 ### Pending Todos
 
@@ -215,6 +218,7 @@ Recent decisions affecting current work:
 - Exact QuantConnect API endpoints, Object Store behavior, notification APIs, Render deployment details, and Streamlit APIs must be re-verified during the relevant implementation phases.
 - Phase 5 execution should record the local Python version because the current shell has Python 3.10 while project metadata requires Python >=3.11 for strict/release validation.
 - Phase 9 must keep Render dashboard read-only and source Paper state from verified QuantConnect-approved paths.
+- Phase 15 Plan 05 external QuantConnect paper smoke is blocked_external_not_verified because QUANTCONNECT_USER_ID, QUANTCONNECT_API_TOKEN, QC_PROJECT_ID, QC_DEPLOY_ID, QC_COMPILE_ID, QC_NODE_ID, and QC_VERSION_ID are not configured locally.
 
 ## Deferred Items
 
@@ -227,6 +231,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-16T11:59:30Z
-Stopped at: Completed 15-04-PLAN.md
-Resume file: None
+Last session: 2026-06-16T12:17:59.017Z
+Stopped at: 15-05-PLAN.md Task 3 checkpoint: blocked_external_not_verified
+Resume file: .planning/phases/15-paper-trading-order-flow/15-05-SUMMARY.md
