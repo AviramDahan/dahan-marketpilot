@@ -11,7 +11,7 @@ provides:
   - "Guarded no-order QuantConnect command-dispatch probe"
   - "Official generic command payload alignment for MarketPilot smoke"
   - "Sanitized command receipt evidence in LEAN before payload parsing"
-  - "Documentation that external dispatch probe was not run because QC env vars were missing"
+  - "Sanitized evidence that a credentialed no-order dispatch probe deployed successfully but produced no observable marker"
 affects: [phase-15-paper-trading-order-flow, quantconnect-paper-operations]
 
 tech-stack:
@@ -36,7 +36,7 @@ key-files:
 key-decisions:
   - "A generic no-`$type` payload is the primary command-dispatch diagnostic because official QuantConnect docs route generic payloads to `on_command`."
   - "Typed command payloads are retained only as diagnostics and use flat fields, not a nested `parameters` envelope."
-  - "External callback/order verification remains blocked until QC env vars are configured in the active process and the no-order dispatch probe is run."
+  - "External callback/order verification remains blocked because a no-order generic dispatch probe still produced no observable log marker."
 
 patterns-established:
   - "Before debugging MarketPilot order logic, isolate QuantConnect generic command dispatch with a no-order echo algorithm."
@@ -50,12 +50,12 @@ completed: 2026-06-16T17:45:00Z
 
 # Phase 15 Plan 07: Command Dispatch Diagnosis Summary
 
-**Local diagnostic tooling complete; credentialed external dispatch probe not run due missing env.**
+**Local diagnostic tooling complete; credentialed no-order dispatch still not observed.**
 
 ## Performance
 
-- **Tasks completed:** 2/4 fully, 1/4 documented as not run, 1/4 skipped.
-- **Checkpoint:** `not_run_missing_env` for external QuantConnect dispatch probe.
+- **Tasks completed:** 3/4 completed, 1/4 skipped because Commands dispatch remains blocked.
+- **Checkpoint:** `blocked_external_dispatch_not_observed`.
 - **Local Python:** 3.10.10
 
 ## Accomplishments
@@ -76,20 +76,24 @@ completed: 2026-06-16T17:45:00Z
 
 ## External Smoke Status
 
-Status: `not_run_missing_env`
+Status: `blocked_external_dispatch_not_observed`
 
-The active process did not have these env vars configured:
+Credentialed QuantConnect env vars were saved in a local ignored `.secrets/`
+file and used only in the active process. Secret values were not committed or
+documented.
 
-- `QUANTCONNECT_USER_ID`
-- `QUANTCONNECT_API_TOKEN`
-- `QC_PROJECT_ID`
-- `QC_DEPLOY_ID`
-- `QC_NODE_ID`
-- `QC_VERSION_ID`
+Sanitized external results:
 
-No credentialed external QuantConnect command dispatch probe was run in this
-plan. No callback, order, fill, rejection, or portfolio-change evidence is
-claimed.
+- Existing Paper deployment was stopped.
+- Echo compile `677437f56a306fab73f489b921f92652-dbdb35fb652acd584047b1e67f1a13b0` returned `BuildSuccess`.
+- Echo Paper deployment `L-2c24272bebaead4a441fadf048662324` returned `Running`.
+- Generic echo `/live/commands/create` returned success.
+- Twelve immediate polls showed 0 live logs and no `MARKETPILOT_DISPATCH_PROBE_RECEIVED` marker.
+- A delayed follow-up generic command to the same deploy also returned command API success.
+- Eighteen delayed polls showed 0 live logs and no marker.
+- The echo deployment was stopped after the probe.
+
+No callback, order, fill, rejection, or portfolio-change evidence is claimed.
 
 ## Verification
 
@@ -100,23 +104,19 @@ claimed.
 
 ## Residual Risk
 
-- Phase 15 still cannot be marked externally complete until the no-order
-  dispatch probe is run with real QuantConnect env vars in the active process.
-- If the no-order probe receives no log marker after API acceptance, the likely
-  blocker is QuantConnect command dispatch or account/project behavior, not
-  MarketPilot order logic.
-- If the no-order probe receives the marker, rerun the MarketPilot generic
-  command smoke and require callback-to-order or callback-to-rejection evidence.
+- Phase 15 still cannot be marked externally complete because even the no-order
+  generic echo probe did not produce observable `on_command` log evidence.
+- The likely blocker is QuantConnect command dispatch semantics, live log
+  visibility, or account/project behavior, not MarketPilot order logic.
+- If a future probe receives the marker, rerun the MarketPilot generic command
+  smoke and require callback-to-order or callback-to-rejection evidence.
 
 ## Next Step
 
-Configure QuantConnect env vars in the current shell and run:
-
-`python scripts\qc_command_dispatch_probe.py --command-label generic_echo`
-
-Do not paste or commit credential values. If the probe passes, continue with the
-MarketPilot generic command smoke. If it does not pass, record the external
-dispatch blocker or implement only a supported paper-only fallback.
+Investigate a supported alternate delivery path or QuantConnect-specific command
+registration requirement. Do not keep modifying MarketPilot order logic until a
+no-order callback receipt is observable. If using a fallback, it must remain
+paper-only, idempotent, and externally proven before Phase 15 can pass.
 
 ---
 *Phase: 15-paper-trading-order-flow*

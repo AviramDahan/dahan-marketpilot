@@ -10,10 +10,10 @@ paper deployment creation, Commands API acceptance, and the disabled-by-default
 command-smoke runner are verified. Real command callback-to-order delivery
 remains `blocked_external_callback_not_verified` because accepted plain and
 typed commands produced no observable `on_command` debug log and no live order
-during polling. Phase 15-07 adds an isolated no-order dispatch probe and aligns
-the MarketPilot smoke payload with the official generic `on_command` contract,
-but the credentialed external probe was not run in this session because
-QuantConnect environment variables were not configured.
+during polling. Phase 15-07 added an isolated no-order dispatch probe and
+aligned the MarketPilot smoke payload with the official generic `on_command`
+contract. The credentialed external probe compiled and deployed successfully,
+but still observed no generic command dispatch marker in live logs.
 
 Offline tests do not prove real QuantConnect execution. Mocked command delivery,
 mocked live orders, fake LEAN objects, and fake fills are not external evidence.
@@ -28,14 +28,14 @@ mocked live orders, fake LEAN objects, and fake fills are not external evidence.
 | Authenticated QuantConnect `/live/list`, `/live/read`, `/live/orders/read` smoke | passed_external_read_only | project `32900381`, deploy `L-223eafd89aaac127343bb441bf96e423`, status `running`, equity `27027.03`, orders read success with 0 orders |
 | QuantConnect cloud file sync, compile, live create, command API smoke | partial_external_command_api_only | synced `main.py` plus 28 `marketpilot/` files; compile `76fe4ebdce72ca35574db67ad60b0433-9fbcc5e87d8c7d73346eda85b8851386` was `BuildSuccess`; deploy `L-6e97706430e5dfec3e6615282153ad47` was `Running`; `/live/commands/create` returned `success=true`; logs/orders stayed empty |
 | Phase 15-06 gap smoke command | blocked_external_callback_not_verified | synced callback-tolerant receiver, compile `54a09ada5318ca08dfd15e3ac7ec12ad-b1d7a4c2bb865f244914254e68bd0b07` was `BuildSuccess`; deploy `L-bd51091b63e10262fac1b2ca8b877f49` was `Running`; `typed_order_command_probe` returned `command_api_success=true`; 12 polls showed 0 logs and 0 orders |
-| Phase 15-07 local dispatch probe readiness | passed_offline_ready_for_external | `qc_command_dispatch_probe.py` refuses by default, dry-run redacts secrets, produces a no-order Python echo algorithm, and builds official generic command payloads; external run not executed because QC env vars were missing |
+| Phase 15-07 no-order dispatch probe | blocked_external_dispatch_not_observed | `qc_command_dispatch_probe.py` refuses by default, dry-run redacts secrets, produces a no-order Python echo algorithm, and builds official generic command payloads. External compile `677437f56a306fab73f489b921f92652-dbdb35fb652acd584047b1e67f1a13b0` was `BuildSuccess`; deploy `L-2c24272bebaead4a441fadf048662324` was `Running`; command API returned success; 12 immediate polls plus 18 delayed polls showed 0 logs and no marker. |
 
 ## Requirement Evidence Matrix
 
 | Requirement | Offline Evidence | External QuantConnect Evidence | Status |
 |-------------|------------------|--------------------------------|--------|
 | PTD-01 | `deploy_paper_algorithm()` tests cover live-paper payload and deployment idempotency. | `/live/create` created Paper deployment `L-6e97706430e5dfec3e6615282153ad47` from successful compile. | passed_external |
-| PTD-02 | E2E test covers `submit_signal_command()` to mocked `create_live_command()` and fake LEAN `on_command`; Phase 15-07 adds a no-order generic dispatch probe. | `/live/commands/create` returned `success=true` for plain and typed probes, but no `on_command` debug/order evidence appeared; Phase 15-07 external probe not run because env vars were missing. | blocked_external_callback_not_verified |
+| PTD-02 | E2E test covers `submit_signal_command()` to mocked `create_live_command()` and fake LEAN `on_command`; Phase 15-07 adds a no-order generic dispatch probe. | `/live/commands/create` returned `success=true` for plain, typed, and no-order generic echo probes, but no `on_command` debug/order/marker evidence appeared. | blocked_external_dispatch_not_observed |
 | PTD-03 | `tests/test_qc_api.py` covers paper-gated stop/liquidate wrapper behavior. | not required for 15-05 smoke, no external stop/liquidate run. | passed_offline_only |
 | PTD-04 | Unit and E2E tests reject duplicate deploy/signal idempotency keys before API calls. | not run externally. | passed_offline_only |
 | PTD-05 | `tests/test_lean_command_flow.py` and E2E tests prove fake LEAN command acceptance creates one tagged paper order path; `lean/main.py` now records sanitized command receipt evidence before parsing. | Phase 15 receiver code compiled and deployed, including tolerant payload normalization, but callback/order behavior was not observed after command API acceptance. | blocked_external_callback_not_verified |
@@ -74,9 +74,10 @@ Phase 15-07 added `scripts/qc_command_dispatch_probe.py` to compile and deploy
 a no-order Python echo algorithm for generic Commands API dispatch diagnosis.
 The probe is disabled by default behind `MARKETPILOT_QC_DISPATCH_PROBE_ENABLED=1`,
 redacts secret-bearing output, restores the target project file by default, and
-looks only for a sanitized log marker. Local dry-run passed. The credentialed
-external dispatch probe was not run because the active process had no
-QuantConnect environment variables configured.
+looks only for a sanitized log marker. Local dry-run passed. Credentialed
+external dispatch ran against project `32900381`: the echo compile succeeded,
+the Paper deploy reached `Running`, and `/live/commands/create` returned
+success, but repeated `/live/logs/read` polls returned 0 logs and no marker.
 
 ## Secret Handling
 
@@ -86,6 +87,8 @@ variable names only.
 ## Residual Risk
 
 Account-specific `/live/create`, `/live/read`, `/live/orders/read`, compile,
-file sync, and command API acceptance are now verified. QuantConnect Python
-`on_command` callback behavior still requires remediation and sanitized evidence
-before Phase 15 can be marked fully passed.
+file sync, and command API acceptance are now verified. A no-order generic
+Python echo algorithm also failed to produce observable command-dispatch logs.
+QuantConnect Python `on_command` callback behavior or live log visibility still
+requires remediation and sanitized evidence before Phase 15 can be marked fully
+passed.

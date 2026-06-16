@@ -313,7 +313,8 @@ $env:MARKETPILOT_QC_DISPATCH_PROBE_ENABLED="1"
 python scripts\qc_command_dispatch_probe.py --dry-run --skip-deploy
 ```
 
-The credentialed dispatch probe requires real QC env vars in the current
-process. If they are absent, record the external status as
-`not_run_missing_env`; do not reuse token values from chat transcripts or
-commit them into scripts.
+Credentialed Phase 15-07 dispatch evidence: compile and Paper deploy succeeded,
+and `/live/commands/create` returned success for a no-order generic echo probe,
+but immediate and delayed `/live/logs/read` polling returned 0 logs and no
+`MARKETPILOT_DISPATCH_PROBE_RECEIVED` marker. Record this status as
+`blocked_external_dispatch_not_observed`.

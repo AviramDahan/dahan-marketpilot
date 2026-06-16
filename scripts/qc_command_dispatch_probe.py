@@ -158,6 +158,21 @@ def run_probe(
 
     project_id = _read_int_env("QC_PROJECT_ID")
     client = QCApiClient()
+    if not deploy:
+        deploy_id = _read_env("QC_DEPLOY_ID")
+        result["deploy_id"] = deploy_id
+        result.update(
+            _send_command_and_poll(
+                client=client,
+                project_id=project_id,
+                deploy_id=deploy_id,
+                command=command,
+                polls=polls,
+                poll_seconds=poll_seconds,
+            )
+        )
+        return result
+
     original_content = ""
     original_read = client.read_project_file(project_id=project_id, name=file_name)
     original_content = _extract_project_file_content(original_read, file_name)
@@ -181,6 +196,31 @@ def run_probe(
             polls=compile_polls,
             poll_seconds=compile_poll_seconds,
         )
+
+        if deploy:
+            deploy_response = client.create_live_algorithm(
+                project_id=project_id,
+                compile_id=compile_id or _read_env("QC_COMPILE_ID"),
+                node_id=_read_env("QC_NODE_ID"),
+                version_id=_read_env("QC_VERSION_ID"),
+                data_providers={"QuantConnectBrokerage": {"id": "QuantConnectBrokerage"}},
+            )
+            result["deploy_response"] = sanitize(_summarize_deploy_response(deploy_response))
+            if not deploy_response.get("success"):
+                result["status"] = "deploy_failed"
+                return result
+            deploy_id = _extract_deploy_id(deploy_response) or os.environ.get("QC_DEPLOY_ID", "").strip()
+        result["deploy_id"] = deploy_id
+        result.update(
+            _send_command_and_poll(
+                client=client,
+                project_id=project_id,
+                deploy_id=deploy_id,
+                command=command,
+                polls=polls,
+                poll_seconds=poll_seconds,
+            )
+        )
     finally:
         if restore_original and original_content:
             result["restore_original_success"] = client.update_project_file_content(
@@ -188,22 +228,19 @@ def run_probe(
                 name=file_name,
                 content=original_content,
             )
+    return result
 
-    if deploy:
-        deploy_response = client.create_live_algorithm(
-            project_id=project_id,
-            compile_id=compile_id or _read_env("QC_COMPILE_ID"),
-            node_id=_read_env("QC_NODE_ID"),
-            version_id=_read_env("QC_VERSION_ID"),
-            data_providers={"QuantConnectBrokerage": {"id": "QuantConnectBrokerage"}},
-        )
-        result["deploy_response"] = sanitize(deploy_response)
-        deploy_id = _extract_deploy_id(deploy_response) or os.environ.get("QC_DEPLOY_ID", "").strip()
-    else:
-        deploy_id = _read_env("QC_DEPLOY_ID")
 
-    result["deploy_id"] = deploy_id
-    result["command_api_success"] = client.create_live_command(project_id=project_id, command=command)
+def _send_command_and_poll(
+    *,
+    client: QCApiClient,
+    project_id: int,
+    deploy_id: str,
+    command: Mapping[str, object],
+    polls: int,
+    poll_seconds: int,
+) -> dict[str, object]:
+    command_api_success = client.create_live_command(project_id=project_id, command=command)
     observations: list[dict[str, object]] = []
     for index in range(polls):
         if index:
@@ -221,13 +258,15 @@ def run_probe(
         if observations[-1]["probe_marker_observed"]:
             break
 
-    result["observations"] = observations
-    result["status"] = (
-        "generic_command_dispatch_observed"
-        if any(obs.get("probe_marker_observed") for obs in observations)
-        else "api_accepted_no_generic_dispatch_observed"
-    )
-    return result
+    return {
+        "command_api_success": command_api_success,
+        "observations": observations,
+        "status": (
+            "generic_command_dispatch_observed"
+            if any(obs.get("probe_marker_observed") for obs in observations)
+            else "api_accepted_no_generic_dispatch_observed"
+        ),
+    }
 
 
 def _poll_compile(
@@ -266,12 +305,53 @@ def _extract_project_file_content(response: Mapping[str, object], file_name: str
 
 
 def _summarize_project_file_read(response: Mapping[str, object]) -> dict[str, object]:
-    content = _extract_project_file_content(response, "")
-    summary = dict(response)
-    summary.pop("content", None)
-    summary.pop("Content", None)
-    summary["content_length"] = len(content)
+    summary = _strip_file_contents(dict(response))
+    files = response.get("files") or response.get("Files")
+    if isinstance(files, list):
+        summary["file_count"] = len(files)
+        summary["content_length"] = sum(
+            len(str(item.get("content") or item.get("Content") or ""))
+            for item in files
+            if isinstance(item, Mapping)
+        )
+    else:
+        content = _extract_project_file_content(response, "")
+        summary["content_length"] = len(content)
     return summary
+
+
+def _summarize_deploy_response(response: Mapping[str, object]) -> dict[str, object]:
+    summary = _strip_file_contents(dict(response))
+    live = summary.get("live")
+    if isinstance(live, Mapping):
+        files = live.get("files")
+        if isinstance(files, list):
+            live["file_count"] = len(files)
+            live["files"] = [
+                {
+                    "name": item.get("name"),
+                    "projectId": item.get("projectId"),
+                    "modified": item.get("modified"),
+                    "content_length": len(str(item.get("content") or item.get("Content") or "")),
+                }
+                for item in files
+                if isinstance(item, Mapping)
+            ][:40]
+    return summary
+
+
+def _strip_file_contents(value: object) -> object:
+    if isinstance(value, dict):
+        clean: dict[str, object] = {}
+        for key, item in value.items():
+            if str(key) in {"content", "Content"}:
+                clean["content_length"] = len(str(item or ""))
+            else:
+                clean[str(key)] = _strip_file_contents(item)
+        return clean
+    if isinstance(value, list):
+        return [_strip_file_contents(item) for item in value]
+    return value
 
 
 def _extract_deploy_id(response: Mapping[str, object]) -> str:

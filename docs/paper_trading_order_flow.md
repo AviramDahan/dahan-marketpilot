@@ -140,3 +140,9 @@ As of Phase 15-07, the next diagnostic route is explicit:
 - If the echo probe logs receipt, the next safe external proof is the
   MarketPilot generic command smoke, with callback-to-order or
   callback-to-rejection evidence recorded separately from API acceptance.
+
+The Phase 15-07 credentialed echo probe compiled and deployed successfully, and
+the Commands API accepted both immediate and delayed generic echo commands.
+However, `/live/logs/read` returned 0 logs and no echo marker. Phase 15 remains
+externally blocked until QuantConnect command dispatch or a supported fallback
+delivery path is proven.

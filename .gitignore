@@ -4,3 +4,6 @@ venv/
 env/
 __pycache__/
 *.pyc
+
+# Local operator secrets - never commit
+.secrets/
