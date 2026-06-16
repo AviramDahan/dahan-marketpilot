@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Completed 15-01; ready for 15-02-PLAN.md
-stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-06-16T07:18:44.917Z"
+status: Completed 15-02; ready for 15-03-PLAN.md
+stopped_at: Completed 15-02-PLAN.md
+last_updated: "2026-06-16T11:42:07.715Z"
 last_activity: 2026-06-16
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 13
-  completed_plans: 9
-  percent: 69
+  completed_plans: 10
+  percent: 77
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-15)
 ## Current Position
 
 Phase: 15
-Plan: 15-02-PLAN.md
-Status: Completed 15-01; ready for 15-02-PLAN.md
+Plan: 15-03-PLAN.md
+Status: Completed 15-02; ready for 15-03-PLAN.md
 Last activity: 2026-06-16
 
-Progress: [███████░░░] 69% complete for v1.1; Phase 15 is in progress with 1/5 plans complete.
+Progress: [████████░░] 77%
 
 ## Performance Metrics
 
@@ -109,6 +109,7 @@ Progress: [███████░░░] 69% complete for v1.1; Phase 15 is in
 | Phase 14 P03 | 5min | 2 tasks | 2 files |
 | Phase 14-data-sync-dashboard-integration P04 | 10min | 3 tasks | 2 files |
 | Phase 15 P01 | 56min | 2 tasks | 5 files |
+| Phase 15 P02 | 14min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -186,6 +187,9 @@ Recent decisions affecting current work:
 - [Phase 14]: Phase 14 Plan 04: Sync tests patch QCApiClient and reconcile_quantconnect_state boundaries directly so no real QuantConnect API call can occur.
 - [Phase 15]: QuantConnect command API success is command-delivery success only; order and fill authority comes from /live/orders/read. — Prevents local command delivery from being misread as an executed order or fill, preserving QuantConnect source-of-truth semantics.
 - [Phase 15]: Paper deployment payloads are hardcoded to QuantConnectBrokerage live-paper with id-only QuantConnect dataProviders and no real brokerage credential path. — Maintains simulated-paper-only safety while matching official QuantConnect live create payload requirements.
+- [Phase 15]: Plan 02 signal command payloads carry MarketPilot trace fields and explicitly mark command delivery as not order execution. — Prevents command API success from being misread as an executed order or fill.
+- [Phase 15]: Plan 02 deployment and signal idempotency ledgers require caller-supplied paths and do not write repo data/ unless explicitly configured. — Preserves local artifacts and keeps JSONL ledgers as explicit audit mirrors only.
+- [Phase 15]: Plan 02 pre-submit sync gate trusts only the latest Phase 14 JSONL record after UTC source_timestamp, max-age, success status, and reconciliation_clean checks pass. — Blocks stale, error, missing, or mismatched sync state before any QuantConnect command API call.
 
 ### Pending Todos
 
@@ -215,6 +219,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-16T07:18:22.085Z
-Stopped at: Completed 15-01-PLAN.md
+Last session: 2026-06-16T11:41:57.387Z
+Stopped at: Completed 15-02-PLAN.md
 Resume file: None

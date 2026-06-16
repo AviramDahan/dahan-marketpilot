@@ -13,7 +13,7 @@
 - [x] **PTD-01**: System can deploy a paper trading algorithm to QC Cloud via API with hardcoded paper-only configuration
 - [x] **PTD-02**: System delivers signals to running algorithm via Commands API (real-time push, no redeployment)
 - [x] **PTD-03**: System can stop and liquidate a running paper algorithm via API
-- [ ] **PTD-04**: Deployment uses idempotent keys; duplicate deploy requests are safely rejected
+- [x] **PTD-04**: Deployment uses idempotent keys; duplicate deploy requests are safely rejected
 - [ ] **PTD-05**: Algorithm receives signal commands and translates them to paper orders within LEAN (orders never placed externally)
 
 ## Fill Tracking & Order Flow
@@ -63,7 +63,7 @@
 - [ ] **SAFE-02**: No code path accepts live brokerage credentials; defense-in-depth across all layers
 - [ ] **SAFE-03**: All existing v1.0 tests (433) pass unchanged after v1.1 implementation; new modules use lazy imports
 - [x] **SAFE-04**: All timestamps stored as UTC internally; convert to ET only at display and market-hours-check boundaries
-- [ ] **SAFE-05**: Execution window guards skip stale signals if triggered outside valid execution window
+- [x] **SAFE-05**: Execution window guards skip stale signals if triggered outside valid execution window
 
 ---
 
@@ -96,7 +96,7 @@
 | PTD-01 | 15 | Complete |
 | PTD-02 | 15 | Complete |
 | PTD-03 | 15 | Complete |
-| PTD-04 | 15 | Pending |
+| PTD-04 | 15 | Complete |
 | PTD-05 | 15 | Pending |
 | FT-01 | 15 | Complete |
 | FT-02 | 15 | Pending |
@@ -128,7 +128,7 @@
 | SAFE-02 | 13 | Pending |
 | SAFE-03 | 16 | Pending |
 | SAFE-04 | 14 | Complete |
-| SAFE-05 | 15 | Pending |
+| SAFE-05 | 15 | Complete |
 
 ---
 
