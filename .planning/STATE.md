@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Blocked 15-06 Task 3: QuantConnect command callback/order smoke not observed
-stopped_at: 15-06-SUMMARY.md checkpoint: blocked_external_callback_not_verified
-last_updated: "2026-06-16T13:36:00.000Z"
+status: Ready to execute Phase 15 Plan 07: QuantConnect command dispatch diagnosis
+stopped_at: 15-07-PLAN.md ready for gap execution
+last_updated: "2026-06-16T17:12:16.000Z"
 last_activity: 2026-06-16
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 14
+  total_plans: 15
   completed_plans: 12
-  percent: 86
+  percent: 80
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-15)
 ## Current Position
 
 Phase: 15
-Plan: 15-06-PLAN.md
-Status: Blocked 15-06 Task 3: QuantConnect command callback/order smoke not observed
+Plan: 15-07-PLAN.md
+Status: Ready to execute Phase 15 Plan 07: QuantConnect command dispatch diagnosis
 Last activity: 2026-06-16
 
-Progress: [█████████░] 86%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -114,6 +114,7 @@ Progress: [█████████░] 86%
 | Phase 15 P04 | 10min | 2 tasks | 3 files |
 | Phase 15 P05 | 9min | 2/3 tasks | 6 files |
 | Phase 15 P06 | 26min | 2/3 tasks; callback blocked | 10 files |
+| Phase 15 P07 | planned | command-dispatch diagnosis and fallback decision | TBD |
 
 ## Accumulated Context
 
@@ -202,6 +203,7 @@ Recent decisions affecting current work:
 - [Phase 15]: Plan 04 trace queries read append-only audit records by signal_id or idempotency_key without becoming order or portfolio authority.
 - [Phase 15]: Plan 05 external smoke verified authenticated `/live/list`, `/live/read`, `/live/orders/read`, cloud file sync, cloud compile, `/live/create`, and `/live/commands/create` API acceptance. Callback-to-order smoke remains blocked because no `on_command` debug log or live order appeared after polling.
 - [Phase 15]: Plan 06 added a disabled-by-default command smoke helper, tested likely QuantConnect dynamic command payload variants, and reran a sanitized typed command Paper smoke. `/live/commands/create` returned success, but 12 polls showed 0 live logs and 0 live orders, so callback/order verification remains blocked.
+- [Phase 15]: Plan 07 will isolate generic QuantConnect Commands dispatch with a no-order Python echo algorithm before changing MarketPilot receiver logic again; if dispatch fails externally, it will evaluate only supported paper-only fallback delivery paths.
 - [Phase 15]: Plan 05 offline E2E tests prove local signal-command-LEAN-audit behavior only; mocks and fake fills are not real QuantConnect execution evidence.
 
 ### Pending Todos
@@ -233,6 +235,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-16T12:17:59.017Z
-Stopped at: 15-06-SUMMARY.md checkpoint: blocked_external_callback_not_verified
-Resume file: .planning/phases/15-paper-trading-order-flow/15-06-SUMMARY.md
+Last session: 2026-06-16T17:12:16.000Z
+Stopped at: 15-07-PLAN.md ready for gap execution
+Resume file: .planning/phases/15-paper-trading-order-flow/15-07-PLAN.md
