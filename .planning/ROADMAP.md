@@ -41,7 +41,7 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 |-------|------|------|--------------|--------------|
 | 13 | QC API Client & Safety Foundation | 4/4 | Complete   | 2026-06-15 |
 | 14 | Data Sync & Dashboard Integration | 4/4 | Complete    | 2026-06-16 |
-| 15 | Paper Trading & Order Flow | Deliver signals to running algorithm; track fills with audit traceability | PTD-01..05, FT-01..04, SAFE-05 | 3/5 In Progress |
+| 15 | Paper Trading & Order Flow | Deliver signals to running algorithm; track fills with audit traceability | PTD-01..05, FT-01..04, SAFE-05 | 4/5 In Progress |
 | 16 | Production Scheduler | Run pipeline autonomously on NYSE schedule with fault tolerance | SCHED-01..06, SAFE-03 | 4 |
 | 17 | MTF Backtest Validation | Validate strategy modes through automated comparative backtests | MTF-01..05 | 3 |
 
@@ -118,14 +118,14 @@ Plans:
 4. Stale signals triggered outside valid execution window are safely skipped with logged reason
 5. Duplicate deploy requests are rejected via idempotent keys; retry-safe operations throughout
 
-**Plans:** 3/5 plans executed
+**Plans:** 4/5 plans executed
 
 Plans:
 
 - [x] 15-01-PLAN.md - QC API paper deployment, command, stop/liquidate, and live-orders wrappers
 - [x] 15-02-PLAN.md - Signal command builder, deployment idempotency, pre-submit sync gate, and stale-window skips
 - [x] 15-03-PLAN.md - LEAN `on_command` receiver, internal stale/duplicate safety gates, and tagged paper orders
-- [ ] 15-04-PLAN.md - Authoritative QC order/fill polling, audit JSONL mirror, and signal-order-fill trace queries
+- [x] 15-04-PLAN.md - Authoritative QC order/fill polling, audit JSONL mirror, and signal-order-fill trace queries
 - [ ] 15-05-PLAN.md - Offline E2E tests, docs, UAT/verification, and credentialed paper smoke checkpoint
 
 ---
