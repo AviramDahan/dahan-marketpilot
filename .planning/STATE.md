@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Blocked 15-08 external Object Store write: QuantConnect returned Organization not found
-stopped_at: 15-08-SUMMARY.md checkpoint: blocked_external_object_store_write_not_verified
-last_updated: "2026-06-16T18:23:00.000Z"
+status: Ready to execute Phase 15 Plan 09 Object Store preflight diagnostics
+stopped_at: 15-09-PLAN.md ready: Object Store preflight and permission blocker classification
+last_updated: "2026-06-16T18:40:00.000Z"
 last_activity: 2026-06-16
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 16
+  total_plans: 17
   completed_plans: 12
-  percent: 75
+  percent: 71
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-15)
 ## Current Position
 
 Phase: 15
-Plan: 15-08-PLAN.md
-Status: Blocked 15-08 external Object Store write: QuantConnect returned Organization not found
+Plan: 15-09-PLAN.md
+Status: Ready to execute Phase 15 Plan 09 Object Store preflight diagnostics
 Last activity: 2026-06-16
 
-Progress: [███████░░░] 75%
+Progress: [███████░░░] 71%
 
 ## Performance Metrics
 
@@ -207,6 +207,7 @@ Recent decisions affecting current work:
 - [Phase 15]: Plan 07 execution added the no-order dispatch probe and official flat payload alignment. Credentialed external echo deploy succeeded and command API returned success, but no live log marker appeared after immediate and delayed polling.
 - [Phase 15]: Plan 08 will test a supported QuantConnect Object Store signal inbox fallback because generic Commands dispatch was accepted by the API but not observed by a no-order echo algorithm.
 - [Phase 15]: Plan 08 execution added Object Store wrappers, a guarded Object Store smoke, and LEAN Object Store polling through shared validation. Credentialed external compile/deploy succeeded, but `/object/set` returned `Organization not found`.
+- [Phase 15]: Plan 09 will make Object Store write access a fail-fast preflight before compile/deploy and classify persistent `Organization not found` as an external permission/paid-tier blocker.
 - [Phase 15]: Plan 05 offline E2E tests prove local signal-command-LEAN-audit behavior only; mocks and fake fills are not real QuantConnect execution evidence.
 
 ### Pending Todos
@@ -238,6 +239,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-16T18:23:00.000Z
-Stopped at: 15-08-SUMMARY.md checkpoint: blocked_external_object_store_write_not_verified
-Resume file: .planning/phases/15-paper-trading-order-flow/15-08-SUMMARY.md
+Last session: 2026-06-16T18:40:00.000Z
+Stopped at: 15-09-PLAN.md ready: Object Store preflight and permission blocker classification
+Resume file: .planning/phases/15-paper-trading-order-flow/15-09-PLAN.md
