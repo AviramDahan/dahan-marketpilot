@@ -14,7 +14,7 @@
 - [x] **PTD-02**: System delivers signals to running algorithm via Commands API (real-time push, no redeployment)
 - [x] **PTD-03**: System can stop and liquidate a running paper algorithm via API
 - [x] **PTD-04**: Deployment uses idempotent keys; duplicate deploy requests are safely rejected
-- [ ] **PTD-05**: Algorithm receives signal commands and translates them to paper orders within LEAN (orders never placed externally)
+- [x] **PTD-05**: Algorithm receives signal commands and translates them to paper orders within LEAN (orders never placed externally)
 
 ## Fill Tracking & Order Flow
 
@@ -97,7 +97,7 @@
 | PTD-02 | 15 | Complete |
 | PTD-03 | 15 | Complete |
 | PTD-04 | 15 | Complete |
-| PTD-05 | 15 | Pending |
+| PTD-05 | 15 | Complete |
 | FT-01 | 15 | Complete |
 | FT-02 | 15 | Pending |
 | FT-03 | 15 | Pending |
