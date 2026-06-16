@@ -98,6 +98,10 @@ def test_safety_gate_blocks_paper_gated_when_constant_false():
         qc_mod.PAPER_TRADING_ONLY = False
         with pytest.raises(QCSafetyError, match="PAPER_TRADING_ONLY must be True"):
             client._validate_endpoint("live/create")
+        with pytest.raises(QCSafetyError, match="PAPER_TRADING_ONLY must be True"):
+            client._validate_endpoint("live/commands/create")
+        with pytest.raises(QCSafetyError, match="PAPER_TRADING_ONLY must be True"):
+            client._validate_endpoint("live/orders/read")
     finally:
         qc_mod.PAPER_TRADING_ONLY = original
 
@@ -106,6 +110,8 @@ def test_safety_gate_allows_paper_gated_when_constant_true():
     client = _make_client_with_mocked_auth()
     # Should not raise — PAPER_TRADING_ONLY is True
     client._validate_endpoint("live/create")
+    client._validate_endpoint("live/commands/create")
+    client._validate_endpoint("live/orders/read")
     client._validate_endpoint("live/update/stop")
     client._validate_endpoint("live/update/liquidate")
 
@@ -246,22 +252,104 @@ def test_read_live_orders_returns_tuple_of_orders():
     from marketpilot.quantconnect_paper import QuantConnectPaperOrder
 
     client = _make_client_with_mocked_auth()
-    fixture = _load_fixture("orders_read_success.json")
+    fixture = _load_fixture("live_orders_read_success.json")
     with patch.object(client, "_make_request", return_value=fixture):
         result = client.read_live_orders(project_id=99999, deploy_id="L-00000000000000000000000000000000")
     assert isinstance(result, tuple)
     assert len(result) == 2
     assert all(isinstance(o, QuantConnectPaperOrder) for o in result)
+    partial = result[0]
+    assert partial.quantconnect_order_id == "1001"
+    assert partial.symbol == "MSFT"
+    assert partial.status == "partiallyfilled"
+    assert partial.raw_status == "PartiallyFilled"
+    assert partial.quantity == 10
+    assert partial.filled_quantity == 4
+    assert partial.remaining_quantity == 6
+    assert partial.average_fill_price == "420.25"
+    assert partial.tag == "mp:sig-001:idem-001"
+    assert partial.signal_id == "sig-001"
+    assert partial.idempotency_key == "idem-001"
+    assert partial.rejection_reason is None
+    assert partial.raw_payload["status"] == "PartiallyFilled"
+
+    rejected = result[1]
+    assert rejected.quantconnect_order_id == "1002"
+    assert rejected.raw_status == "Invalid"
+    assert rejected.rejection_reason == "insufficient buying power"
+    assert rejected.filled_quantity == 0
+    assert rejected.remaining_quantity == 5
 
 
 def test_create_live_algorithm_hardcodes_paper_brokerage():
     client = _make_client_with_mocked_auth()
     fixture = _load_fixture("live_create_success.json")
     with patch.object(client, "_make_request", return_value=fixture) as mock_req:
-        client.create_live_algorithm(project_id=99999, compile_id="C-1", node_id="N-1")
+        client.create_live_algorithm(
+            project_id=99999,
+            compile_id="C-1",
+            node_id="N-1",
+            version_id="-1",
+            data_providers={"QuantConnectBrokerage": {"id": "QuantConnectBrokerage"}},
+        )
     call_args = mock_req.call_args
     payload = call_args[0][1] if len(call_args[0]) > 1 else call_args[1].get("payload")
-    assert payload["brokerage"] == {"id": "QuantConnectBrokerage"}
+    assert call_args[0][0] == "live/create"
+    assert payload["projectId"] == 99999
+    assert payload["compileId"] == "C-1"
+    assert payload["nodeId"] == "N-1"
+    assert payload["versionId"] == "-1"
+    assert payload["brokerage"]["id"] == "QuantConnectBrokerage"
+    assert payload["brokerage"]["environment"] == "live-paper"
+    assert "InteractiveBrokersBrokerage" not in json.dumps(payload)
+    assert payload["dataProviders"] == {
+        "QuantConnectBrokerage": {"id": "QuantConnectBrokerage"}
+    }
+
+
+def test_create_live_command_payload():
+    client = _make_client_with_mocked_auth()
+    fixture = _load_fixture("live_command_success.json")
+    command = {
+        "command_type": "marketpilot_signal",
+        "signal_id": "sig-001",
+        "idempotency_key": "idem-001",
+        "symbol": "MSFT",
+        "quantity": 10,
+    }
+    with patch.object(client, "_make_request", return_value=fixture) as mock_req:
+        delivered = client.create_live_command(project_id=99999, command=command)
+
+    assert delivered is True
+    call_args = mock_req.call_args
+    assert call_args[0][0] == "live/commands/create"
+    payload = call_args[0][1]
+    assert payload == {"projectId": 99999, "command": command}
+    assert "symbol" not in payload
+    assert "quantity" not in payload
+    assert "order_type" not in payload
+
+
+def test_read_live_orders_page_uses_official_endpoint():
+    client = _make_client_with_mocked_auth()
+    fixture = _load_fixture("live_orders_read_success.json")
+    with patch.object(client, "_make_request", return_value=fixture) as mock_req:
+        result = client.read_live_orders_page(
+            project_id=99999,
+            deploy_id="L-00000000000000000000000000000000",
+            start=0,
+            end=100,
+        )
+
+    assert result == fixture
+    call_args = mock_req.call_args
+    assert call_args[0][0] == "live/orders/read"
+    assert call_args[0][1] == {
+        "projectId": 99999,
+        "algorithmId": "L-00000000000000000000000000000000",
+        "start": 0,
+        "end": 100,
+    }
 
 
 def test_create_backtest_returns_response_with_backtest_id():

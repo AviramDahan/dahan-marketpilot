@@ -1,0 +1,33 @@
+{
+  "success": true,
+  "orders": {
+    "1001": {
+      "id": "1001",
+      "orderId": 1001,
+      "symbol": {"value": "MSFT", "id": "MSFT R735QTJ8XC9X"},
+      "status": "PartiallyFilled",
+      "quantity": 10,
+      "quantityFilled": 4,
+      "remainingQuantity": 6,
+      "averageFillPrice": "420.25",
+      "price": "420.00",
+      "tag": "mp:sig-001:idem-001",
+      "createdTime": "2026-06-15T10:30:00Z",
+      "lastFillTime": "2026-06-15T10:30:05Z"
+    },
+    "1002": {
+      "id": "1002",
+      "orderId": 1002,
+      "symbol": {"value": "AAPL", "id": "AAPL R735QTJ8XC9X"},
+      "status": "Invalid",
+      "quantity": 5,
+      "quantityFilled": 0,
+      "remainingQuantity": 5,
+      "averageFillPrice": "0",
+      "price": "0",
+      "tag": "mp:sig-002:idem-002",
+      "message": "insufficient buying power",
+      "createdTime": "2026-06-15T11:00:00Z"
+    }
+  }
+}
