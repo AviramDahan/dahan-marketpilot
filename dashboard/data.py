@@ -566,6 +566,7 @@ def _load_shared_state_snapshot(*, cache_timestamp: datetime) -> DashboardSnapsh
             },
             cache_timestamp=cache_timestamp,
         )
+        dashboard_snapshot = _with_shared_state_sections(dashboard_snapshot, payload)
     except Exception as exc:
         return _source_error(
             code="shared_state_parse_error",
@@ -574,6 +575,53 @@ def _load_shared_state_snapshot(*, cache_timestamp: datetime) -> DashboardSnapsh
             status=DashboardSectionStatus.ERROR,
         )
     return dashboard_snapshot
+
+
+def _with_shared_state_sections(snapshot: DashboardSnapshot, payload: Mapping[str, object]) -> DashboardSnapshot:
+    system_health = _mapping(payload.get("system_health"))
+    runtime_evidence = _mapping(payload.get("runtime_evidence"))
+    system_items = []
+    if system_health:
+        system_items.append(_system_health_item(system_health))
+    if runtime_evidence:
+        system_items.append({"record_type": "runtime_evidence", **dict(runtime_evidence)})
+    if not system_items:
+        return snapshot
+    system = DashboardCollectionSection(
+        status=DashboardSectionStatus.AVAILABLE,
+        items=tuple(system_items),
+        reasons=("shared_state_system_health_loaded",),
+    )
+    return DashboardSnapshot(
+        source_metadata=snapshot.source_metadata,
+        portfolio=snapshot.portfolio,
+        positions=snapshot.positions,
+        trades=snapshot.trades,
+        signals=snapshot.signals,
+        backtests=snapshot.backtests,
+        strategies=snapshot.strategies,
+        risk=snapshot.risk,
+        notifications=snapshot.notifications,
+        activity=snapshot.activity,
+        system=system,
+    )
+
+
+def _system_health_item(system_health: Mapping[str, object]) -> Mapping[str, object]:
+    timestamp = system_health.get("timestamp")
+    status = str(system_health.get("status") or "unknown")
+    return {
+        "subsystem": "scheduler",
+        "severity": "info" if status in {"attempted", "completed", "ok"} else "warning",
+        "message": f"heartbeat {status} at {timestamp}",
+        "record_type": system_health.get("record_type") or "scheduler_heartbeat",
+        "run_id": system_health.get("run_id"),
+        "timestamp": timestamp,
+        "last_successful_run_id": system_health.get("last_successful_run_id"),
+        "last_attempted_run_id": system_health.get("last_attempted_run_id"),
+        "dependency_health": _mapping(system_health.get("dependency_health")),
+        "paper_trading_only": system_health.get("paper_trading_only") is not False,
+    }
 
 
 def _mapping(value: object) -> Mapping[str, object]:

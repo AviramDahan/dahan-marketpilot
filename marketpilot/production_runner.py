@@ -49,6 +49,11 @@ class DashboardExportSink(Protocol):
         ...
 
 
+class HeartbeatSink(Protocol):
+    def publish_heartbeat(self, payload: Mapping[str, object]) -> object:
+        ...
+
+
 class NotificationSink(Protocol):
     def emit(self, event: NotificationDomainEvent) -> bool:
         ...
@@ -217,6 +222,7 @@ def run_production_cycle(
                 SchedulerJobId.NOTIFICATION_EMISSION: lambda: _notification_job(deps=deps, context=context),
                 SchedulerJobId.HEARTBEAT: lambda: _heartbeat_job(
                     config=config,
+                    deps=deps,
                     run_id=run_id,
                     context=context,
                     now=datetime.now(timezone.utc),
@@ -485,30 +491,30 @@ def _notification_job(*, deps: ProductionRunnerDependencies, context: dict[str, 
 def _heartbeat_job(
     *,
     config: SchedulerConfig,
+    deps: ProductionRunnerDependencies,
     run_id: str,
     context: dict[str, object],
     now: datetime,
 ) -> SchedulerJobResult:
     started = datetime.now(timezone.utc)
-    append_scheduler_heartbeat(
-        config.heartbeat_path,
-        SchedulerHeartbeatRecord(
-            run_id=run_id,
-            timestamp=now,
-            status="attempted",
-            last_attempted_run_id=run_id,
-            last_successful_run_id=run_id if int(context.get("delivered_signal_count", 0)) >= 0 else None,
-            dependency_health={
-                "delivered_signal_count": int(context.get("delivered_signal_count", 0)),
-                "observed_order_count": int(context.get("observed_order_count", 0)),
-            },
-        ),
+    record = SchedulerHeartbeatRecord(
+        run_id=run_id,
+        timestamp=now,
+        status="attempted",
+        last_attempted_run_id=run_id,
+        last_successful_run_id=run_id if int(context.get("delivered_signal_count", 0)) >= 0 else None,
+        dependency_health={
+            "delivered_signal_count": int(context.get("delivered_signal_count", 0)),
+            "observed_order_count": int(context.get("observed_order_count", 0)),
+        },
     )
+    append_scheduler_heartbeat(config.heartbeat_path, record)
+    heartbeat_published = _publish_shared_heartbeat(deps.dashboard_export_sink, record)
     return SchedulerJobResult.success(
         SchedulerJobId.HEARTBEAT,
         started_at=started,
         ended_at=datetime.now(timezone.utc),
-        details={"heartbeat_path": str(config.heartbeat_path)},
+        details={"heartbeat_path": str(config.heartbeat_path), "shared_state_published": heartbeat_published},
     )
 
 
@@ -608,6 +614,14 @@ def _release_lock(lock_store: FileLockStore, lease: SchedulerLockLease | None) -
         _logger.warning("Failed to release scheduler lock for run %s", lease.run_id)
 
 
+def _publish_shared_heartbeat(sink: object, record: SchedulerHeartbeatRecord) -> bool:
+    publish = getattr(sink, "publish_heartbeat", None)
+    if not callable(publish):
+        return False
+    publish(record.to_json_dict())
+    return True
+
+
 @dataclass(frozen=True)
 class _TelegramNotificationSink:
     service: TelegramDeliveryService
@@ -646,6 +660,7 @@ if __name__ == "__main__":
 
 __all__ = [
     "DashboardExportSink",
+    "HeartbeatSink",
     "NotificationSink",
     "ProductionRunnerDependencies",
     "ProductionRuntimeResult",

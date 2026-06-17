@@ -211,6 +211,32 @@ def test_shared_state_source_loads_latest_dashboard_payload(monkeypatch):
     assert snapshot.portfolio.status is DashboardSectionStatus.AVAILABLE
 
 
+def test_shared_state_source_loads_scheduler_system_health(monkeypatch):
+    class FakeSharedSnapshot:
+        def __init__(self, payload):
+            self.payload = payload
+
+    payload = _portfolio_payload()
+    payload["system_health"] = {
+        "record_type": "scheduler_heartbeat",
+        "run_id": "run-1",
+        "timestamp": "2026-06-16T14:05:00+00:00",
+        "status": "attempted",
+        "last_successful_run_id": "run-1",
+        "last_attempted_run_id": "run-1",
+        "dependency_health": {"delivered_signal_count": 0, "observed_order_count": 0},
+        "paper_trading_only": True,
+    }
+
+    monkeypatch.setattr("marketpilot.shared_state.load_dashboard_payload_from_env", lambda: FakeSharedSnapshot(payload))
+    snapshot = load_dashboard_snapshot(DashboardConfig(data_source_kind="shared_state"), now=NOW)
+
+    assert snapshot.system.status is DashboardSectionStatus.AVAILABLE
+    assert snapshot.system.reasons == ("shared_state_system_health_loaded",)
+    assert snapshot.system.items[0]["subsystem"] == "scheduler"
+    assert "heartbeat attempted" in snapshot.system.items[0]["message"]
+
+
 @pytest.mark.parametrize(
     "age_seconds,freshness,portfolio_status",
     [

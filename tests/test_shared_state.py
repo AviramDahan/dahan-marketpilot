@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from marketpilot.shared_state import DEFAULT_DASHBOARD_KEY, InMemorySharedStateStore, RenderKeyValueStore
+from marketpilot.shared_state import DEFAULT_DASHBOARD_KEY, DEFAULT_HEARTBEAT_KEY, InMemorySharedStateStore, RenderKeyValueStore
 
 
 class FakeRedis:
@@ -52,6 +52,28 @@ def test_in_memory_shared_state_publishes_dashboard_payload_and_activity():
 
     assert store.get_json(DEFAULT_DASHBOARD_KEY)["fixture_label"] == "scheduler-production-cycle"
     assert store.read_activity(limit=1)[0]["event"] == "dashboard_export_published"
+
+
+def test_shared_state_publishes_heartbeat_into_dashboard_payload():
+    store = InMemorySharedStateStore()
+    store.publish('{"fixture_label":"scheduler-production-cycle","paper_trading_only":true}')
+
+    store.publish_heartbeat(
+        {
+            "record_type": "scheduler_heartbeat",
+            "run_id": "run-1",
+            "timestamp": "2026-06-16T14:05:00+00:00",
+            "status": "attempted",
+            "last_successful_run_id": "run-1",
+            "last_attempted_run_id": "run-1",
+            "dependency_health": {"delivered_signal_count": 0},
+        }
+    )
+
+    assert store.get_json(DEFAULT_HEARTBEAT_KEY)["paper_trading_only"] is True
+    dashboard = store.get_json(DEFAULT_DASHBOARD_KEY)
+    assert dashboard["system_health"]["record_type"] == "scheduler_heartbeat"
+    assert store.read_activity(limit=1)[0]["event"] == "scheduler_heartbeat_published"
 
 
 def test_render_key_value_store_namespaces_json_and_activity_without_logging_url():

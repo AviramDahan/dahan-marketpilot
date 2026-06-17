@@ -173,7 +173,29 @@ def test_production_cycle_exports_dashboard_after_sync_without_runtime_input(tmp
     assert jobs[SchedulerJobId.QC_SYNC].status is SchedulerJobStatus.SUCCESS
     assert jobs[SchedulerJobId.RUNTIME_EVALUATION].status is SchedulerJobStatus.SKIPPED
     assert jobs[SchedulerJobId.DASHBOARD_EXPORT].status is SchedulerJobStatus.SUCCESS
+    assert jobs[SchedulerJobId.HEARTBEAT].details["shared_state_published"] is False
     assert dashboard.payloads
+
+
+def test_production_cycle_publishes_shared_state_heartbeat(tmp_path):
+    from marketpilot.shared_state import InMemorySharedStateStore
+
+    store = InMemorySharedStateStore()
+    config = _config(tmp_path)
+
+    result = run_production_cycle(
+        config,
+        now=datetime(2026, 6, 16, 14, 0, tzinfo=timezone.utc),
+        dependencies=ProductionRunnerDependencies(
+            sync_func=_sync_success,
+            dashboard_export_sink=store,
+            lock_store=store,
+        ),
+    )
+
+    jobs = {job.job_id: job for job in result.job_results}
+    assert jobs[SchedulerJobId.HEARTBEAT].details["shared_state_published"] is True
+    assert store.get_json("dashboard:latest")["system_health"]["record_type"] == "scheduler_heartbeat"
 
 
 def test_production_cycle_skips_closed_market_without_qc_calls(tmp_path):

@@ -16,6 +16,7 @@ DEFAULT_NAMESPACE = "marketpilot:v1.1"
 DEFAULT_DASHBOARD_KEY = "dashboard:latest"
 DEFAULT_ACTIVITY_KEY = "activity"
 DEFAULT_LOCK_KEY = "scheduler:lock"
+DEFAULT_HEARTBEAT_KEY = "scheduler:heartbeat:latest"
 
 
 class SharedStateStore(Protocol):
@@ -84,6 +85,22 @@ class InMemorySharedStateStore:
             {
                 "event": "dashboard_export_published",
                 "source_timestamp": payload.get("source_timestamp"),
+                "paper_trading_only": True,
+            }
+        )
+
+    def publish_heartbeat(self, payload: Mapping[str, object]) -> None:
+        heartbeat = dict(payload)
+        heartbeat["paper_trading_only"] = True
+        self.set_json(DEFAULT_HEARTBEAT_KEY, heartbeat)
+        current = self.get_json(DEFAULT_DASHBOARD_KEY) or {}
+        current["system_health"] = heartbeat
+        self.set_json(DEFAULT_DASHBOARD_KEY, current)
+        self.append_activity(
+            {
+                "event": "scheduler_heartbeat_published",
+                "timestamp": heartbeat.get("timestamp"),
+                "status": heartbeat.get("status"),
                 "paper_trading_only": True,
             }
         )
@@ -170,6 +187,22 @@ class RenderKeyValueStore:
             {
                 "event": "dashboard_export_published",
                 "source_timestamp": payload.get("source_timestamp"),
+                "paper_trading_only": True,
+            }
+        )
+
+    def publish_heartbeat(self, payload: Mapping[str, object]) -> None:
+        heartbeat = dict(payload)
+        heartbeat["paper_trading_only"] = True
+        self.set_json(DEFAULT_HEARTBEAT_KEY, heartbeat)
+        current = self.get_json(DEFAULT_DASHBOARD_KEY) or {}
+        current["system_health"] = heartbeat
+        self.set_json(DEFAULT_DASHBOARD_KEY, current)
+        self.append_activity(
+            {
+                "event": "scheduler_heartbeat_published",
+                "timestamp": heartbeat.get("timestamp"),
+                "status": heartbeat.get("status"),
                 "paper_trading_only": True,
             }
         )
@@ -282,6 +315,7 @@ def _aware_utc(value: datetime) -> datetime:
 __all__ = [
     "DEFAULT_ACTIVITY_KEY",
     "DEFAULT_DASHBOARD_KEY",
+    "DEFAULT_HEARTBEAT_KEY",
     "DEFAULT_NAMESPACE",
     "DEFAULT_REDIS_URL_ENV_VAR",
     "InMemorySharedStateStore",
