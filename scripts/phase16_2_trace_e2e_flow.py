@@ -40,6 +40,7 @@ def main(argv: list[str] | None = None) -> int:
 def build_trace(payloads: list[Mapping[str, Any]]) -> dict[str, object]:
     segments: dict[str, dict[str, object]] = {name: {"status": "not_run"} for name in REQUIRED_SEGMENTS}
     correlation_ids: set[str] = set()
+    segment_correlation_ids: set[str] = set()
     for payload in payloads:
         sanitized = sanitize(payload)
         correlation_id = _extract_correlation_id(sanitized)
@@ -52,13 +53,18 @@ def build_trace(payloads: list[Mapping[str, Any]]) -> dict[str, object]:
                     "correlation_id": correlation_id,
                     "evidence": _summarize_payload(segment, sanitized),
                 }
+                if correlation_id:
+                    segment_correlation_ids.add(correlation_id)
     missing = [name for name, segment in segments.items() if segment["status"] != "passed"]
-    status = "passed" if not missing and correlation_ids else "blocked_external_not_verified"
+    correlation_mismatch = len(segment_correlation_ids) > 1
+    status = "passed" if not missing and len(segment_correlation_ids) == 1 else "blocked_external_not_verified"
     return {
         "status": status,
         "checked_at": datetime.now(timezone.utc).isoformat(),
         "paper_trading_only": True,
         "correlation_ids": sorted(correlation_ids),
+        "segment_correlation_ids": sorted(segment_correlation_ids),
+        "correlation_mismatch": correlation_mismatch,
         "missing_segments": missing,
         "segments": segments,
     }
@@ -109,14 +115,19 @@ def _payload_proves_segment(segment: str, payload: Mapping[str, Any]) -> bool:
     if segment == "scoring":
         return bool(payload.get("score") or payload.get("ranking") or payload.get("production_result"))
     if segment == "risk_decision":
-        return bool(payload.get("risk_decision") or payload.get("order_intent") or payload.get("paper_trading_only") is True)
+        risk = payload.get("risk_decision")
+        if isinstance(risk, Mapping):
+            return risk.get("accepted") in {True, False} or bool(risk.get("status"))
+        if isinstance(risk, str):
+            return risk.strip().lower() in {"accepted", "rejected", "blocked", "passed"}
+        return bool(payload.get("order_intent"))
     if segment == "qc_order_authority":
         if payload.get("orders_authority_status") in {"submitted", "filled", "rejected", "passed"}:
             return True
         order_status = str(payload.get("order_status") or payload.get("status") or "").lower()
         return order_status in {"submitted", "filled", "rejected", "passed"}
     if segment == "sync":
-        return bool(payload.get("source") == "quantconnect" or payload.get("sync") or payload.get("source_timestamp"))
+        return bool(payload.get("source") == "quantconnect" and payload.get("source_timestamp"))
     if segment == "dashboard":
         return bool(payload.get("dashboard") or payload.get("dashboard_url") or payload.get("freshness_level"))
     if segment == "telegram":
@@ -145,4 +156,3 @@ def _summarize_payload(segment: str, payload: Mapping[str, Any]) -> dict[str, ob
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
