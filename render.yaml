@@ -67,6 +67,10 @@ services:
         value: "900"
       - key: MARKETPILOT_TELEGRAM_ENABLED
         value: "1"
+      - key: MARKETPILOT_RUNTIME_INPUT_KIND
+        value: "none"
+      - key: MARKETPILOT_OPERATOR_PAPER_PROBE_ENABLED
+        value: "false"
       - key: REDIS_URL
         fromService:
           name: dahan-marketpilot-state

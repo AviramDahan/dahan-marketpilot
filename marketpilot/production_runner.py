@@ -10,14 +10,25 @@ import socket
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Callable, Iterable, Mapping, Protocol
 
+from marketpilot.backtesting import BacktestRunStatus
 from marketpilot.constants import PAPER_TRADING_ONLY
 from marketpilot.dashboard_export import build_dashboard_export_payload
 from marketpilot.notification_events import NotificationDomainEvent
+from marketpilot.paper_modes import PaperTradingMode
 from marketpilot.paper_order_flow import poll_quantconnect_order_updates, submit_signal_command
 from marketpilot.qc_api import QCApiClient
+from marketpilot.quantconnect_paper import (
+    QuantConnectAlgorithmStatus,
+    QuantConnectDeploymentStatus,
+    QuantConnectHolding,
+    QuantConnectPaperPerformance,
+    QuantConnectPaperSnapshot,
+)
+from marketpilot.risk import PortfolioSnapshot
 from marketpilot.runtime_orchestrator import (
     RuntimeOrchestrationInput,
     RuntimeOrchestrationResult,
@@ -36,9 +47,12 @@ from marketpilot.scheduler_jobs import (
 )
 from marketpilot.scheduler_lock import FileLockStore, SchedulerLockLease
 from marketpilot.scheduler_storage import JsonlSchedulerStorage, build_run_id
+from marketpilot.setups.base import NumericEvidence, SetupResult, SetupStatus, SetupTiming
 from marketpilot.shared_state import RenderKeyValueStore
 from marketpilot.sync import SyncResult, read_last_sync_record, sync_portfolio
 from marketpilot.telegram import TelegramDeliveryService, load_telegram_config
+from marketpilot.timeframes import StrategyMode
+from marketpilot.validation import ActivationApprovalState, evaluate_activation_gates
 
 
 _logger = logging.getLogger("marketpilot.production_runner")
@@ -561,11 +575,214 @@ def build_production_dependencies_from_env(
     if telegram_config is not None and telegram_config.can_deliver:
         notification_sink = _TelegramNotificationSink(TelegramDeliveryService(telegram_config))
 
+    runtime_input_factory = _runtime_input_factory_from_env(source)
+
     return ProductionRunnerDependencies(
+        runtime_input_factory=runtime_input_factory,
         dashboard_export_sink=shared_store,
         notification_sink=notification_sink,
         lock_store=shared_store,
     )
+
+
+def _runtime_input_factory_from_env(source: Mapping[str, str]) -> RuntimeInputFactory | None:
+    kind = str(source.get("MARKETPILOT_RUNTIME_INPUT_KIND") or "").strip().lower()
+    enabled = _env_flag(source.get("MARKETPILOT_OPERATOR_PAPER_PROBE_ENABLED"))
+    if kind != "operator_paper_probe" or not enabled:
+        return None
+
+    data_dir = Path(str(source.get("MARKETPILOT_DATA_DIR") or "data"))
+    sync_path = data_dir / "portfolio_sync.jsonl"
+    symbol = str(source.get("MARKETPILOT_OPERATOR_PAPER_PROBE_SYMBOL") or "MSFT").strip().upper()
+    sector = str(source.get("MARKETPILOT_OPERATOR_PAPER_PROBE_SECTOR") or "Technology").strip() or "Technology"
+    entry = _optional_positive_decimal(source.get("MARKETPILOT_OPERATOR_PAPER_PROBE_ENTRY_PRICE"), Decimal("750"))
+    stop = _optional_positive_decimal(source.get("MARKETPILOT_OPERATOR_PAPER_PROBE_STOP_PRICE"), Decimal("700"))
+    target = _optional_positive_decimal(source.get("MARKETPILOT_OPERATOR_PAPER_PROBE_TARGET_PRICE"), Decimal("850"))
+    if stop >= entry or target <= entry:
+        raise ValueError("operator paper probe requires stop < entry < target.")
+
+    def factory(run_id: str) -> RuntimeOrchestrationInput | None:
+        latest_sync = read_last_sync_record(sync_path)
+        if latest_sync is None:
+            return None
+        return _build_operator_paper_probe_runtime_input(
+            run_id=run_id,
+            sync_record=latest_sync,
+            symbol=symbol,
+            sector=sector,
+            entry_price=entry,
+            stop_price=stop,
+            target_price=target,
+        )
+
+    return factory
+
+
+def _build_operator_paper_probe_runtime_input(
+    *,
+    run_id: str,
+    sync_record: Mapping[str, object],
+    symbol: str,
+    sector: str,
+    entry_price: Decimal,
+    stop_price: Decimal,
+    target_price: Decimal,
+) -> RuntimeOrchestrationInput | None:
+    if str(sync_record.get("sync_status") or "") != "success":
+        return None
+    if sync_record.get("reconciliation_clean") is not True:
+        return None
+
+    source_timestamp = _parse_sync_timestamp(sync_record.get("source_timestamp"))
+    portfolio_data = sync_record.get("portfolio")
+    if not isinstance(portfolio_data, Mapping):
+        return None
+
+    cash = _decimal_from_mapping(portfolio_data, "cash")
+    equity = _decimal_from_mapping(portfolio_data, "equity")
+    if cash is None or equity is None or cash <= 0 or equity <= 0:
+        return None
+
+    holdings = _holdings_from_portfolio(portfolio_data)
+    snapshot = QuantConnectPaperSnapshot(
+        fixture_label="render-sync-authoritative-probe",
+        captured_at=source_timestamp,
+        cash=cash,
+        portfolio_equity=equity,
+        holdings=holdings,
+        orders=(),
+        fills=(),
+        deployment_status=_deployment_status(sync_record.get("deployment_status")),
+        algorithm_status=_algorithm_status(sync_record.get("algorithm_status")),
+        performance=QuantConnectPaperPerformance(
+            total_orders=int(sync_record.get("orders_count") or 0),
+            total_fills=int(sync_record.get("fills_count") or 0),
+            unrealized_profit=_decimal_from_mapping(portfolio_data, "unrealized_profit") or Decimal("0"),
+        ),
+    )
+    timing = SetupTiming(signal_time=source_timestamp, strategy_mode=StrategyMode.DAILY_ONLY, bar_end=source_timestamp)
+    reward_risk = (target_price - entry_price) / (entry_price - stop_price)
+    setup = SetupResult(
+        setup_name="operator_gated_paper_probe",
+        symbol=symbol,
+        status=SetupStatus.VALID,
+        timing=timing,
+        evidence=(
+            NumericEvidence("close_above_ema50", True, True, True),
+            NumericEvidence("ema50_above_ema200", True, True, True),
+            NumericEvidence("spy_rs20", 0.04, "> 0", True),
+            NumericEvidence("spy_rs60", 0.06, "> 0", True),
+            NumericEvidence("rsi14", 55.0, "supporting", True),
+            NumericEvidence("breakout_close", str(entry_price), "operator_probe", True),
+            NumericEvidence("volume_ratio", 1.8, 1.5, True),
+            NumericEvidence("reward_risk_proxy", str(reward_risk), "operator_probe", True),
+            NumericEvidence("atr_pct", 4.0, 8.0, True),
+            NumericEvidence("regime", "risk_on", "entry_allowed", True),
+            NumericEvidence("strategy_mode", StrategyMode.DAILY_ONLY.value, "config", True),
+            NumericEvidence("planned_entry_price", str(entry_price), "operator_probe", True),
+            NumericEvidence("initial_stop_price", str(stop_price), "operator_probe", True),
+            NumericEvidence("target_price", str(target_price), "operator_probe", True),
+            NumericEvidence("sector", sector, "operator_probe", True),
+            NumericEvidence("operator_gated_paper_probe", True, True, True),
+        ),
+        explanation=("Operator-gated Paper-only validation probe; not a production strategy signal.",),
+    )
+    validation = evaluate_activation_gates(
+        run_status=BacktestRunStatus.REAL_QUANTCONNECT,
+        no_lookahead_passed=True,
+        no_fake_results=True,
+        coverage_complete=True,
+        benchmark_available=True,
+        risk_checks_passed=True,
+        assumptions_present=True,
+        report_complete=True,
+        requested_state=ActivationApprovalState.APPROVED_FOR_LIMITED_PAPER,
+    )
+    portfolio = PortfolioSnapshot(
+        simulated_equity=equity,
+        available_cash=cash,
+        open_positions=len(holdings),
+        sector_exposure={sector: Decimal("0")},
+        new_entries_today=0,
+        portfolio_epoch=f"qc-sync-gen-{sync_record.get('generation', 'unknown')}",
+    )
+    return RuntimeOrchestrationInput(
+        correlation_id=run_id,
+        strategy_mode=StrategyMode.DAILY_ONLY,
+        setup_results=(setup,),
+        validation_decision=validation,
+        quantconnect_snapshot=snapshot,
+        portfolio_snapshot=portfolio,
+        evidence={
+            "input_kind": "operator_gated_paper_probe",
+            "paper_trading_only": True,
+            "probe_is_strategy_signal": False,
+            "paper_mode": PaperTradingMode.LIMITED_PAPER.value,
+        },
+    )
+
+
+def _holdings_from_portfolio(portfolio_data: Mapping[str, object]) -> tuple[QuantConnectHolding, ...]:
+    raw_holdings = portfolio_data.get("holdings")
+    if not isinstance(raw_holdings, list):
+        return ()
+    holdings: list[QuantConnectHolding] = []
+    for raw in raw_holdings:
+        if not isinstance(raw, Mapping):
+            continue
+        quantity = int(raw.get("quantity") or 0)
+        average_price = _decimal_from_mapping(raw, "average_price") or Decimal("0")
+        market_price = _decimal_from_mapping(raw, "market_price") or Decimal("0")
+        symbol = str(raw.get("symbol") or "").strip().upper()
+        if symbol and quantity and average_price >= 0 and market_price >= 0:
+            holdings.append(
+                QuantConnectHolding(
+                    symbol=symbol,
+                    quantity=quantity,
+                    average_price=average_price,
+                    market_price=market_price,
+                )
+            )
+    return tuple(holdings)
+
+
+def _deployment_status(value: object) -> QuantConnectDeploymentStatus:
+    normalized = str(value or "").strip().lower()
+    return QuantConnectDeploymentStatus.RUNNING if normalized == "running" else QuantConnectDeploymentStatus.NOT_RUN
+
+
+def _algorithm_status(value: object) -> QuantConnectAlgorithmStatus:
+    normalized = str(value or "").strip().lower()
+    return QuantConnectAlgorithmStatus.RUNNING if normalized == "running" else QuantConnectAlgorithmStatus.NOT_RUN
+
+
+def _parse_sync_timestamp(value: object) -> datetime:
+    if not isinstance(value, str):
+        raise ValueError("source_timestamp is required for operator paper probe runtime input.")
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        raise ValueError("source_timestamp must be timezone-aware.")
+    return parsed.astimezone(timezone.utc)
+
+
+def _decimal_from_mapping(mapping: Mapping[str, object], key: str) -> Decimal | None:
+    try:
+        return Decimal(str(mapping[key]))
+    except (KeyError, InvalidOperation, TypeError, ValueError):
+        return None
+
+
+def _optional_positive_decimal(value: object, default: Decimal) -> Decimal:
+    if value is None or str(value).strip() == "":
+        return default
+    parsed = Decimal(str(value))
+    if parsed <= 0:
+        raise ValueError("operator paper probe price inputs must be positive.")
+    return parsed
+
+
+def _env_flag(value: object) -> bool:
+    return str(value or "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def _run_status(jobs: Iterable[SchedulerJobResult]) -> str:

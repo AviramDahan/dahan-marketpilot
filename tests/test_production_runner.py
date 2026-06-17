@@ -239,3 +239,79 @@ def test_production_dependencies_from_env_are_empty_without_external_secrets():
     assert deps.dashboard_export_sink is None
     assert deps.notification_sink is None
     assert deps.lock_store is None
+    assert deps.runtime_input_factory is None
+
+
+def test_production_dependencies_from_env_builds_operator_probe_factory(tmp_path):
+    sync_path = tmp_path / "portfolio_sync.jsonl"
+    source_timestamp = datetime(2026, 6, 16, 14, 0, tzinfo=timezone.utc).isoformat()
+    sync_path.write_text(
+        (
+            '{"algorithm_status":"running","captured_at":"%s","deployment_status":"running",'
+            '"fills_count":0,"generation":7,"orders_count":0,'
+            '"portfolio":{"cash":"100000","equity":"100000","holdings":[],"unrealized_profit":"0"},'
+            '"reconciliation_clean":true,"source_timestamp":"%s","sync_status":"success"}\n'
+        )
+        % (source_timestamp, source_timestamp),
+        encoding="utf-8",
+    )
+
+    deps = build_production_dependencies_from_env(
+        env={
+            "MARKETPILOT_RUNTIME_INPUT_KIND": "operator_paper_probe",
+            "MARKETPILOT_OPERATOR_PAPER_PROBE_ENABLED": "1",
+            "MARKETPILOT_DATA_DIR": str(tmp_path),
+        }
+    )
+
+    assert deps.runtime_input_factory is not None
+    runtime_input = deps.runtime_input_factory("uat-probe-run")
+
+    assert runtime_input is not None
+    assert runtime_input.correlation_id == "uat-probe-run"
+    assert runtime_input.evidence["input_kind"] == "operator_gated_paper_probe"
+    assert runtime_input.evidence["probe_is_strategy_signal"] is False
+    assert runtime_input.quantconnect_snapshot is not None
+    assert runtime_input.quantconnect_snapshot.authoritative_source == "quantconnect"
+
+
+def test_operator_probe_factory_refuses_unclean_sync(tmp_path):
+    sync_path = tmp_path / "portfolio_sync.jsonl"
+    source_timestamp = datetime(2026, 6, 16, 14, 0, tzinfo=timezone.utc).isoformat()
+    sync_path.write_text(
+        (
+            '{"algorithm_status":"running","captured_at":"%s","deployment_status":"running",'
+            '"fills_count":0,"generation":7,"orders_count":0,'
+            '"portfolio":{"cash":"100000","equity":"100000","holdings":[],"unrealized_profit":"0"},'
+            '"reconciliation_clean":false,"source_timestamp":"%s","sync_status":"reconciliation_mismatch"}\n'
+        )
+        % (source_timestamp, source_timestamp),
+        encoding="utf-8",
+    )
+
+    deps = build_production_dependencies_from_env(
+        env={
+            "MARKETPILOT_RUNTIME_INPUT_KIND": "operator_paper_probe",
+            "MARKETPILOT_OPERATOR_PAPER_PROBE_ENABLED": "1",
+            "MARKETPILOT_DATA_DIR": str(tmp_path),
+        }
+    )
+
+    assert deps.runtime_input_factory is not None
+    assert deps.runtime_input_factory("uat-probe-run") is None
+
+
+def test_operator_probe_factory_rejects_invalid_price_shape(tmp_path):
+    import pytest
+
+    with pytest.raises(ValueError, match="stop < entry < target"):
+        build_production_dependencies_from_env(
+            env={
+                "MARKETPILOT_RUNTIME_INPUT_KIND": "operator_paper_probe",
+                "MARKETPILOT_OPERATOR_PAPER_PROBE_ENABLED": "1",
+                "MARKETPILOT_DATA_DIR": str(tmp_path),
+                "MARKETPILOT_OPERATOR_PAPER_PROBE_ENTRY_PRICE": "750",
+                "MARKETPILOT_OPERATOR_PAPER_PROBE_STOP_PRICE": "800",
+                "MARKETPILOT_OPERATOR_PAPER_PROBE_TARGET_PRICE": "850",
+            }
+        )

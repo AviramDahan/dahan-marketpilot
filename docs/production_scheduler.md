@@ -52,6 +52,26 @@ Telegram variables may be configured now, but production delivery verification b
 runtime build a real Telegram notification sink while keeping
 `config/notifications.yaml` disabled by default for repository safety.
 
+Phase 16.2 UAT may temporarily enable an explicit operator-gated Paper-only
+validation probe when no natural strategy signal appears:
+
+- `MARKETPILOT_RUNTIME_INPUT_KIND=operator_paper_probe`
+- `MARKETPILOT_OPERATOR_PAPER_PROBE_ENABLED=1`
+- Optional non-secret sizing assumptions:
+  `MARKETPILOT_OPERATOR_PAPER_PROBE_SYMBOL`,
+  `MARKETPILOT_OPERATOR_PAPER_PROBE_SECTOR`,
+  `MARKETPILOT_OPERATOR_PAPER_PROBE_ENTRY_PRICE`,
+  `MARKETPILOT_OPERATOR_PAPER_PROBE_STOP_PRICE`, and
+  `MARKETPILOT_OPERATOR_PAPER_PROBE_TARGET_PRICE`.
+
+The probe is disabled unless both required flags are present. It reads only the
+latest clean QuantConnect sync record, labels evidence as
+`operator_gated_paper_probe`, preserves `PAPER_TRADING_ONLY`, and still routes
+through scoring, ranking, risk, Paper command delivery, `/live/orders/read`,
+dashboard export, and Telegram notification jobs. It must be turned off after
+UAT evidence is captured unless another explicit operator-approved Paper
+validation window is active.
+
 Phase 16.1 production shared state:
 
 - `REDIS_URL` is injected by Render from `dahan-marketpilot-state` and must not
