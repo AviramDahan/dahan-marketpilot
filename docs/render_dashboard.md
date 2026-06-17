@@ -95,6 +95,8 @@ Set these values in Render as environment variables or Blueprint prompts. Store
 real values only in Render or another approved external secret store:
 
 - `DASHBOARD_PASSWORD`
+- `DASHBOARD_AUTH_ENABLED` (optional; defaults to enabled unless explicitly set
+  to `false` for operator-approved personal Paper Trading UAT)
 - `QUANTCONNECT_USER_ID`
 - `QUANTCONNECT_API_TOKEN`
 - `QUANTCONNECT_PROJECT_ID`
@@ -137,6 +139,11 @@ reachable. It does not, by itself, prove shared-state freshness, Telegram
 runtime delivery, QuantConnect order authority, or multi-session burn-in.
 Those gates require a running QuantConnect Paper deployment and sanitized
 runtime evidence.
+
+For Phase 16.2 UAT, `DASHBOARD_AUTH_ENABLED=false` may be used when the operator
+explicitly approves unauthenticated access to the personal read-only Paper
+Trading dashboard. This setting must be documented in UAT evidence and does not
+change the read-only, paper-only, QuantConnect-authoritative boundaries.
 
 ## Verification
 

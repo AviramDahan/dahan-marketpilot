@@ -159,6 +159,12 @@ in repository files, docs, tests, logs, reports, planning artifacts, or chat.
 No dashboard data is rendered before login, and authentication failures must be
 redacted.
 
+For personal Paper Trading UAT only, an explicit deployment override
+`DASHBOARD_AUTH_ENABLED=false` may disable the password gate while preserving all
+read-only and paper-only restrictions. This is not a trading-control permission:
+the dashboard must still expose no order submission, broker mutation, Telegram
+send, recovery approval, or real-money controls.
+
 The dashboard action surface is limited to view, refresh, login, and logout.
 It must remain Overview-first on mobile and read-only for every page.
 

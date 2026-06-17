@@ -24,6 +24,12 @@ class DashboardAuth:
 
     @classmethod
     def from_config(cls, config: DashboardConfig) -> "DashboardAuth":
+        if config.auth_enabled is False:
+            return cls(
+                status=AuthStatus.AUTHENTICATED,
+                authenticated=True,
+                message="Dashboard authentication disabled by deployment configuration.",
+            )
         if not config.password:
             return cls(
                 status=AuthStatus.AUTH_REQUIRED,
@@ -41,6 +47,8 @@ class DashboardAuth:
 
 
 def authenticate_dashboard(config: DashboardConfig, candidate_password: str | None) -> DashboardAuth:
+    if config.auth_enabled is False:
+        return DashboardAuth.from_config(config)
     if not config.password:
         return DashboardAuth.from_config(config)
 

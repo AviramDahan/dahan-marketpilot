@@ -56,6 +56,11 @@ def resolve_dashboard_auth(st: object, config: object) -> DashboardAuth:
     if st.session_state["dashboard_authenticated"]:
         return DashboardAuth(status=AuthStatus.AUTHENTICATED, authenticated=True)
 
+    if config.auth_enabled is False:
+        auth = DashboardAuth.from_config(config)
+        st.session_state["dashboard_authenticated"] = True
+        return auth
+
     password = st.text_input("Dashboard password", type="password")
     login_clicked = st.button("Login")
     auth = authenticate_dashboard(config, password) if login_clicked else DashboardAuth.from_config(config)

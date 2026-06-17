@@ -114,3 +114,24 @@ def test_missing_or_empty_dashboard_password_fails_closed():
     assert empty.password is None
     assert DashboardAuth.from_config(missing).status is AuthStatus.AUTH_REQUIRED
     assert DashboardAuth.from_config(empty).status is AuthStatus.AUTH_REQUIRED
+
+
+def test_dashboard_auth_can_be_disabled_only_by_env_override():
+    config = load_dashboard_config(
+        ROOT / "config" / "dashboard.yaml",
+        env={"DASHBOARD_AUTH_ENABLED": "false"},
+    )
+
+    auth = DashboardAuth.from_config(config)
+
+    assert config.auth_enabled is False
+    assert auth.status is AuthStatus.AUTHENTICATED
+    assert dashboard_data_visible(auth) is True
+
+
+def test_dashboard_auth_env_override_rejects_invalid_values():
+    with pytest.raises(ValueError, match="DASHBOARD_AUTH_ENABLED"):
+        load_dashboard_config(
+            ROOT / "config" / "dashboard.yaml",
+            env={"DASHBOARD_AUTH_ENABLED": "sometimes"},
+        )

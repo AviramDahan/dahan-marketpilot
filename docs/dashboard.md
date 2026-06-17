@@ -34,6 +34,12 @@ The dashboard uses a single strong password loaded from the `DASHBOARD_PASSWORD`
 environment variable. Repository configuration may name this environment
 variable, but it must never store the raw dashboard password.
 
+For personal Paper Trading UAT only, deployment can explicitly set
+`DASHBOARD_AUTH_ENABLED=false` to expose the read-only dashboard without the
+password gate. This must be recorded in UAT evidence and does not enable order
+controls, broker mutation, Telegram send controls, recovery actions, or any
+real-money behavior.
+
 No dashboard data is rendered before login. Authentication failures are
 fail-visible and redacted. The only allowed actions are view, refresh, login,
 and logout.

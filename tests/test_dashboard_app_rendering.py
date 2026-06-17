@@ -108,3 +108,14 @@ def test_resolve_dashboard_auth_requires_explicit_login_click():
 
     assert auth.authenticated is True
     assert clicked.session_state["dashboard_authenticated"] is True
+
+
+def test_resolve_dashboard_auth_skips_form_when_auth_disabled():
+    config = DashboardConfig(auth_enabled=False, password=None)
+    fake = FakeAuthStreamlit(password="", login_clicked=False)
+
+    auth = resolve_dashboard_auth(fake, config)
+
+    assert auth.authenticated is True
+    assert fake.session_state["dashboard_authenticated"] is True
+    assert ("button", "Login") not in fake.calls

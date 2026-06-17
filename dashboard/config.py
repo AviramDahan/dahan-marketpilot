@@ -14,6 +14,7 @@ from .redaction import REDACTED, looks_secret_key
 
 DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[1] / "config" / "dashboard.yaml"
 DEFAULT_PASSWORD_ENV_VAR = "DASHBOARD_PASSWORD"
+DEFAULT_AUTH_ENABLED_ENV_VAR = "DASHBOARD_AUTH_ENABLED"
 DEFAULT_ALLOWED_ACTIONS = ("view", "refresh", "login", "logout")
 DEFAULT_NAVIGATION_SECTIONS = (
     "Overview",
@@ -64,8 +65,8 @@ class DashboardConfig:
             raise ValueError("dashboard.trading_currency must be USD.")
         if self.display_currency != "NIS":
             raise ValueError("dashboard.display_currency must be NIS.")
-        if self.auth_enabled is not True:
-            raise ValueError("dashboard.auth_enabled must be true.")
+        if not isinstance(self.auth_enabled, bool):
+            raise ValueError("dashboard.auth_enabled must be a boolean.")
         if not self.password_env_var:
             raise ValueError("dashboard.password_env_var is required.")
         if tuple(self.allowed_actions) != DEFAULT_ALLOWED_ACTIONS:
@@ -123,6 +124,7 @@ def load_dashboard_config(
     password_env_var = str(raw.get("password_env_var", DEFAULT_PASSWORD_ENV_VAR)).strip().upper()
     source = env if env is not None else os.environ
     password = _blank_to_none(source.get(password_env_var))
+    auth_enabled = _env_bool(source.get(DEFAULT_AUTH_ENABLED_ENV_VAR), default=raw.get("auth_enabled") is True)
     _reject_raw_password_fields(raw)
 
     return DashboardConfig(
@@ -131,7 +133,7 @@ def load_dashboard_config(
         manual_order_controls_enabled=raw.get("manual_order_controls_enabled") is True,
         trading_currency=str(raw.get("trading_currency") or ""),
         display_currency=str(raw.get("display_currency") or ""),
-        auth_enabled=raw.get("auth_enabled") is True,
+        auth_enabled=auth_enabled,
         password_env_var=password_env_var,
         password=password,
         allowed_actions=tuple(raw.get("allowed_actions") or ()),
@@ -150,6 +152,17 @@ def _blank_to_none(value: object) -> str | None:
         return None
     text = str(value).strip()
     return text or None
+
+
+def _env_bool(value: object, *, default: bool) -> bool:
+    if value is None:
+        return default
+    text = str(value).strip().lower()
+    if text in {"1", "true", "yes", "on"}:
+        return True
+    if text in {"0", "false", "no", "off"}:
+        return False
+    raise ValueError(f"{DEFAULT_AUTH_ENABLED_ENV_VAR} must be true or false when set.")
 
 
 def _reject_raw_password_fields(raw: Mapping[str, object]) -> None:

@@ -23,6 +23,8 @@ services:
         value: config
       - key: MARKETPILOT_TELEGRAM_ENABLED
         value: "1"
+      - key: DASHBOARD_AUTH_ENABLED
+        value: "false"
       - key: REDIS_URL
         fromService:
           name: dahan-marketpilot-state
