@@ -43,7 +43,7 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 |-------|------|------|--------------|--------------|
 | 13 | QC API Client & Safety Foundation | 4/4 | Complete   | 2026-06-15 |
 | 14 | Data Sync & Dashboard Integration | 4/4 | Complete    | 2026-06-16 |
-| 15 | Paper Trading & Order Flow | Deliver signals to running algorithm; track fills with audit traceability | PTD-01..05, FT-01..04, SAFE-05 | 4/11 executed plus external order-authority gate pending |
+| 15 | Paper Trading & Order Flow | Deliver signals to running algorithm; track fills with audit traceability | PTD-01..05, FT-01..04, SAFE-05 | 11/12 executed plus external order-authority gate pending |
 | 16 | Production Scheduler | Run pipeline autonomously on NYSE schedule with fault tolerance | SCHED-01..06, SAFE-03 | 5/5 complete |
 | 16.1 | Production Integration & Dashboard Go-Live | Deploy a working personal autonomous Paper Trading product on Render with real dashboard data and Telegram delivery | PROD-01..10, SAFE-06..07 | TBD |
 | 16.2 | End-to-End UAT & Operational Burn-in | Prove the deployed product operates continuously across real market sessions | UAT-01..09, OPS-01 | TBD |
@@ -122,7 +122,7 @@ Plans:
 4. Stale signals triggered outside valid execution window are safely skipped with logged reason
 5. Duplicate deploy requests are rejected via idempotent keys; retry-safe operations throughout
 
-**Plans:** 4/11 plans complete, 7/11 externally partially verified or blocked at order-authority checkpoint; temporary smoke deployments now auto-stop
+**Plans:** 11/12 plans complete, 1/12 planned for market-hours or next-open order-authority verification; temporary smoke deployments auto-stop unless `--keep-running` is explicitly used
 
 Plans:
 
@@ -137,6 +137,7 @@ Plans:
 - [ ] 15-09-PLAN.md - Gap closure: Object Store preflight/diagnose-only implemented; multipart upload fixed and external write now passes, but no algorithm receipt observed
 - [ ] 15-10-PLAN.md - Gap closure: live-log API pagination corrected; Object Store receipt and submitted paper order event observed, `/live/orders/read` still pending
 - [ ] 15-11-PLAN.md - Gap closure: temporary Paper deployments auto-stop by default; explicit `--keep-running` required for next-open order-authority follow-up
+- [ ] 15-12-PLAN.md - Gap closure: market-hours or next-open `/live/orders/read` order/fill/rejection authority observation with explicit `--keep-running` and cleanup
 
 ---
 
