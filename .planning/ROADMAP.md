@@ -46,7 +46,7 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 | 15 | Paper Trading & Order Flow | Deliver signals to running algorithm; track fills with audit traceability | PTD-01..05, FT-01..04, SAFE-05 | 12/12 complete; external order authority passed |
 | 16 | Production Scheduler | Run pipeline autonomously on NYSE schedule with fault tolerance | SCHED-01..06, SAFE-03 | 5/5 complete |
 | 16.1 | Production Integration & Dashboard Go-Live | Deploy a working personal autonomous Paper Trading product on Render with real dashboard data and Telegram delivery | PROD-01..10, SAFE-06..07 | 6/6 complete; deployed go-live verified |
-| 16.2 | End-to-End UAT & Operational Burn-in | Prove the deployed product operates continuously across real market sessions | UAT-01..09, OPS-01 | TBD |
+| 16.2 | End-to-End UAT & Operational Burn-in | Prove the deployed product operates continuously across real market sessions | UAT-01..09, OPS-01 | 5 planned |
 | 17 | MTF Backtest Validation | Validate strategy modes through automated comparative backtests | MTF-01..05 | 3 |
 
 ## Phase Details
@@ -238,7 +238,25 @@ burn-in, restart recovery, missed-run monitoring, and complete signal -> order
 5. Burn-in covers multiple consecutive real market sessions.
 6. Final operational-readiness report confirms v1.1 is a working deployed product, not only completed code, tests, plans, or documentation.
 
-**Plans**: TBD
+**Plans**:
+
+- Wave 1:
+  - [ ] 16.2-01-PLAN.md - Burn-in evidence ledger and reporting scaffold
+- Wave 2 *(blocked on Wave 1 completion)*:
+  - [ ] 16.2-02-PLAN.md - Deployed session observation
+  - [ ] 16.2-03-PLAN.md - Authoritative end-to-end Paper flow trace
+- Wave 3 *(blocked on Wave 1 and deployed-session evidence)*:
+  - [ ] 16.2-04-PLAN.md - Recovery and failure-handling proof
+- Wave 4 *(blocked on Waves 2 and 3 completion)*:
+  - [ ] 16.2-05-PLAN.md - Multi-session burn-in closeout and v1.1 readiness decision
+
+**Cross-cutting constraints:**
+
+- QuantConnect remains the authority for Paper orders, fills, rejections, deployment state, cash, holdings, and algorithm status.
+- Render shared state and dashboard are mirrors only; the dashboard remains read-only.
+- Telegram delivery is observational and never controls safety, order, or recovery logic.
+- Phase 16.2 evidence must not contain secrets and must not fabricate external provider verification.
+- v1.1 remains open until UAT-01 through UAT-09 and OPS-01 are externally verified or explicitly escalated.
 
 ---
 
