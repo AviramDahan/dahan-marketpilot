@@ -9,12 +9,14 @@ services:
     name: dahan-marketpilot-dashboard
     runtime: python
     plan: starter
-    buildCommand: pip install -r requirements.txt
-    startCommand: PYTHONPATH=. streamlit run dashboard/app.py --server.address=0.0.0.0 --server.port=$PORT
+    buildCommand: pip install -r requirements.txt && pip install -e .
+    startCommand: streamlit run dashboard/app.py --server.address=0.0.0.0 --server.port=$PORT
     healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: PYTHONPATH
+        value: .
       - key: MARKETPILOT_ENV
         value: paper
       - key: MARKETPILOT_CONFIG_DIR
@@ -42,11 +44,13 @@ services:
     name: dahan-marketpilot-scheduler
     runtime: python
     plan: starter
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && pip install -e .
     startCommand: python -m marketpilot.production_runner scheduler
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: PYTHONPATH
+        value: .
       - key: MARKETPILOT_ENV
         value: paper
       - key: MARKETPILOT_DATA_DIR

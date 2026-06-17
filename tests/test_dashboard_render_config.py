@@ -32,9 +32,9 @@ def test_render_blueprint_starts_streamlit_on_render_port():
 
     assert service["type"] == "web"
     assert service["runtime"] == "python"
-    assert service["buildCommand"] == "pip install -r requirements.txt"
+    assert service["buildCommand"] == "pip install -r requirements.txt && pip install -e ."
     assert service["startCommand"] == (
-        "PYTHONPATH=. streamlit run dashboard/app.py --server.address=0.0.0.0 --server.port=$PORT"
+        "streamlit run dashboard/app.py --server.address=0.0.0.0 --server.port=$PORT"
     )
 
 
@@ -43,6 +43,7 @@ def test_render_blueprint_uses_python_311_and_secret_references_only():
     env_vars = {item["key"]: item for item in service["envVars"]}
 
     assert env_vars["PYTHON_VERSION"]["value"].startswith("3.11.")
+    assert env_vars["PYTHONPATH"]["value"] == "."
     for name in SECRET_ENV_NAMES:
         assert name in env_vars
         assert env_vars[name]["sync"] is False
@@ -55,9 +56,10 @@ def test_render_blueprint_defines_scheduler_background_worker():
 
     assert service["type"] == "worker"
     assert service["runtime"] == "python"
-    assert service["buildCommand"] == "pip install -r requirements.txt"
+    assert service["buildCommand"] == "pip install -r requirements.txt && pip install -e ."
     assert service["startCommand"] == "python -m marketpilot.production_runner scheduler"
     assert env_vars["PYTHON_VERSION"]["value"].startswith("3.11.")
+    assert env_vars["PYTHONPATH"]["value"] == "."
     assert env_vars["MARKETPILOT_ENV"]["value"] == "paper"
     for name in {
         "QUANTCONNECT_USER_ID",
