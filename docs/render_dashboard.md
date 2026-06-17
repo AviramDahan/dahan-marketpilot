@@ -22,7 +22,7 @@ client, or optional `streamlit[auth]` package was added.
 `render.yaml` defines a Python Web Service, Background Worker, and shared Render
 Key Value instance:
 
-- Build command: `pip install -r requirements.txt`
+- Build command: `pip install -r requirements.txt && pip install -e .`
 - Start command: `streamlit run dashboard/app.py --server.address=0.0.0.0 --server.port=$PORT`
 - Python version: `3.11.9`
 - Health path: `/`
@@ -111,8 +111,26 @@ repository names the required variables without committing their values.
 Non-secret runtime variables:
 
 - `PYTHON_VERSION=3.11.9`
+- `PYTHONPATH=.`
 - `MARKETPILOT_ENV=paper`
 - `MARKETPILOT_CONFIG_DIR=config`
+
+## Deployment Evidence
+
+2026-06-17 Render deployment:
+
+- Blueprint: `dahan-marketpilot-production`
+- Dashboard service: `dahan-marketpilot-dashboard`
+- Dashboard URL: `https://dahan-marketpilot-dashboard.onrender.com`
+- Scheduler worker: `dahan-marketpilot-scheduler`
+- Shared state: `dahan-marketpilot-state`
+- Public dashboard GET check: HTTP 200 with Streamlit shell returned.
+
+The deployment evidence above proves that the Render dashboard endpoint is
+reachable. It does not, by itself, prove shared-state freshness, Telegram
+runtime delivery, QuantConnect order authority, or multi-session burn-in.
+Those gates require a running QuantConnect Paper deployment and sanitized
+runtime evidence.
 
 ## Verification
 
