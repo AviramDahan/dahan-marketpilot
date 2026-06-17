@@ -24,6 +24,8 @@ Key Value instance:
 
 - Build command: `pip install -r requirements.txt && pip install -e .`
 - Start command: `streamlit run dashboard/app.py --server.address=0.0.0.0 --server.port=$PORT`
+- Heartbeat health command:
+  `python -m marketpilot.heartbeat_health_server --host=0.0.0.0 --port=$PORT`
 - Python version: `3.11.9`
 - Health path: `/`
 - Shared state: `dahan-marketpilot-state`, `type: keyvalue`,
@@ -36,6 +38,10 @@ mutation workflow.
 
 Both dashboard and scheduler receive `REDIS_URL` from the Key Value service's
 private `connectionString`. Do not paste a Redis URL into repository files.
+The heartbeat health service also receives this private connection string from
+Render and exposes only sanitized JSON at `/heartbeat`; it never returns Redis
+URLs, internal keys, credentials, QuantConnect identifiers, Telegram tokens, or
+dashboard passwords.
 
 ## Cache And Stale Data
 
@@ -83,6 +89,13 @@ Supported Phase 16.1 production source:
   worker and read by the dashboard web service. QuantConnect remains
   authoritative; shared state is for display, activity, and system-health
   visibility only.
+
+Supported Phase 16.2 monitor source:
+
+- `https://dahan-marketpilot-heartbeat-health.onrender.com/heartbeat` - a
+  read-only JSON surface backed by the same shared state. It returns only
+  `status`, `checked_at`, `latest_heartbeat_at`, `age_seconds`, `reason`,
+  `worker_state`, and paper-only/monitor-only control flags.
 
 The source path is configuration, not a credential. It must not contain tokens,
 passwords, account IDs, parent-directory traversal, remote URLs, deploy hooks,
@@ -178,3 +191,12 @@ send Telegram messages.
 
 Dashboard health evidence is operational context only. QuantConnect remains
 authoritative for Paper Trading state, and dashboard cache remains display-only.
+
+## Heartbeat Health Workflow
+
+GitHub Actions `marketpilot-heartbeat-monitor.yml` reads
+`HEARTBEAT_HEALTH_URL` from GitHub Actions Secrets and performs a read-only GET
+against the deployed heartbeat health surface. If the secret is missing, the
+workflow records `not_run` and fails closed. The workflow must not run scans,
+signals, scheduler cycles, QuantConnect commands, Paper orders, Telegram sends,
+or recovery actions.

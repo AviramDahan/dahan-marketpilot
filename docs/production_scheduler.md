@@ -74,6 +74,9 @@ Phase 16.1 extends this with Render Key Value / Valkey shared state:
 
 - The scheduler worker writes the latest dashboard mirror to
   `marketpilot:v1.1:dashboard:latest`.
+- The scheduler worker also mirrors the latest scheduler heartbeat into the
+  dashboard payload and the dedicated heartbeat key so deployed monitors can
+  verify worker freshness without reading Redis directly.
 - The dashboard web service reads that mirror using `data_source_kind:
   shared_state`.
 - The scheduler can use the same shared state adapter as a deployment-wide
@@ -98,6 +101,9 @@ Phase 16.1 extends this with Render Key Value / Valkey shared state:
 - `dahan-marketpilot-dashboard` as the existing Streamlit web service.
 - `dahan-marketpilot-scheduler` as the APScheduler Background Worker.
 - `dahan-marketpilot-state` as the shared Render Key Value instance.
+- `dahan-marketpilot-heartbeat-health` as a read-only JSON health web service
+  exposing only sanitized heartbeat status, timestamp, age, worker state, and
+  paper-only/monitor-only flags.
 
 Phase 16.1 proves the deployed dashboard is live, password-protected, reading
 shared durable production data, and independent of the local computer only when
@@ -122,6 +128,17 @@ Run the heartbeat monitor locally:
 ```powershell
 python scripts/check_scheduler_heartbeat.py --heartbeat-path data/scheduler_heartbeat.jsonl --max-age-seconds 900
 ```
+
+Run the deployed heartbeat monitor against the read-only health URL:
+
+```powershell
+python scripts/check_scheduler_heartbeat.py --heartbeat-url https://dahan-marketpilot-heartbeat-health.onrender.com/heartbeat --max-age-seconds 900
+```
+
+The URL-based monitor performs only a GET request and exits nonzero when the
+sanitized heartbeat status is missing, stale, or malformed. It must never run
+the scheduler, scans, signals, QuantConnect commands, orders, Telegram sends,
+or recovery actions.
 
 Run a dry config check only when the required non-secret IDs are configured:
 

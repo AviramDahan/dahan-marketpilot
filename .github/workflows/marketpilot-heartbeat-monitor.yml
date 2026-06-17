@@ -26,4 +26,11 @@ jobs:
       - name: Check heartbeat freshness
         env:
           PYTHONPATH: .
-        run: python scripts/check_scheduler_heartbeat.py --heartbeat-path data/scheduler_heartbeat.jsonl --max-age-seconds 900
+          HEARTBEAT_HEALTH_URL: ${{ secrets.HEARTBEAT_HEALTH_URL }}
+        run: |
+          if [ -z "${HEARTBEAT_HEALTH_URL:-}" ]; then
+            echo '{"status":"not_run","reason":"HEARTBEAT_HEALTH_URL is not configured","paper_trading_only":true,"monitor_only":true}'
+            exit 2
+          fi
+          echo "::add-mask::$HEARTBEAT_HEALTH_URL"
+          python scripts/check_scheduler_heartbeat.py --heartbeat-url "$HEARTBEAT_HEALTH_URL" --max-age-seconds 900 --timeout-seconds 20

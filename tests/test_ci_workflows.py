@@ -23,6 +23,7 @@ SECRET_PATTERNS = (
     "TELEGRAM_BOT_TOKEN",
     "RENDER_DEPLOY",
     "DASHBOARD_HEALTH_URL",
+    "HEARTBEAT_HEALTH_URL",
     "broker",
 )
 FORBIDDEN_EXTERNAL_COMMANDS = (
@@ -56,7 +57,8 @@ def _walk_values(value: object):
 
 
 def _workflow_triggers(workflow: dict[str, object]) -> dict[str, object]:
-    return workflow.get("on", {})
+    triggers = workflow.get("on", workflow.get(True, {}))
+    return triggers or {}
 
 
 def test_default_tests_workflow_is_offline_secret_free_and_least_privilege():
@@ -133,6 +135,23 @@ def test_dashboard_health_is_read_only_guarded_and_does_not_print_url():
     assert "curl --fail --silent --show-error --location" in text
     assert "echo \"$DASHBOARD_HEALTH_URL\"" not in text
     assert "Write-Output $env:DASHBOARD_HEALTH_URL" not in text
+
+    for command in FORBIDDEN_EXTERNAL_COMMANDS:
+        assert command not in text
+
+
+def test_heartbeat_monitor_reads_external_health_url_without_trading_actions():
+    workflow = _workflow("marketpilot-heartbeat-monitor.yml")
+    text = _workflow_text("marketpilot-heartbeat-monitor.yml")
+    triggers = _workflow_triggers(workflow)
+
+    assert "schedule" in triggers
+    assert "workflow_dispatch" in triggers
+    assert "HEARTBEAT_HEALTH_URL" in text
+    assert "--heartbeat-url" in text
+    assert "not_run" in text
+    assert "echo \"$HEARTBEAT_HEALTH_URL\"" not in text
+    assert "Write-Output $env:HEARTBEAT_HEALTH_URL" not in text
 
     for command in FORBIDDEN_EXTERNAL_COMMANDS:
         assert command not in text

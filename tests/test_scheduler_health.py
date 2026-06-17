@@ -8,6 +8,8 @@ from marketpilot.scheduler_health import (
     event_for_scheduler_health,
     read_latest_heartbeat,
 )
+from marketpilot.heartbeat_health_server import build_heartbeat_health
+from scripts.check_scheduler_heartbeat import _remote_heartbeat_ok, _sanitize_remote_payload
 
 
 def test_heartbeat_missing_is_monitor_failure(tmp_path):
@@ -51,3 +53,48 @@ def test_scheduler_health_event_is_not_safety_control(tmp_path):
     assert event.payload["controls_safety_logic"] is False
     assert event.payload["delivery_required_for_safety"] is False
 
+
+def test_remote_heartbeat_payload_is_sanitized_and_monitor_only():
+    payload = _sanitize_remote_payload(
+        {
+            "status": "ok",
+            "checked_at": "2026-06-17T18:56:00+00:00",
+            "latest_heartbeat_at": "2026-06-17T18:55:00+00:00",
+            "age_seconds": 60,
+            "paper_trading_only": True,
+            "monitor_only": True,
+            "controls_scheduler": False,
+            "controls_orders": False,
+            "redis_url": "redis://should-not-appear",
+            "token": "should-not-appear",
+        }
+    )
+
+    assert _remote_heartbeat_ok(payload) is True
+    assert "redis_url" not in payload
+    assert "token" not in payload
+
+
+def test_deployed_heartbeat_health_reports_shared_state_heartbeat(monkeypatch):
+    class FakeSnapshot:
+        payload = {
+            "system_health": {
+                "timestamp": "2026-06-17T18:55:00+00:00",
+                "status": "attempted",
+                "paper_trading_only": True,
+            }
+        }
+
+    monkeypatch.setattr("marketpilot.heartbeat_health_server.load_dashboard_payload_from_env", lambda: FakeSnapshot())
+
+    health = build_heartbeat_health(
+        now=datetime(2026, 6, 17, 18, 56, tzinfo=timezone.utc),
+        max_age_seconds=900,
+    )
+
+    assert health["status"] == "ok"
+    assert health["age_seconds"] == 60
+    assert health["worker_state"] == "attempted"
+    assert health["paper_trading_only"] is True
+    assert health["controls_scheduler"] is False
+    assert health["controls_orders"] is False
