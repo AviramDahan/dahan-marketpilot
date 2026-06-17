@@ -33,7 +33,7 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 - [x] **Phase 14: Data Sync & Dashboard Integration** â€” Reliable portfolio sync from QC with freshness-aware dashboard display (completed 2026-06-16)
 - [x] **Phase 15: Paper Trading & Order Flow** â€” Signal delivery to live algorithm with full fill tracking and audit trail (completed 2026-06-17)
 - [x] **Phase 16: Production Scheduler** â€” Autonomous market-hours pipeline execution with fault tolerance (local implementation complete 2026-06-17; deployed product gates remain Phase 16.1/16.2)
-- [x] **Phase 16.1: Production Integration & Dashboard Go-Live** â€” Local implementation for deployed personal autonomous Paper Trading product is complete; external deployment evidence remains pending
+- [x] **Phase 16.1: Production Integration & Dashboard Go-Live** â€” Render dashboard, scheduler worker, shared state, password auth, fresh dashboard data, and Telegram runtime delivery verified 2026-06-17
 - [ ] **Phase 16.2: End-to-End UAT & Operational Burn-in** â€” Multi-session deployed-system proof under real QuantConnect Paper Trading conditions
 - [ ] **Phase 17: MTF Backtest Validation** â€” Automated comparative backtesting with regression detection
 
@@ -45,7 +45,7 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 | 14 | Data Sync & Dashboard Integration | 4/4 | Complete    | 2026-06-16 |
 | 15 | Paper Trading & Order Flow | Deliver signals to running algorithm; track fills with audit traceability | PTD-01..05, FT-01..04, SAFE-05 | 12/12 complete; external order authority passed |
 | 16 | Production Scheduler | Run pipeline autonomously on NYSE schedule with fault tolerance | SCHED-01..06, SAFE-03 | 5/5 complete |
-| 16.1 | Production Integration & Dashboard Go-Live | Deploy a working personal autonomous Paper Trading product on Render with real dashboard data and Telegram delivery | PROD-01..10, SAFE-06..07 | TBD |
+| 16.1 | Production Integration & Dashboard Go-Live | Deploy a working personal autonomous Paper Trading product on Render with real dashboard data and Telegram delivery | PROD-01..10, SAFE-06..07 | 6/6 complete; deployed go-live verified |
 | 16.2 | End-to-End UAT & Operational Burn-in | Prove the deployed product operates continuously across real market sessions | UAT-01..09, OPS-01 | TBD |
 | 17 | MTF Backtest Validation | Validate strategy modes through automated comparative backtests | MTF-01..05 | 3 |
 

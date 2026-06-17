@@ -59,16 +59,16 @@
 
 ## Production Integration & Dashboard Go-Live
 
-- [ ] **PROD-01**: One production runtime runner connects the complete pipeline from data sync through setup evaluation, scoring, ranking, risk decision, Paper order intent, reconciliation, audit, notification, and dashboard export
-- [ ] **PROD-02**: Streamlit dashboard is deployed as a Render Web Service with a working password-protected URL
-- [ ] **PROD-03**: Autonomous scheduler is deployed as a Render Background Worker and does not depend on the local computer being on
-- [ ] **PROD-04**: Worker and dashboard use durable shared production data transport/storage; dashboard production mode must not use `data_source_kind=none`
-- [ ] **PROD-05**: Dashboard uses a real production data source for portfolio, signals, orders, fills, activity, and system-health data
-- [ ] **PROD-06**: Dashboard supports controlled auto-refresh without fabricating missing data or hiding stale/error states
-- [ ] **PROD-07**: Runtime notification events are connected to real Telegram delivery while preserving delivery-failure isolation from safety logic
-- [ ] **PROD-08**: Production secrets are configured securely outside the repo for QuantConnect, Telegram, Render, dashboard auth, and any shared storage
-- [ ] **PROD-09**: Deployed system continues operating while the local computer is off
-- [ ] **PROD-10**: Render deployment documentation and operator runbook cover dashboard URL, worker status, logs, restarts, secrets, and rollback
+- [x] **PROD-01**: One production runtime runner connects the complete pipeline from data sync through setup evaluation, scoring, ranking, risk decision, Paper order intent, reconciliation, audit, notification, and dashboard export
+- [x] **PROD-02**: Streamlit dashboard is deployed as a Render Web Service with a working password-protected URL
+- [x] **PROD-03**: Autonomous scheduler is deployed as a Render Background Worker and does not depend on the local computer being on
+- [x] **PROD-04**: Worker and dashboard use durable shared production data transport/storage; dashboard production mode must not use `data_source_kind=none`
+- [x] **PROD-05**: Dashboard uses a real production data source for portfolio, signals, orders, fills, activity, and system-health data
+- [x] **PROD-06**: Dashboard supports controlled auto-refresh without fabricating missing data or hiding stale/error states
+- [x] **PROD-07**: Runtime notification events are connected to real Telegram delivery while preserving delivery-failure isolation from safety logic
+- [x] **PROD-08**: Production secrets are configured securely outside the repo for QuantConnect, Telegram, Render, dashboard auth, and any shared storage
+- [x] **PROD-09**: Deployed system continues operating while the local computer is off
+- [x] **PROD-10**: Render deployment documentation and operator runbook cover dashboard URL, worker status, logs, restarts, secrets, and rollback
 
 ## End-to-End UAT & Operational Burn-in
 
@@ -93,8 +93,8 @@
 - [x] **SAFE-03**: All existing v1.0 tests (433) pass unchanged after v1.1 implementation; new modules use lazy imports
 - [x] **SAFE-04**: All timestamps stored as UTC internally; convert to ET only at display and market-hours-check boundaries
 - [x] **SAFE-05**: Execution window guards skip stale signals if triggered outside valid execution window
-- [ ] **SAFE-06**: Phase 15's remaining `/live/orders/read` order/fill/rejection verification must not be bypassed, faked, or marked complete outside a valid market-hours or next-open observation
-- [ ] **SAFE-07**: Future milestones after v1.1 require explicit user approval; do not create v1.2 or add unrelated strategies/features during v1.1 production-readiness work
+- [x] **SAFE-06**: Phase 15's remaining `/live/orders/read` order/fill/rejection verification must not be bypassed, faked, or marked complete outside a valid market-hours or next-open observation
+- [x] **SAFE-07**: Future milestones after v1.1 require explicit user approval; do not create v1.2 or add unrelated strategies/features during v1.1 production-readiness work
 
 ---
 
@@ -145,16 +145,16 @@
 | SCHED-04 | 16 | Complete |
 | SCHED-05 | 16 | Complete |
 | SCHED-06 | 16 | Complete |
-| PROD-01 | 16.1 | Pending |
-| PROD-02 | 16.1 | Pending |
-| PROD-03 | 16.1 | Pending |
-| PROD-04 | 16.1 | Pending |
-| PROD-05 | 16.1 | Pending |
-| PROD-06 | 16.1 | Pending |
-| PROD-07 | 16.1 | Pending |
-| PROD-08 | 16.1 | Pending |
-| PROD-09 | 16.1 | Pending |
-| PROD-10 | 16.1 | Pending |
+| PROD-01 | 16.1 | Complete |
+| PROD-02 | 16.1 | Complete |
+| PROD-03 | 16.1 | Complete |
+| PROD-04 | 16.1 | Complete |
+| PROD-05 | 16.1 | Complete |
+| PROD-06 | 16.1 | Complete |
+| PROD-07 | 16.1 | Complete |
+| PROD-08 | 16.1 | Complete |
+| PROD-09 | 16.1 | Complete |
+| PROD-10 | 16.1 | Complete |
 | UAT-01 | 16.2 | Pending |
 | UAT-02 | 16.2 | Pending |
 | UAT-03 | 16.2 | Pending |
@@ -180,8 +180,8 @@
 | SAFE-03 | 16 | Complete |
 | SAFE-04 | 14 | Complete |
 | SAFE-05 | 15 | Complete |
-| SAFE-06 | 16.1 | Pending |
-| SAFE-07 | 16.1 | Pending |
+| SAFE-06 | 16.1 | Complete |
+| SAFE-07 | 16.1 | Complete |
 
 ---
 

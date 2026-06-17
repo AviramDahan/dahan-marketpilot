@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Phase 15 order authority passed; Phase 16.1 deployed go-live evidence and Phase 16.2 burn-in remain
-stopped_at: Phase 15 external `/live/orders/read` current-tag Submitted/Filled evidence captured and committed; next eligible GSD work is Phase 16.1/16.2 deployed product verification
-last_updated: "2026-06-17T17:52:00.000+03:00"
+status: Phase 15 order authority passed; Phase 16.1 deployed go-live verified; Phase 16.2 burn-in remains
+stopped_at: Phase 16.1 Render dashboard, scheduler worker, shared-state dashboard data, password auth, and Telegram runtime delivery verified; next eligible GSD work is Phase 16.2 burn-in
+last_updated: "2026-06-17T18:40:00.000+03:00"
 last_activity: 2026-06-17
 progress:
   total_phases: 7
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 30
   completed_plans: 30
   percent: 70
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-15)
 
 **Core value:** The system must provide an auditable paper-only swing-trading workflow where every signal, backtest, paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
-**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 15 order/fill authority is externally verified through `/live/orders/read` for simulated Paper Trading. Phase 16.1 local implementation is complete, but deployed external evidence is still pending. Phase 16.2 burn-in is not started.
+**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 15 order/fill authority is externally verified through `/live/orders/read` for simulated Paper Trading. Phase 16.1 deployed go-live is verified on Render with password-authenticated dashboard data and Telegram runtime delivery. Phase 16.2 burn-in is not started.
 
 ## Current Position
 
-Phase: 16.1 local implementation complete / Phase 15 external gate passed
-Plan: 16.1-01 through 16.1-06 complete; next eligible work is Render deployment evidence and Phase 16.2 burn-in preparation
-Status: Phase 16.1 local implementation complete; external deployment evidence and burn-in pending
+Phase: 16.1 deployed go-live complete / Phase 15 external gate passed
+Plan: 16.1-01 through 16.1-06 complete; next eligible work is Phase 16.2 burn-in
+Status: Phase 16.1 deployed evidence complete; multi-session burn-in pending
 Last activity: 2026-06-17
 
-Progress: [████████░░] 77%
+Progress: [█████████░] 85%
 
 ## Performance Metrics
 
@@ -62,7 +62,7 @@ Progress: [████████░░] 77%
 **Recent Trend:**
 
 - Last 5 plans: 16.1-02, 16.1-03, 16.1-04, 16.1-05, 16.1-06
-- Trend: Phase 15 external order authority passed; Phase 16.1 deployed evidence and Phase 16.2 burn-in remain pending
+- Trend: Phase 15 external order authority passed; Phase 16.1 deployed go-live verified; Phase 16.2 burn-in remains pending
 
 *Updated after each plan completion*
 | Phase 04 P01 | 6 min | 2 tasks | 4 files |
