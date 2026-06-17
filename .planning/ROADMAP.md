@@ -46,7 +46,7 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 | 15 | Paper Trading & Order Flow | Deliver signals to running algorithm; track fills with audit traceability | PTD-01..05, FT-01..04, SAFE-05 | 12/12 complete; external order authority passed |
 | 16 | Production Scheduler | Run pipeline autonomously on NYSE schedule with fault tolerance | SCHED-01..06, SAFE-03 | 5/5 complete |
 | 16.1 | Production Integration & Dashboard Go-Live | Deploy a working personal autonomous Paper Trading product on Render with real dashboard data and Telegram delivery | PROD-01..10, SAFE-06..07 | 6/6 complete; deployed go-live verified |
-| 16.2 | End-to-End UAT & Operational Burn-in | Prove the deployed product operates continuously across real market sessions | UAT-01..09, OPS-01 | 5 planned |
+| 16.2 | End-to-End UAT & Operational Burn-in | Prove the deployed product operates continuously across real market sessions | UAT-01..09, OPS-01 | 2/5 plans complete; 2/10 UAT rows passed |
 | 17 | MTF Backtest Validation | Validate strategy modes through automated comparative backtests | MTF-01..05 | 3 |
 
 ## Phase Details
@@ -243,7 +243,7 @@ burn-in, restart recovery, missed-run monitoring, and complete signal -> order
 - Wave 1:
   - [x] 16.2-01-PLAN.md - Burn-in evidence ledger and reporting scaffold
 - Wave 2 *(blocked on Wave 1 completion)*:
-  - [ ] 16.2-02-PLAN.md - Deployed session observation
+  - [x] 16.2-02-PLAN.md - Deployed session observation and heartbeat/missed-run monitor evidence
   - [ ] 16.2-03-PLAN.md - Authoritative end-to-end Paper flow trace
 - Wave 3 *(blocked on Wave 1 and deployed-session evidence)*:
   - [ ] 16.2-04-PLAN.md - Recovery and failure-handling proof
@@ -332,8 +332,8 @@ burn-in, restart recovery, missed-run monitoring, and complete signal -> order
 | SAFE-06 | 16.1 | Complete |
 | SAFE-07 | 16.1 | Complete |
 | UAT-01 | 16.2 | Pending |
-| UAT-02 | 16.2 | Pending |
-| UAT-03 | 16.2 | Pending |
+| UAT-02 | 16.2 | Complete |
+| UAT-03 | 16.2 | Complete |
 | UAT-04 | 16.2 | Pending |
 | UAT-05 | 16.2 | Pending |
 | UAT-06 | 16.2 | Pending |

@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Phase 16.2 execution in progress; Plan 01 complete
-stopped_at: Phase 16.2 Plan 01 evidence scaffold complete; next eligible work is Plan 02 deployed session observation
-last_updated: "2026-06-17T21:20:00.000+03:00"
-last_activity: 2026-06-17 -- Phase 16.2 Plan 01 complete
+status: Phase 16.2 execution in progress; Plans 01-02 complete; UAT-02 and UAT-03 passed
+stopped_at: Phase 16.2 UAT-02 heartbeat/missed-run monitor and UAT-03 redeploy recovery verified; next eligible work is UAT-01 deployed Paper E2E trace or UAT-04..07 deployed resilience evidence
+last_updated: "2026-06-17T22:36:00.000+03:00"
+last_activity: 2026-06-17 -- Phase 16.2 UAT-02 and UAT-03 external evidence recorded
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 35
-  completed_plans: 31
+  completed_plans: 32
   percent: 70
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-15)
 
 **Core value:** The system must provide an auditable paper-only swing-trading workflow where every signal, backtest, paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
-**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 15 order/fill authority is externally verified through `/live/orders/read` for simulated Paper Trading. Phase 16.1 deployed go-live is verified on Render with password-authenticated dashboard data and Telegram runtime delivery. Phase 16.2 burn-in is planned and ready to execute.
+**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 15 order/fill authority is externally verified through `/live/orders/read` for simulated Paper Trading. Phase 16.1 deployed go-live is verified on Render with password-authenticated dashboard data and Telegram runtime delivery. Phase 16.2 execution has passed heartbeat/missed-run monitoring and redeploy recovery, while end-to-end Paper flow, resilience proofs, burn-in, and final readiness remain open.
 
 ## Current Position
 
 Phase: 16.2 execution in progress
-Plan: 16.2-01 complete; next eligible work is 16.2-02 deployed session observation
-Status: Multi-session burn-in pending execution; v1.1 remains active until UAT-01 through UAT-09 and OPS-01 pass
-Last activity: 2026-06-17 -- Phase 16.2 Plan 01 complete
+Plan: 16.2-01 and 16.2-02 complete; next eligible work is 16.2-03 deployed E2E Paper trace or 16.2-04 deployed resilience evidence
+Status: UAT-02 and UAT-03 passed; UAT-01 and UAT-04 through OPS-01 remain open; v1.1 remains active until UAT-01 through UAT-09 and OPS-01 pass
+Last activity: 2026-06-17 -- Phase 16.2 heartbeat/missed-run monitor passed in GitHub Actions run 27714718830
 
 Progress: [█████████░] 85%
 
@@ -62,7 +62,7 @@ Progress: [█████████░] 85%
 **Recent Trend:**
 
 - Last 5 planned plans: 16.2-01, 16.2-02, 16.2-03, 16.2-04, 16.2-05
-- Trend: Phase 15 external order authority passed; Phase 16.1 deployed go-live verified; Phase 16.2 burn-in planned and ready to execute
+- Trend: Phase 15 external order authority passed; Phase 16.1 deployed go-live verified; Phase 16.2 UAT-02 heartbeat/missed-run monitoring and UAT-03 redeploy recovery passed; UAT-01 E2E Paper flow remains the main market-hours gate
 
 *Updated after each plan completion*
 | Phase 04 P01 | 6 min | 2 tasks | 4 files |
