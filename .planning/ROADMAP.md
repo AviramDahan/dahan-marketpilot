@@ -197,7 +197,22 @@ Plans:
 7. Production secrets are configured securely in Render/QuantConnect/Telegram environments and are never committed.
 8. The system continues operating while the local computer is off.
 
-**Plans**: TBD
+**Plans**: 6 plans planned across 4 execution waves. Execution has not started.
+
+**Execution Waves:**
+
+- Wave 1:
+  - [ ] 16.1-01-PLAN.md - Shared Render Key Value production state store
+  - [ ] 16.1-02-PLAN.md - Production runner wiring for shared state, durable lock, dashboard export, and Telegram
+- Wave 2:
+  - [ ] 16.1-03-PLAN.md - Dashboard production data source and controlled auto-refresh
+  - [ ] 16.1-04-PLAN.md - Render Blueprint, secrets, deployment docs, and operator runbook
+- Wave 3:
+  - [ ] 16.1-05-PLAN.md - External go-live verification scripts
+- Wave 4:
+  - [ ] 16.1-06-PLAN.md - Go-live evidence, UAT, verification, and residual gate closeout
+
+**Completion Gate:** Phase 16.1 cannot be marked complete from local tests alone. It requires sanitized deployed evidence for dashboard URL/auth, worker heartbeat, shared production data, Telegram runtime delivery, and local-computer independence.
 
 ---
 

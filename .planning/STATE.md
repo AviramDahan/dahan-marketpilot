@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Phase 16 local implementation complete; Phase 15 order authority pending next market window
-stopped_at: Phase 16 executed across 5 plans and 4 waves; next eligible GSD work is Phase 16.1 planning/execution only with explicit approval, or Phase 15 order-authority follow-up during market window
-last_updated: "2026-06-17T02:35:00.0000000+03:00"
+status: Phase 16.1 planned; Phase 15 order authority pending next market window
+stopped_at: Phase 16.1 planned across 6 plans and 4 waves; execution not started
+last_updated: "2026-06-17T03:05:00.0000000+03:00"
 last_activity: 2026-06-17
 progress:
   total_phases: 7
   completed_phases: 3
-  total_plans: 24
+  total_plans: 30
   completed_plans: 17
   percent: 71
 ---
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-15)
 
 **Core value:** The system must provide an auditable paper-only swing-trading workflow where every signal, backtest, paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
-**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 16 local scheduler implementation is complete. Phase 15 is still waiting for the next valid US market-hours or next-open `/live/orders/read` order/fill/rejection verification. Phase 16.1/16.2 production readiness gates are not started unless explicitly approved.
+**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 16.1 production go-live is planned but not executed. Phase 15 is still waiting for the next valid US market-hours or next-open `/live/orders/read` order/fill/rejection verification. Phase 16.2 burn-in is not started.
 
 ## Current Position
 
-Phase: 16 complete / Phase 15 external gate pending
-Plan: 16-01 through 16-05 SUMMARY.md complete; next Phase 15 action is order-authority verification during market window
-Status: Phase 16 local implementation complete; Phase 15 order authority pending next market window
+Phase: 16.1 planned / Phase 15 external gate pending
+Plan: 16.1-01 through 16.1-06 planned; next Phase 15 action is order-authority verification during market window
+Status: Phase 16.1 planned; Phase 15 order authority pending next market window
 Last activity: 2026-06-17
 
 Progress: [███████░░░] 71%
