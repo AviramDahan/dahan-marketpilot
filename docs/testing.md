@@ -391,6 +391,19 @@ from deployment `L-103091222fcd6eee4aae06e1de635e38`. Record this status as
 until the official orders endpoint returns the current tagged order, fill, or
 rejection, or an approved QuantConnect-authority alternative is documented.
 
+Phase 15-13 closes that authority gate. `qc_object_store_signal_smoke.py` now
+polls `/live/orders/read` with `start=0,end=1000`, preserves exact current-tag
+order evidence in top-level `qc_order_evidence_*` fields, and cleans up the
+Object Store probe on deploy failure as well as successful runs. Credentialed
+Paper-only evidence: key
+`32900381/marketpilot/signals/object-store-smoke-20260617143733.json`, compile
+`be2643e583a354020fbc7a08e1a136fc-e62f04e374002b91ed7c97cf9ee17189`,
+deployment `L-d62998269941f7f00ba48804a092c2b7`, exact tag
+`mp:qc-object-store-sig-20260617143733:qc-object-store-order-20260617143733`,
+order id `1`, status `3`, Submitted and Filled events, fill quantity `1`, fill
+price `$750.08`, object cleanup success, and deployment stop success. Phase 15
+order authority is passed for simulated Paper Trading only.
+
 ## Phase 16 Production Scheduler Tests
 
 Phase 16 tests are deterministic and offline. They verify the autonomous

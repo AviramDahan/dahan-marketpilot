@@ -206,3 +206,11 @@ and Object Store writes are externally verified:
   only an older tagged order from deployment `L-103091222fcd6eee4aae06e1de635e38`.
   Therefore live-log fill evidence is stronger than before, but the
   `/live/orders/read` authority gate remains open.
+- As of Phase 15-13, the `/live/orders/read` authority gate is closed for
+  simulated Paper Trading. The smoke polls `start=0,end=1000`, records
+  top-level `qc_order_evidence_*` fields, and waits long enough for
+  QuantConnect's delayed live-order snapshot. The credentialed run for
+  deployment `L-d62998269941f7f00ba48804a092c2b7` returned the exact current
+  tag `mp:qc-object-store-sig-20260617143733:qc-object-store-order-20260617143733`
+  with Submitted and Filled events, fill quantity `1`, fill price `$750.08`,
+  object cleanup success, and deployment stop success.

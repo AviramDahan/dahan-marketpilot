@@ -986,7 +986,100 @@ def test_qc_object_store_smoke_ignores_stale_marketpilot_orders(monkeypatch):
 
     assert result["observations"][0]["marketpilot_order_count"] == 1
     assert result["observations"][0]["tagged_order_count"] == 0
+    assert result["orders_range"] == {"start": 0, "end": 1000}
     assert result["status"] == "object_store_written_no_algorithm_receipt_observed"
+
+
+def test_qc_object_store_smoke_records_top_level_authority_order(monkeypatch):
+    module = _load_qc_object_store_smoke_module()
+
+    class FakeClient:
+        expected_tag = ""
+
+        def discover_organization_id(self):
+            return "org-1"
+
+        def upload_object_store_file(self, **_kwargs):
+            return {"success": True}
+
+        def read_object_store_metadata(self, **_kwargs):
+            return {"success": True, "size": 42}
+
+        def read_project_file(self, **_kwargs):
+            return {"files": [{"name": "main.py", "content": "old"}]}
+
+        def update_project_file_content(self, **_kwargs):
+            return True
+
+        def create_compile(self, **_kwargs):
+            return {"success": True, "compileId": "C-1"}
+
+        def read_compile(self, **_kwargs):
+            return {"success": True, "state": "BuildSuccess", "logs": []}
+
+        def create_live_algorithm(self, **_kwargs):
+            return {"success": True, "deployId": "L-paper"}
+
+        def read_live_logs(self, **_kwargs):
+            return {"success": True, "logs": ["MarketPilot object_store accepted: SPY 1"]}
+
+        def read_live_orders_page(self, **_kwargs):
+            return {
+                "success": True,
+                "orders": [
+                    {
+                        "id": 1,
+                        "tag": self.expected_tag,
+                        "status": "Filled",
+                        "quantity": 1,
+                    }
+                ],
+            }
+
+        def delete_object_store_file(self, **_kwargs):
+            return True
+
+        def stop_live_algorithm(self, **_kwargs):
+            return True
+
+    fake = FakeClient()
+
+    monkeypatch.setenv("MARKETPILOT_QC_OBJECT_STORE_SMOKE_ENABLED", "1")
+    monkeypatch.setenv("QC_PROJECT_ID", "32900381")
+    monkeypatch.setenv("QC_NODE_ID", "LN-paper")
+    monkeypatch.setenv("QC_VERSION_ID", "17838")
+    fixed_signal = {
+        "signal_id": "qc-object-store-sig-fixed",
+        "idempotency_key": "qc-object-store-order-fixed",
+        "symbol": "SPY",
+        "quantity": 1,
+        "paper_trading_only": True,
+    }
+    fake.expected_tag = "mp:qc-object-store-sig-fixed:qc-object-store-order-fixed"
+
+    with (
+        patch.object(module, "QCApiClient", return_value=fake),
+        patch.object(module, "build_object_store_signal", return_value=fixed_signal),
+        patch.object(module, "build_object_store_key", return_value="32900381/marketpilot/signals/fixed.json"),
+    ):
+        result = module.run_smoke(
+            command_label="object_store_signal_probe",
+            dry_run=False,
+            diagnose_only=False,
+            deploy=True,
+            cleanup=True,
+            file_name="main.py",
+            restore_original=True,
+            compile_polls=1,
+            compile_poll_seconds=0,
+            polls=1,
+            poll_seconds=0,
+        )
+
+    assert result["status"] == "object_store_delivery_order_observed"
+    assert result["qc_order_evidence_observed_at_poll"] == 0
+    assert result["qc_order_evidence_count"] == 1
+    assert result["qc_order_evidence_orders"][0]["tag"] == fake.expected_tag
 
 
 def test_create_live_algorithm_hardcodes_paper_brokerage():

@@ -23,7 +23,8 @@ SIMULATED PAPER TRADING ONLY - NOT FINANCIAL ADVICE.
 | Phase 15-10 live-log corrected Object Store smoke | object_store_delivery_receipt_or_rejection_observed | Corrected `/live/logs/read` request fields to `startLine`/`endLine`. Full fallback smoke observed Object Store receipt, acceptance, and a QuantConnect paper order event with status `Submitted`; `/live/orders/read` still returned 0 orders during the polling window. |
 | Phase 15-11 Object Store smoke deployment safety | passed_external_auto_stop | Added default auto-stop for temporary Paper deployments and explicit `--keep-running` override. A short credentialed smoke created a Paper deployment and returned `stop_success=true`. |
 | Phase 15-12 market-hours Object Store order-authority follow-up | live_logs_filled_but_orders_read_current_tag_missing | Added exact current-tag filtering to the smoke and LEAN price-data deferral. Credentialed market-hours smoke for deployment `L-3eccd7fbf41cc4b0aa944d500f760a90` observed Object Store receipt, acceptance, and QuantConnect live-log `Submitted` and `Filled` events for SPY quantity 1 at fill price `$751.31`. `/live/orders/read` still returned only an older tagged order from deployment `L-103091222fcd6eee4aae06e1de635e38`, not the current expected tag. Deployment stop succeeded. |
-| Phase 15 full pass / phase-complete | partial_external_live_log_fill_only | Offline tests, cloud sync, compile, live create, read-only smoke, command API acceptance, Object Store write, Object Store signal receipt, and live-log Submitted/Filled evidence are verified. Authoritative `/live/orders/read` order/fill/rejection polling for the current tagged order is still not externally complete. |
+| Phase 15-13 snapshot-wait Object Store order-authority follow-up | passed_external_order_authority | Expanded `/live/orders/read` polling to `start=0,end=1000`, waited through QuantConnect's delayed live-order snapshot, and captured the exact current tag from `/live/orders/read`. Deployment `L-d62998269941f7f00ba48804a092c2b7` returned order id `1`, status `3`, tag `mp:qc-object-store-sig-20260617143733:qc-object-store-order-20260617143733`, Submitted and Filled order events, fill quantity `1`, fill price `$750.08`, object cleanup success, and deployment stop success. |
+| Phase 15 full pass / phase-complete | passed_external_order_authority | Offline tests, cloud sync, compile, live create, read-only smoke, command API acceptance, Object Store write, Object Store signal receipt, live-log Submitted/Filled evidence, and authoritative `/live/orders/read` current-tag order/fill evidence are verified for simulated Paper Trading only. |
 
 ## Offline User Acceptance Checks
 
@@ -43,7 +44,7 @@ SIMULATED PAPER TRADING ONLY - NOT FINANCIAL ADVICE.
 
 ## External QuantConnect Smoke Status
 
-Status: `partial_external_verified_command_api_only`
+Status: `passed_external_order_authority`
 
 Environment/API check on 2026-06-16:
 
@@ -133,12 +134,20 @@ fill price `$751.31`. `/live/orders/read` still returned no order with the
 current expected tag, so the authority gate remains open. The temporary
 deployment was stopped successfully.
 
+Phase 15-13 closed the remaining `/live/orders/read` authority gate by waiting
+long enough for QuantConnect's delayed live-order snapshot and reading
+`start=0,end=1000`. The credentialed Paper-only run wrote Object Store key
+`32900381/marketpilot/signals/object-store-smoke-20260617143733.json`,
+compiled `be2643e583a354020fbc7a08e1a136fc-e62f04e374002b91ed7c97cf9ee17189`
+to `BuildSuccess`, deployed `L-d62998269941f7f00ba48804a092c2b7`, observed
+Object Store receipt and acceptance, and `/live/orders/read` returned order id
+`1` with exact tag
+`mp:qc-object-store-sig-20260617143733:qc-object-store-order-20260617143733`,
+status `3`, Submitted and Filled order events, fill quantity `1`, and fill
+price `$750.08`. Object cleanup and deployment stop both succeeded.
+
 ## Human Verification Gate
 
-Before Phase 15 can be marked fully passed, an operator must resolve why
-QuantConnect's submitted/filled Paper order from the Object Store fallback does
-not yet appear in `/live/orders/read` with the current expected tag, then rerun
-the smallest safe order/fill/rejection polling smoke.
-The resulting evidence must be sanitized and must include only safe identifiers,
-timestamps, paper-only status, command delivery status, and observed
-QuantConnect order/fill/rejection trace status. Secrets must never be recorded.
+Closed for Phase 15 simulated Paper Trading order flow on 2026-06-17. The
+remaining v1.1 work is not Phase 15 order authority; it is deployed product
+go-live evidence and multi-session burn-in in later phases.

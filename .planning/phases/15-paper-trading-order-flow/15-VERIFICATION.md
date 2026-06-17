@@ -26,7 +26,10 @@ polling window, so order/fill/rejection authority remained unverified. Phase
 deployments and defer Object Store signals until the target symbol has a
 tradeable price. A credentialed market-hours rerun observed live-log
 `Submitted` and `Filled` events, but `/live/orders/read` still did not return
-the current expected order tag.
+the current expected order tag. Phase 15-13 expanded the order polling range and
+waited through the delayed QuantConnect live-order snapshot. `/live/orders/read`
+then returned the exact current expected tag with submitted and filled order
+events, closing the Phase 15 order-authority gate for simulated Paper Trading.
 
 Offline tests do not prove real QuantConnect execution. Mocked command delivery,
 mocked live orders, fake LEAN objects, and fake fills are not external evidence.
@@ -48,6 +51,7 @@ mocked live orders, fake LEAN objects, and fake fills are not external evidence.
 | Phase 15-10 corrected live-log Object Store fallback smoke | object_store_delivery_receipt_or_rejection_observed | Corrected `/live/logs/read` to send `format`, `startLine`, `endLine`, and `deploymentLogs`. Full fallback smoke wrote key `32900381/marketpilot/signals/object-store-smoke-20260616222641.json`, compiled `17cf8c855b9f015b657bb8ee93dde36f-fc7dc35aac534131b7f46de7f1f4338f` to `BuildSuccess`, deployed Paper algorithm `L-103091222fcd6eee4aae06e1de635e38`, observed `MarketPilot Object Store signal received.` and `MarketPilot object_store accepted: SPY 1` in live logs, observed a QuantConnect `New Order Event` with status `Submitted`, cleaned up the object, and stopped the deployment. `/live/orders/read` returned 0 orders during the smoke window. |
 | Phase 15-11 short auto-stop smoke | passed_external_auto_stop | Object Store fallback smokes now stop temporary Paper deployments by default and require `--keep-running` for explicit next-open observation. A short credentialed smoke wrote key `32900381/marketpilot/signals/object-store-smoke-20260616223659.json`, compiled `afa175c1bfd2ec3fbe9761e785d36564-3a1e17366ee80c002632e087f0b2adc5` to `BuildSuccess`, deployed `L-d54a7a1b3ffb938b43db9cab1a0f2560`, cleaned up the object, and returned `stop_success=true`. |
 | Phase 15-12 exact-tag market-hours smoke | live_logs_filled_but_orders_read_current_tag_missing | Fixed the smoke to require the current expected order tag and fixed LEAN Object Store handling to defer valid signals until the symbol has tradeable price data. Credentialed market-hours smoke wrote key `32900381/marketpilot/signals/object-store-smoke-20260617135051.json`, compiled `dc91c5ab5e0058488a8d1d9f2df34e67-b2ee161c2a598a4ba7551a28468e76ff` to `BuildSuccess`, deployed `L-3eccd7fbf41cc4b0aa944d500f760a90`, observed receipt and acceptance logs, and observed QuantConnect live-log `Submitted` and `Filled` events for SPY quantity 1 at fill price `$751.31`. `/live/orders/read` returned only an older tagged order from `L-103091222fcd6eee4aae06e1de635e38`, not the current expected tag. Object cleanup and deployment stop succeeded. |
+| Phase 15-13 snapshot-wait order authority smoke | passed_external_order_authority | Expanded `/live/orders/read` polling to `start=0,end=1000` and waited through the QuantConnect live-order snapshot delay. Credentialed Paper-only smoke wrote key `32900381/marketpilot/signals/object-store-smoke-20260617143733.json`, compiled `be2643e583a354020fbc7a08e1a136fc-e62f04e374002b91ed7c97cf9ee17189` to `BuildSuccess`, deployed `L-d62998269941f7f00ba48804a092c2b7`, observed Object Store receipt and acceptance, and `/live/orders/read` returned order id `1` with exact tag `mp:qc-object-store-sig-20260617143733:qc-object-store-order-20260617143733`, status `3`, Submitted and Filled events, fill quantity `1`, and fill price `$750.08`. Object cleanup and deployment stop succeeded. |
 
 ## Requirement Evidence Matrix
 
@@ -57,16 +61,16 @@ mocked live orders, fake LEAN objects, and fake fills are not external evidence.
 | PTD-02 | E2E test covers `submit_signal_command()` to mocked `create_live_command()` and fake LEAN `on_command`; Phase 15-08 adds fake LEAN Object Store payload polling through the same validation path. | `/live/commands/create` returned `success=true` for plain, typed, and no-order generic echo probes, but no `on_command` debug/order/marker evidence appeared. Object Store fallback now writes externally and the deployed Paper algorithm logged receipt and acceptance. | passed_external_via_object_store_fallback |
 | PTD-03 | `tests/test_qc_api.py` covers paper-gated stop/liquidate wrapper behavior. | not required for 15-05 smoke, no external stop/liquidate run. | passed_offline_only |
 | PTD-04 | Unit and E2E tests reject duplicate deploy/signal idempotency keys before API calls. | not run externally. | passed_offline_only |
-| PTD-05 | `tests/test_lean_command_flow.py` and E2E tests prove fake LEAN command and Object Store payload acceptance create one tagged paper order path; `lean/main.py` records sanitized command/Object Store receipt evidence before parsing. Phase 15-12 adds price-data deferral before processing Object Store keys. | Phase 15 receiver code compiled and deployed. Object Store receipt and acceptance were observed in live logs, and QuantConnect logged paper `Submitted` and `Filled` events after price-data deferral. `/live/orders/read` still did not return the current expected tag, so authoritative order/fill/rejection polling remains incomplete. | partial_external_live_log_fill_only |
-| FT-01 | `poll_quantconnect_order_updates()` tests poll fake `read_live_orders()` and map tags to signal ids. Phase 15-12 smoke now filters exact current tags and ignores stale MarketPilot orders. | `/live/orders/read` succeeded externally, but returned an older tagged order from deployment `L-103091222fcd6eee4aae06e1de635e38` instead of the current tag. | partial_external_orders_endpoint_current_tag_missing |
-| FT-02 | Audit JSONL tests prove QC-derived fill records append with `source_authority=quantconnect` and `local_authority=false`. | Live logs show a real Paper fill, but `/live/orders/read` and `/live/read` did not return the current order/fill payload. Local fill mirroring remains blocked on the authority endpoint. | partial_external_live_log_fill_only |
-| FT-03 | Offline tests cover partial fills and rejected orders with reasons from mocked QC payloads. | no real order/fill/rejection exists yet. | passed_offline_only_until_external_callback_smoke |
-| FT-04 | Trace query tests reconstruct command/order/fill and rejection chains by signal id or idempotency key. | no real signal/order/fill trace exists yet. | passed_offline_only_until_external_callback_smoke |
-| SAFE-05 | Unit and E2E tests prove stale signals are skipped locally and rejected inside fake LEAN before order placement. Object Store stale payloads also reject through shared validation. | not externally proven because neither Commands nor Object Store delivered an algorithm-readable signal. | passed_offline |
+| PTD-05 | `tests/test_lean_command_flow.py` and E2E tests prove fake LEAN command and Object Store payload acceptance create one tagged paper order path; `lean/main.py` records sanitized command/Object Store receipt evidence before parsing. Phase 15-12 adds price-data deferral before processing Object Store keys. | Phase 15 receiver code compiled and deployed. Object Store receipt and acceptance were observed in live logs, and `/live/orders/read` returned the current tagged Paper order with submitted and filled events. | passed_external_order_authority |
+| FT-01 | `poll_quantconnect_order_updates()` tests poll fake `read_live_orders()` and map tags to signal ids. Phase 15-12 smoke now filters exact current tags and ignores stale MarketPilot orders. | `/live/orders/read` returned exact current tag `mp:qc-object-store-sig-20260617143733:qc-object-store-order-20260617143733` for deployment `L-d62998269941f7f00ba48804a092c2b7`. | passed_external_order_authority |
+| FT-02 | Audit JSONL tests prove QC-derived fill records append with `source_authority=quantconnect` and `local_authority=false`. | `/live/orders/read` returned a Filled event with fill quantity `1` and fill price `$750.08`; QuantConnect remains the source authority for the fill. | passed_external_order_authority |
+| FT-03 | Offline tests cover partial fills and rejected orders with reasons from mocked QC payloads. | `/live/orders/read` returned real submitted and filled order events. Rejection parsing remains covered offline. | passed_external_filled_path |
+| FT-04 | Trace query tests reconstruct command/order/fill and rejection chains by signal id or idempotency key. | The current signal id and idempotency key were recovered from the exact QuantConnect order tag returned by `/live/orders/read`. | passed_external_order_authority |
+| SAFE-05 | Unit and E2E tests prove stale signals are skipped locally and rejected inside fake LEAN before order placement. Object Store stale payloads also reject through shared validation. | The external fresh Object Store payload passed shared validation; stale and duplicate rejection paths remain covered offline. | passed_offline_and_external_fresh_path |
 
 ## External Smoke Gate
 
-Status: `partial_external_command_api_only`
+Status: `passed_external_order_authority`
 
 Authenticated QuantConnect smoke on 2026-06-16T12:46:23Z:
 
@@ -142,6 +146,14 @@ only the older tagged order from deployment `L-103091222fcd6eee4aae06e1de635e38`
 The current deployment `L-3eccd7fbf41cc4b0aa944d500f760a90` was stopped after
 the evidence capture.
 
+Phase 15-13 completed the order-authority gate. The smoke now records top-level
+`qc_order_evidence_*` fields so exact order evidence is not hidden by generic
+redaction or truncated observations. A retry after the QuantConnect deploy
+processing window returned `object_store_delivery_order_observed`; order id `1`
+for deployment `L-d62998269941f7f00ba48804a092c2b7` matched the current
+expected tag and included submitted and filled events with fill quantity `1`
+and fill price `$750.08`. Cleanup and stop both succeeded.
+
 ## Secret Handling
 
 No secret values are stored or committed. Documentation lists environment
@@ -150,10 +162,8 @@ variable names only.
 ## Residual Risk
 
 Account-specific `/live/create`, `/live/read`, `/live/orders/read`, compile,
-file sync, command API acceptance, and Object Store fallback code paths are now
-locally verified. A no-order generic Python echo algorithm failed to produce
-observable command-dispatch logs. Object Store writes and algorithm receipt are
-now externally verified through deployment logs. The remaining risk is
-post-receipt order authority: the submitted Paper order was visible in live logs
-and Phase 15-12 later showed a live-log fill, but the current tagged
-order/fill still was not returned by `/live/orders/read`.
+file sync, command API acceptance, Object Store fallback code paths, algorithm
+receipt, and current-tag order/fill authority are now externally verified for
+simulated Paper Trading. The remaining v1.1 risk is not Phase 15 order
+authority; it is deployed product go-live evidence, local-computer
+independence, and multi-session burn-in covered by Phase 16.1 and Phase 16.2.

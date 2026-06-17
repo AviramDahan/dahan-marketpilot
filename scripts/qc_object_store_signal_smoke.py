@@ -113,6 +113,7 @@ def run_smoke(
     compile_poll_seconds: int,
     polls: int,
     poll_seconds: int,
+    orders_end: int = 1000,
     stop_after_deploy: bool = True,
 ) -> dict[str, object]:
     _require_enabled()
@@ -133,6 +134,7 @@ def run_smoke(
         "diagnose_only": diagnose_only,
         "cleanup": cleanup,
         "stop_after_deploy": stop_after_deploy,
+        "orders_range": {"start": 0, "end": orders_end},
         "environment": summarize_env(),
         "signal_preview": sanitize(signal),
         "expected_order_tag": expected_order_tag,
@@ -201,6 +203,12 @@ def run_smoke(
             result["deploy_response"] = sanitize(_summarize_deploy_response(deploy_response))
             if not deploy_response.get("success"):
                 result["status"] = "deploy_failed"
+                if cleanup:
+                    result["cleanup_success"] = client.delete_object_store_file(
+                        organization_id=organization_id,
+                        project_id=project_id,
+                        key=key,
+                    )
                 return result
             deploy_id = _extract_deploy_id(deploy_response) or _read_env("QC_DEPLOY_ID")
         finally:
@@ -229,7 +237,7 @@ def run_smoke(
             project_id=project_id,
             deploy_id=deploy_id,
             start=0,
-            end=20,
+            end=orders_end,
         )
         live_logs = logs.get("LiveLogs") or logs.get("logs") or []
         raw_orders = orders.get("orders") or []
@@ -259,6 +267,9 @@ def run_smoke(
             }
         )
         if tagged_orders:
+            result["qc_order_evidence_observed_at_poll"] = index
+            result["qc_order_evidence_count"] = len(tagged_orders)
+            result["qc_order_evidence_orders"] = sanitize(tagged_orders[:5])
             break
 
     result["observations"] = observations
@@ -473,6 +484,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--compile-poll-seconds", type=int, default=5)
     parser.add_argument("--polls", type=int, default=12)
     parser.add_argument("--poll-seconds", type=int, default=5)
+    parser.add_argument("--orders-end", type=int, default=1000)
     args = parser.parse_args(argv)
 
     output = run_smoke(
@@ -487,6 +499,7 @@ def main(argv: list[str] | None = None) -> int:
         compile_poll_seconds=args.compile_poll_seconds,
         polls=args.polls,
         poll_seconds=args.poll_seconds,
+        orders_end=args.orders_end,
         stop_after_deploy=not args.keep_running,
     )
     print(json.dumps(sanitize(output), indent=2, default=str))

@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Phase 15 Plan 12 executed; live-log fill observed but `/live/orders/read` current-tag authority still pending
-stopped_at: Phase 15 Plan 12 executed; next eligible work is a narrow QuantConnect order-authority endpoint semantics follow-up
-last_updated: "2026-06-17T17:05:00.000+03:00"
+status: Phase 15 order authority passed; Phase 16.1 deployed go-live evidence and Phase 16.2 burn-in remain
+stopped_at: Phase 15 external `/live/orders/read` current-tag Submitted/Filled evidence captured and committed; next eligible GSD work is Phase 16.1/16.2 deployed product verification
+last_updated: "2026-06-17T17:52:00.000+03:00"
 last_activity: 2026-06-17
 progress:
   total_phases: 7
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-15)
 
 **Core value:** The system must provide an auditable paper-only swing-trading workflow where every signal, backtest, paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
-**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 16.1 local implementation is complete, but deployed external evidence is still pending. Phase 15 is still waiting for the next valid US market-hours or next-open `/live/orders/read` order/fill/rejection verification. Phase 16.2 burn-in is not started.
+**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 15 order/fill authority is externally verified through `/live/orders/read` for simulated Paper Trading. Phase 16.1 local implementation is complete, but deployed external evidence is still pending. Phase 16.2 burn-in is not started.
 
 ## Current Position
 
-Phase: 16.1 local implementation complete / Phase 15 external gate pending
-Plan: 16.1-01 through 16.1-06 complete; next eligible work is Render deployment evidence or Phase 15 order-authority verification during market window
-Status: Phase 16.1 local implementation complete; external deployment evidence and Phase 15 order authority pending
+Phase: 16.1 local implementation complete / Phase 15 external gate passed
+Plan: 16.1-01 through 16.1-06 complete; next eligible work is Render deployment evidence and Phase 16.2 burn-in preparation
+Status: Phase 16.1 local implementation complete; external deployment evidence and burn-in pending
 Last activity: 2026-06-17
 
 Progress: [████████░░] 77%
@@ -62,7 +62,7 @@ Progress: [████████░░] 77%
 **Recent Trend:**
 
 - Last 5 plans: 16.1-02, 16.1-03, 16.1-04, 16.1-05, 16.1-06
-- Trend: Phase 16.1 local implementation complete; deployed evidence and Phase 15 external order authority remain pending
+- Trend: Phase 15 external order authority passed; Phase 16.1 deployed evidence and Phase 16.2 burn-in remain pending
 
 *Updated after each plan completion*
 | Phase 04 P01 | 6 min | 2 tasks | 4 files |
@@ -244,6 +244,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-17T17:05:00.000+03:00
-Stopped at: Phase 15 Plan 12 executed; live-log fill observed, `/live/orders/read` current-tag authority still pending
+Last session: 2026-06-17T17:52:00.000+03:00
+Stopped at: Phase 15 order authority passed; next work is deployed product evidence and burn-in
 Resume file: .planning/phases/15-paper-trading-order-flow/15-12-SUMMARY.md
