@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from marketpilot.scheduler_calendar import evaluate_market_session
 from marketpilot.scheduler_health import SchedulerHealthStatus, evaluate_scheduler_heartbeat
 
 
@@ -30,8 +31,9 @@ def main(argv: list[str] | None = None) -> int:
     now = _parse_now(args.now_utc)
     if args.heartbeat_url:
         payload = _read_remote_heartbeat(args.heartbeat_url, timeout_seconds=args.timeout_seconds)
+        payload = _annotate_monitor_window(payload, now=now)
         print(json.dumps(payload, sort_keys=True))
-        return 0 if _remote_heartbeat_ok(payload) else 2
+        return 0 if _remote_heartbeat_ok(payload, now=now) else 2
 
     check = evaluate_scheduler_heartbeat(
         Path(args.heartbeat_path),
@@ -79,14 +81,36 @@ def _sanitize_remote_payload(payload: dict[str, object]) -> dict[str, object]:
     return {key: payload.get(key) for key in sorted(allowed_keys)}
 
 
-def _remote_heartbeat_ok(payload: Mapping[str, object]) -> bool:
+def _monitor_flags_ok(payload: Mapping[str, object]) -> bool:
     return (
-        payload.get("status") in {"ok", "passed"}
-        and payload.get("paper_trading_only") is True
+        payload.get("status") in {"ok", "passed", "stale"}
         and payload.get("monitor_only") is True
+        and payload.get("paper_trading_only") is True
         and payload.get("controls_scheduler") is False
         and payload.get("controls_orders") is False
+        and payload.get("controls_recovery") is False
     )
+
+
+def _annotate_monitor_window(payload: Mapping[str, object], *, now: datetime | None) -> dict[str, object]:
+    annotated = dict(payload)
+    decision = evaluate_market_session(now=now)
+    annotated["market_window_status"] = decision.status.value
+    annotated["market_window_reason"] = decision.reason.value if decision.reason else None
+    annotated["heartbeat_required_now"] = decision.eligible_for_orders
+    return annotated
+
+
+def _remote_heartbeat_ok(payload: Mapping[str, object], *, now: datetime | None = None) -> bool:
+    if not _monitor_flags_ok(payload):
+        return False
+    if payload.get("status") in {"ok", "passed"}:
+        return True
+    return payload.get("status") == "stale" and payload.get("reason") == "heartbeat_stale" and _market_is_closed(now=now)
+
+
+def _market_is_closed(*, now: datetime | None) -> bool:
+    return not evaluate_market_session(now=now).eligible_for_orders
 
 
 def _parse_now(value: str | None) -> datetime | None:

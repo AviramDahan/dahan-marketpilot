@@ -9,7 +9,7 @@ from marketpilot.scheduler_health import (
     read_latest_heartbeat,
 )
 from marketpilot.heartbeat_health_server import build_heartbeat_health
-from scripts.check_scheduler_heartbeat import _remote_heartbeat_ok, _sanitize_remote_payload
+from scripts.check_scheduler_heartbeat import _annotate_monitor_window, _remote_heartbeat_ok, _sanitize_remote_payload
 
 
 def test_heartbeat_missing_is_monitor_failure(tmp_path):
@@ -65,6 +65,7 @@ def test_remote_heartbeat_payload_is_sanitized_and_monitor_only():
             "monitor_only": True,
             "controls_scheduler": False,
             "controls_orders": False,
+            "controls_recovery": False,
             "redis_url": "redis://should-not-appear",
             "token": "should-not-appear",
         }
@@ -73,6 +74,52 @@ def test_remote_heartbeat_payload_is_sanitized_and_monitor_only():
     assert _remote_heartbeat_ok(payload) is True
     assert "redis_url" not in payload
     assert "token" not in payload
+
+
+def test_remote_stale_heartbeat_is_allowed_after_market_close():
+    payload = _sanitize_remote_payload(
+        {
+            "status": "stale",
+            "reason": "heartbeat_stale",
+            "latest_heartbeat_at": "2026-06-17T20:55:00+00:00",
+            "age_seconds": 3684,
+            "paper_trading_only": True,
+            "monitor_only": True,
+            "controls_scheduler": False,
+            "controls_orders": False,
+            "controls_recovery": False,
+        }
+    )
+    now = datetime(2026, 6, 17, 22, 6, tzinfo=timezone.utc)
+
+    annotated = _annotate_monitor_window(payload, now=now)
+
+    assert annotated["market_window_status"] == "closed"
+    assert annotated["heartbeat_required_now"] is False
+    assert _remote_heartbeat_ok(annotated, now=now) is True
+
+
+def test_remote_stale_heartbeat_fails_during_market_hours():
+    payload = _sanitize_remote_payload(
+        {
+            "status": "stale",
+            "reason": "heartbeat_stale",
+            "latest_heartbeat_at": "2026-06-17T14:00:00+00:00",
+            "age_seconds": 3600,
+            "paper_trading_only": True,
+            "monitor_only": True,
+            "controls_scheduler": False,
+            "controls_orders": False,
+            "controls_recovery": False,
+        }
+    )
+    now = datetime(2026, 6, 17, 15, 0, tzinfo=timezone.utc)
+
+    annotated = _annotate_monitor_window(payload, now=now)
+
+    assert annotated["market_window_status"] == "open"
+    assert annotated["heartbeat_required_now"] is True
+    assert _remote_heartbeat_ok(annotated, now=now) is False
 
 
 def test_deployed_heartbeat_health_reports_shared_state_heartbeat(monkeypatch):
