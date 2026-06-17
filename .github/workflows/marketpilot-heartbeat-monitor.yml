@@ -21,4 +21,6 @@ jobs:
           python-version: "3.11"
 
       - name: Check heartbeat freshness
+        env:
+          PYTHONPATH: .
         run: python scripts/check_scheduler_heartbeat.py --heartbeat-path data/scheduler_heartbeat.jsonl --max-age-seconds 900
