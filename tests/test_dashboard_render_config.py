@@ -34,7 +34,7 @@ def test_render_blueprint_starts_streamlit_on_render_port():
     assert service["runtime"] == "python"
     assert service["buildCommand"] == "pip install -r requirements.txt"
     assert service["startCommand"] == (
-        "streamlit run dashboard/app.py --server.address=0.0.0.0 --server.port=$PORT"
+        "PYTHONPATH=. streamlit run dashboard/app.py --server.address=0.0.0.0 --server.port=$PORT"
     )
 
 
