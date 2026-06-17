@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
 status: Phase 16.2 execution in progress; Plans 01-02 complete; UAT-02 and UAT-03 passed
-stopped_at: Phase 16.2 UAT-02 heartbeat/missed-run monitor and UAT-03 redeploy recovery verified; next eligible work is UAT-01 deployed Paper E2E trace or UAT-04..07 deployed resilience evidence
-last_updated: "2026-06-17T22:36:00.000+03:00"
-last_activity: 2026-06-17 -- Phase 16.2 UAT-02 and UAT-03 external evidence recorded
+stopped_at: Phase 16.2 heartbeat/missed-run monitor is verified for market-hours freshness and off-hours no-false-positive behavior; next eligible work is UAT-01 deployed Paper E2E trace during market hours or UAT-04..07 deployed resilience evidence
+last_updated: "2026-06-18T01:12:00.000+03:00"
+last_activity: 2026-06-18 -- Phase 16.2 heartbeat monitor made market-window aware and verified by GitHub Actions run 27722971339
 progress:
   total_phases: 7
   completed_phases: 5
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-06-15)
 Phase: 16.2 execution in progress
 Plan: 16.2-01 and 16.2-02 complete; next eligible work is 16.2-03 deployed E2E Paper trace or 16.2-04 deployed resilience evidence
 Status: UAT-02 and UAT-03 passed; UAT-01 and UAT-04 through OPS-01 remain open; v1.1 remains active until UAT-01 through UAT-09 and OPS-01 pass
-Last activity: 2026-06-17 -- Phase 16.2 heartbeat/missed-run monitor passed in GitHub Actions run 27714718830
+Last activity: 2026-06-18 -- Phase 16.2 heartbeat/missed-run monitor passed in GitHub Actions run 27722971339 after market close with `heartbeat_required_now=false`
 
 Progress: [█████████░] 85%
 
@@ -62,7 +62,7 @@ Progress: [█████████░] 85%
 **Recent Trend:**
 
 - Last 5 planned plans: 16.2-01, 16.2-02, 16.2-03, 16.2-04, 16.2-05
-- Trend: Phase 15 external order authority passed; Phase 16.1 deployed go-live verified; Phase 16.2 UAT-02 heartbeat/missed-run monitoring and UAT-03 redeploy recovery passed; UAT-01 E2E Paper flow remains the main market-hours gate
+- Trend: Phase 15 external order authority passed; Phase 16.1 deployed go-live verified; Phase 16.2 UAT-02 heartbeat/missed-run monitoring, off-hours monitor behavior, and UAT-03 redeploy recovery passed; UAT-01 E2E Paper flow remains the main market-hours gate
 
 *Updated after each plan completion*
 | Phase 04 P01 | 6 min | 2 tasks | 4 files |
