@@ -9,6 +9,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Mapping
+from urllib.error import URLError
+from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -29,6 +31,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dashboard-url", default=os.environ.get("DASHBOARD_HEALTH_URL", DEFAULT_DASHBOARD_URL))
     parser.add_argument("--heartbeat-path", default=os.environ.get("SCHEDULER_HEARTBEAT_PATH", "data/scheduler_heartbeat.jsonl"))
     parser.add_argument("--heartbeat-url", default=os.environ.get("HEARTBEAT_HEALTH_URL"))
+    parser.add_argument("--shared-state-url", default=os.environ.get("DASHBOARD_STATE_HEALTH_URL"))
     parser.add_argument("--max-heartbeat-age-seconds", type=int, default=900)
     parser.add_argument("--require-shared-state", action="store_true")
     parser.add_argument("--require-heartbeat", action="store_true")
@@ -39,6 +42,7 @@ def main(argv: list[str] | None = None) -> int:
         dashboard_url=args.dashboard_url,
         heartbeat_path=Path(args.heartbeat_path),
         heartbeat_url=args.heartbeat_url,
+        shared_state_url=args.shared_state_url,
         max_heartbeat_age_seconds=args.max_heartbeat_age_seconds,
         require_shared_state=args.require_shared_state,
         require_heartbeat=args.require_heartbeat,
@@ -53,6 +57,7 @@ def observe_deployed_session(
     dashboard_url: str | None,
     heartbeat_path: Path,
     heartbeat_url: str | None,
+    shared_state_url: str | None,
     max_heartbeat_age_seconds: int,
     require_shared_state: bool,
     require_heartbeat: bool,
@@ -60,7 +65,10 @@ def observe_deployed_session(
 ) -> dict[str, object]:
     checks = {
         "dashboard_url": _check_dashboard_url(dashboard_url, timeout_seconds=timeout_seconds),
-        "shared_state": _check_shared_state(),
+        "shared_state": _check_shared_state(
+            shared_state_url=shared_state_url,
+            timeout_seconds=timeout_seconds,
+        ),
         "heartbeat": _check_heartbeat(
             heartbeat_path,
             heartbeat_url=heartbeat_url,
@@ -86,7 +94,11 @@ def observe_deployed_session(
     }
 
 
-def _check_shared_state() -> dict[str, object]:
+def _check_shared_state(*, shared_state_url: str | None, timeout_seconds: int) -> dict[str, object]:
+    if shared_state_url:
+        payload = _read_remote_shared_state(shared_state_url, timeout_seconds=timeout_seconds)
+        payload["status"] = "passed" if _remote_shared_state_ok(payload) else payload.get("status", "failed")
+        return payload
     try:
         snapshot = load_dashboard_payload_from_env()
     except Exception as exc:
@@ -103,6 +115,66 @@ def _check_shared_state() -> dict[str, object]:
         "freshness_level": payload.get("freshness_level"),
         "paper_trading_only": payload.get("paper_trading_only") is True,
     }
+
+
+def _read_remote_shared_state(url: str, *, timeout_seconds: int) -> dict[str, object]:
+    request = Request(url, headers={"Accept": "application/json", "User-Agent": "MarketPilot-Deployed-Session-Observer"})
+    try:
+        with urlopen(request, timeout=timeout_seconds) as response:
+            loaded = json.loads(response.read().decode("utf-8"))
+    except (OSError, TimeoutError, URLError, json.JSONDecodeError) as exc:
+        return {
+            "status": "failed",
+            "reason": type(exc).__name__,
+            "paper_trading_only": True,
+            "monitor_only": True,
+            "controls_scheduler": False,
+            "controls_orders": False,
+            "controls_recovery": False,
+        }
+    if not isinstance(loaded, dict):
+        return {
+            "status": "failed",
+            "reason": "remote_shared_state_payload_not_object",
+            "paper_trading_only": True,
+            "monitor_only": True,
+            "controls_scheduler": False,
+            "controls_orders": False,
+            "controls_recovery": False,
+        }
+    return _sanitize_remote_shared_state(loaded)
+
+
+def _sanitize_remote_shared_state(payload: Mapping[str, object]) -> dict[str, object]:
+    allowed_keys = {
+        "status",
+        "checked_at",
+        "source",
+        "authority",
+        "source_timestamp",
+        "age_seconds",
+        "freshness_level",
+        "reason",
+        "read_only_dashboard",
+        "paper_trading_only",
+        "monitor_only",
+        "controls_scheduler",
+        "controls_orders",
+        "controls_recovery",
+    }
+    return {key: payload.get(key) for key in sorted(allowed_keys)}
+
+
+def _remote_shared_state_ok(payload: Mapping[str, object]) -> bool:
+    return (
+        payload.get("status") in {"ok", "passed"}
+        and payload.get("monitor_only") is True
+        and payload.get("read_only_dashboard") is True
+        and payload.get("paper_trading_only") is True
+        and payload.get("controls_scheduler") is False
+        and payload.get("controls_orders") is False
+        and payload.get("controls_recovery") is False
+    )
 
 
 def _check_heartbeat(

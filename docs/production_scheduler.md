@@ -122,8 +122,8 @@ Phase 16.1 extends this with Render Key Value / Valkey shared state:
 - `dahan-marketpilot-scheduler` as the APScheduler Background Worker.
 - `dahan-marketpilot-state` as the shared Render Key Value instance.
 - `dahan-marketpilot-heartbeat-health` as a read-only JSON health web service
-  exposing only sanitized heartbeat status, timestamp, age, worker state, and
-  paper-only/monitor-only flags.
+  exposing only sanitized heartbeat status, dashboard shared-state freshness,
+  timestamps, age, worker state, and paper-only/monitor-only flags.
 
 Phase 16.1 proves the deployed dashboard is live, password-protected, reading
 shared durable production data, and independent of the local computer only when
@@ -159,6 +159,17 @@ The URL-based monitor performs only a GET request and exits nonzero when the
 sanitized heartbeat status is missing, stale, or malformed. It must never run
 the scheduler, scans, signals, QuantConnect commands, orders, Telegram sends,
 or recovery actions.
+
+Run the Phase 16.2 deployed-session observer against both read-only health URLs:
+
+```powershell
+python scripts\phase16_2_observe_deployed_session.py --heartbeat-url https://dahan-marketpilot-heartbeat-health.onrender.com/heartbeat --shared-state-url https://dahan-marketpilot-heartbeat-health.onrender.com/dashboard-state --require-heartbeat --require-shared-state --timeout-seconds 30
+```
+
+The observer performs GET checks only. It treats missing, unsafe, or stale
+shared-state evidence as `blocked_external_not_verified` and must not be used
+to trigger scans, scheduler runs, QuantConnect mutations, orders, Telegram
+sends, or recovery actions.
 
 Run a dry config check only when the required non-secret IDs are configured:
 

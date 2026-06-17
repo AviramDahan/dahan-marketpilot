@@ -76,6 +76,65 @@ def build_heartbeat_health(
     )
 
 
+def build_dashboard_state_health(
+    *,
+    now: datetime | None = None,
+    max_age_seconds: int = DEFAULT_MAX_AGE_SECONDS,
+) -> dict[str, object]:
+    """Return a sanitized monitor-only dashboard shared-state summary."""
+
+    checked_at = _aware_utc(now or datetime.now(timezone.utc))
+    try:
+        snapshot = load_dashboard_payload_from_env()
+    except Exception:
+        return _dashboard_state_payload(
+            status="error",
+            checked_at=checked_at,
+            source_timestamp=None,
+            age_seconds=None,
+            reason="shared_state_read_error",
+        )
+    if snapshot is None:
+        return _dashboard_state_payload(
+            status="missing",
+            checked_at=checked_at,
+            source_timestamp=None,
+            age_seconds=None,
+            reason="dashboard_state_missing",
+        )
+
+    payload = dict(snapshot.payload)
+    source_timestamp = _parse_timestamp(payload.get("source_timestamp"))
+    if source_timestamp is None:
+        return _dashboard_state_payload(
+            status="missing",
+            checked_at=checked_at,
+            source_timestamp=None,
+            age_seconds=None,
+            reason="source_timestamp_missing",
+            source=payload.get("source"),
+            authority=payload.get("authority"),
+            freshness_level=payload.get("freshness_level"),
+            read_only_dashboard=payload.get("read_only_dashboard") is not False,
+            paper_trading_only=payload.get("paper_trading_only") is not False,
+        )
+
+    age_seconds = max(0, int((checked_at - source_timestamp).total_seconds()))
+    status = "ok" if age_seconds <= max_age_seconds else "stale"
+    return _dashboard_state_payload(
+        status=status,
+        checked_at=checked_at,
+        source_timestamp=source_timestamp,
+        age_seconds=age_seconds,
+        reason=None if status == "ok" else "dashboard_state_stale",
+        source=payload.get("source"),
+        authority=payload.get("authority"),
+        freshness_level=payload.get("freshness_level"),
+        read_only_dashboard=payload.get("read_only_dashboard") is not False,
+        paper_trading_only=payload.get("paper_trading_only") is not False,
+    )
+
+
 def _health_payload(
     *,
     status: str,
@@ -100,6 +159,37 @@ def _health_payload(
     }
 
 
+def _dashboard_state_payload(
+    *,
+    status: str,
+    checked_at: datetime,
+    source_timestamp: datetime | None,
+    age_seconds: int | None,
+    reason: str | None,
+    source: object = None,
+    authority: object = None,
+    freshness_level: object = None,
+    read_only_dashboard: bool = True,
+    paper_trading_only: bool = True,
+) -> dict[str, object]:
+    return {
+        "status": status,
+        "checked_at": checked_at.astimezone(timezone.utc).isoformat(),
+        "source": str(source) if source not in (None, "") else None,
+        "authority": str(authority) if authority not in (None, "") else None,
+        "source_timestamp": source_timestamp.astimezone(timezone.utc).isoformat() if source_timestamp else None,
+        "age_seconds": age_seconds,
+        "freshness_level": str(freshness_level) if freshness_level not in (None, "") else None,
+        "reason": reason,
+        "read_only_dashboard": read_only_dashboard,
+        "paper_trading_only": paper_trading_only,
+        "monitor_only": True,
+        "controls_scheduler": False,
+        "controls_orders": False,
+        "controls_recovery": False,
+    }
+
+
 def _handler(max_age_seconds: int) -> type[BaseHTTPRequestHandler]:
     class HeartbeatHealthHandler(BaseHTTPRequestHandler):
         def do_GET(self) -> None:  # noqa: N802 - stdlib callback name
@@ -107,11 +197,17 @@ def _handler(max_age_seconds: int) -> type[BaseHTTPRequestHandler]:
             if path == "/":
                 self._write_json({"status": "service_ok", "paper_trading_only": True}, status_code=200)
                 return
-            if path != "/heartbeat":
+            if path == "/heartbeat":
+                payload = build_heartbeat_health(max_age_seconds=max_age_seconds)
+                self._write_json(payload, status_code=200)
+                return
+            if path == "/dashboard-state":
+                payload = build_dashboard_state_health(max_age_seconds=max_age_seconds)
+                self._write_json(payload, status_code=200)
+                return
+            else:
                 self._write_json({"status": "not_found", "paper_trading_only": True}, status_code=404)
                 return
-            payload = build_heartbeat_health(max_age_seconds=max_age_seconds)
-            self._write_json(payload, status_code=200)
 
         def log_message(self, _format: str, *_args: object) -> None:
             return
@@ -168,4 +264,4 @@ if __name__ == "__main__":
     raise SystemExit(main())
 
 
-__all__ = ["build_heartbeat_health", "main", "serve"]
+__all__ = ["build_dashboard_state_health", "build_heartbeat_health", "main", "serve"]

@@ -8,7 +8,7 @@ from marketpilot.scheduler_health import (
     event_for_scheduler_health,
     read_latest_heartbeat,
 )
-from marketpilot.heartbeat_health_server import build_heartbeat_health
+from marketpilot.heartbeat_health_server import build_dashboard_state_health, build_heartbeat_health
 from scripts.check_scheduler_heartbeat import _annotate_monitor_window, _remote_heartbeat_ok, _sanitize_remote_payload
 
 
@@ -145,3 +145,59 @@ def test_deployed_heartbeat_health_reports_shared_state_heartbeat(monkeypatch):
     assert health["paper_trading_only"] is True
     assert health["controls_scheduler"] is False
     assert health["controls_orders"] is False
+
+
+def test_deployed_dashboard_state_health_is_sanitized(monkeypatch):
+    class FakeSnapshot:
+        payload = {
+            "source": "quantconnect",
+            "authority": "authoritative",
+            "source_timestamp": "2026-06-17T18:55:00+00:00",
+            "freshness_level": "fresh",
+            "read_only_dashboard": True,
+            "paper_trading_only": True,
+            "redis_url": "redis://should-not-appear",
+            "token": "should-not-appear",
+        }
+
+    monkeypatch.setattr("marketpilot.heartbeat_health_server.load_dashboard_payload_from_env", lambda: FakeSnapshot())
+
+    health = build_dashboard_state_health(
+        now=datetime(2026, 6, 17, 18, 56, tzinfo=timezone.utc),
+        max_age_seconds=900,
+    )
+
+    assert health["status"] == "ok"
+    assert health["source"] == "quantconnect"
+    assert health["authority"] == "authoritative"
+    assert health["source_timestamp"] == "2026-06-17T18:55:00+00:00"
+    assert health["age_seconds"] == 60
+    assert health["read_only_dashboard"] is True
+    assert health["paper_trading_only"] is True
+    assert health["controls_scheduler"] is False
+    assert health["controls_orders"] is False
+    assert "redis_url" not in health
+    assert "token" not in health
+
+
+def test_deployed_dashboard_state_health_reports_stale(monkeypatch):
+    class FakeSnapshot:
+        payload = {
+            "source": "quantconnect",
+            "authority": "authoritative",
+            "source_timestamp": "2026-06-17T18:00:00+00:00",
+            "freshness_level": "stale",
+            "read_only_dashboard": True,
+            "paper_trading_only": True,
+        }
+
+    monkeypatch.setattr("marketpilot.heartbeat_health_server.load_dashboard_payload_from_env", lambda: FakeSnapshot())
+
+    health = build_dashboard_state_health(
+        now=datetime(2026, 6, 17, 18, 30, tzinfo=timezone.utc),
+        max_age_seconds=900,
+    )
+
+    assert health["status"] == "stale"
+    assert health["reason"] == "dashboard_state_stale"
+    assert health["age_seconds"] == 1800

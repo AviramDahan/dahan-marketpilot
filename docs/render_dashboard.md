@@ -39,9 +39,9 @@ mutation workflow.
 Both dashboard and scheduler receive `REDIS_URL` from the Key Value service's
 private `connectionString`. Do not paste a Redis URL into repository files.
 The heartbeat health service also receives this private connection string from
-Render and exposes only sanitized JSON at `/heartbeat`; it never returns Redis
-URLs, internal keys, credentials, QuantConnect identifiers, Telegram tokens, or
-dashboard passwords.
+Render and exposes only sanitized JSON at `/heartbeat` and `/dashboard-state`;
+it never returns Redis URLs, internal keys, credentials, QuantConnect
+identifiers, Telegram tokens, dashboard passwords, or full dashboard payloads.
 
 ## Cache And Stale Data
 
@@ -96,6 +96,10 @@ Supported Phase 16.2 monitor source:
   read-only JSON surface backed by the same shared state. It returns only
   `status`, `checked_at`, `latest_heartbeat_at`, `age_seconds`, `reason`,
   `worker_state`, and paper-only/monitor-only control flags.
+- `https://dahan-marketpilot-heartbeat-health.onrender.com/dashboard-state` -
+  a read-only JSON surface for sanitized shared-state freshness evidence. It
+  returns only source identity, authority label, source timestamp, freshness,
+  age, read-only/paper-only flags, and monitor-only control flags.
 
 The source path is configuration, not a credential. It must not contain tokens,
 passwords, account IDs, parent-directory traversal, remote URLs, deploy hooks,
