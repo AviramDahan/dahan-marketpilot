@@ -47,6 +47,11 @@ Telegram variables may be configured now, but production delivery verification b
 - `TELEGRAM_BOT_TOKEN`
 - `TELEGRAM_CHAT_ID`
 
+Phase 16.1 production shared state:
+
+- `REDIS_URL` is injected by Render from `dahan-marketpilot-state` and must not
+  be committed or pasted into repository configuration.
+
 ## Data And Locks
 
 Phase 16 uses append-only JSONL contracts:
@@ -59,6 +64,18 @@ Phase 16 uses append-only JSONL contracts:
 The lock contract includes `run_id`, `owner`, `acquired_at`, and `expires_at`. Overlapping runs are rejected before any QuantConnect or order path runs.
 
 Phase 16.1 must replace or extend the local file-backed adapter with durable shared storage suitable for both the Render worker and the Render dashboard. Until then, local JSONL files are implementation/test artifacts, not the final shared production transport.
+
+Phase 16.1 extends this with Render Key Value / Valkey shared state:
+
+- The scheduler worker writes the latest dashboard mirror to
+  `marketpilot:v1.1:dashboard:latest`.
+- The dashboard web service reads that mirror using `data_source_kind:
+  shared_state`.
+- The scheduler can use the same shared state adapter as a deployment-wide
+  lease lock, preventing overlap across Render worker restarts.
+- Activity records are appended to `marketpilot:v1.1:activity`.
+- QuantConnect remains authoritative for Paper portfolio, orders, fills, and
+  rejections; shared state is only a display/audit/system-health mirror.
 
 ## Failure Behavior
 
@@ -75,8 +92,11 @@ Phase 16.1 must replace or extend the local file-backed adapter with durable sha
 
 - `dahan-marketpilot-dashboard` as the existing Streamlit web service.
 - `dahan-marketpilot-scheduler` as the APScheduler Background Worker.
+- `dahan-marketpilot-state` as the shared Render Key Value instance.
 
-Phase 16 does not prove the deployed dashboard is live, password-protected, or reading shared durable production data. That is Phase 16.1.
+Phase 16.1 proves the deployed dashboard is live, password-protected, reading
+shared durable production data, and independent of the local computer only when
+sanitized external evidence is captured. Local tests alone are not enough.
 
 ## External Gates
 
@@ -104,3 +124,19 @@ Run a dry config check only when the required non-secret IDs are configured:
 python -m marketpilot.production_runner once --dry-run
 ```
 
+Run the Phase 16.1 production integration checks:
+
+```powershell
+python -m pytest tests/test_shared_state.py tests/test_dashboard_runtime_source.py tests/test_dashboard_render_config.py tests/test_production_runner.py tests/test_phase16_1_golive_scripts.py -q
+```
+
+Operator-run external checks:
+
+```powershell
+python scripts\verify_render_golive.py --require-dashboard-url --require-shared-state
+$env:MARKETPILOT_RUNTIME_TELEGRAM_SMOKE_ENABLED="1"
+python scripts\telegram_runtime_smoke.py
+```
+
+The Telegram smoke uses the production runtime notification dependency path.
+It is disabled unless the explicit smoke env var is set.

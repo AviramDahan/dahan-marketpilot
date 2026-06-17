@@ -186,6 +186,9 @@ def load_dashboard_snapshot(config: DashboardConfig, *, now: datetime) -> Dashbo
     if config.data_source_kind == "sync_jsonl":
         return _load_sync_jsonl_snapshot(config.data_source_path, config=config, cache_timestamp=now)
 
+    if config.data_source_kind == "shared_state":
+        return _load_shared_state_snapshot(cache_timestamp=now)
+
     return _source_error(
         code="dashboard_source_not_configured",
         message="Unsupported dashboard data source kind.",
@@ -532,6 +535,45 @@ def _load_object_store_snapshot(key: str | None, *, cache_timestamp: datetime) -
         reason="object_store_not_configured",
         status=DashboardSectionStatus.NOT_AVAILABLE,
     )
+
+
+def _load_shared_state_snapshot(*, cache_timestamp: datetime) -> DashboardSnapshot:
+    try:
+        from marketpilot.shared_state import load_dashboard_payload_from_env
+
+        snapshot = load_dashboard_payload_from_env()
+    except Exception as exc:
+        return _source_error(
+            code="shared_state_source_error",
+            message=f"Shared state source read failed: {exc}",
+            reason="shared_state_source_error",
+            status=DashboardSectionStatus.ERROR,
+        )
+    if snapshot is None:
+        return _source_error(
+            code="shared_state_no_data",
+            message="No shared production dashboard data is available yet.",
+            reason="shared_state_no_data",
+            status=DashboardSectionStatus.NOT_AVAILABLE,
+        )
+    payload = dict(snapshot.payload)
+    try:
+        dashboard_snapshot = DashboardDataClient.from_quantconnect_portfolio_fixture(
+            {
+                "fixture_label": str(payload.get("fixture_label") or "shared-state-production"),
+                "source_timestamp": payload.get("source_timestamp"),
+                "portfolio": _mapping(payload.get("portfolio")),
+            },
+            cache_timestamp=cache_timestamp,
+        )
+    except Exception as exc:
+        return _source_error(
+            code="shared_state_parse_error",
+            message=f"Shared state dashboard payload parse failed: {exc}",
+            reason="shared_state_parse_error",
+            status=DashboardSectionStatus.ERROR,
+        )
+    return dashboard_snapshot
 
 
 def _mapping(value: object) -> Mapping[str, object]:

@@ -13,21 +13,29 @@ The deployment dependency checkpoint approved `streamlit` as the official
 Streamlit runtime package. The package is declared conservatively as
 `streamlit>=1.51,<2` in `requirements.txt` and `pyproject.toml`.
 
+Phase 16.1 adds `redis>=5.0,<6` for Render Key Value / Valkey shared state.
 No additional auth package, Render CLI package, HTTP client package, database
-client, cache service client, or optional `streamlit[auth]` package was added.
+client, or optional `streamlit[auth]` package was added.
 
 ## Render Blueprint
 
-`render.yaml` defines one Python Web Service:
+`render.yaml` defines a Python Web Service, Background Worker, and shared Render
+Key Value instance:
 
 - Build command: `pip install -r requirements.txt`
 - Start command: `streamlit run dashboard/app.py --server.address=0.0.0.0 --server.port=$PORT`
 - Python version: `3.11.9`
 - Health path: `/`
+- Shared state: `dahan-marketpilot-state`, `type: keyvalue`,
+  `persistenceMode: journal-snapshot`, `maxmemoryPolicy: noeviction`,
+  `ipAllowList: []`.
 
 The start command binds Streamlit to `0.0.0.0` and the `$PORT` value provided by
 Render. This keeps the service reachable by Render without exposing any
 mutation workflow.
+
+Both dashboard and scheduler receive `REDIS_URL` from the Key Value service's
+private `connectionString`. Do not paste a Redis URL into repository files.
 
 ## Cache And Stale Data
 
@@ -37,6 +45,10 @@ appears around 10 minutes, and a strong stale/error state appears around
 timestamps and stale/error labels when last-good display cache exists, or safe
 `not_available`/`error` states when no cache exists.
 
+Streamlit auto-refresh is controlled by `gentle_poll_seconds` and uses
+Streamlit's fragment refresh helper when available. It is display-only and must
+not trigger scans, QuantConnect commands, Telegram delivery, or order logic.
+
 FX display is also display-only. USD remains the source/accounting currency.
 NIS display requires FX rate, source, timestamp, and freshness metadata; missing
 or stale FX marks NIS unavailable/stale.
@@ -44,9 +56,13 @@ or stale FX marks NIS unavailable/stale.
 ## Runtime Data Source
 
 The Render dashboard uses the same read-only runtime source loader as local
-Streamlit. By default, `config/dashboard.yaml` sets `data_source_kind: none`,
-so authenticated users see a clear `not_configured` state until a dashboard
-export source is configured.
+Streamlit. Phase 16.1 sets `config/dashboard.yaml` to
+`data_source_kind: shared_state`, which reads the latest dashboard export mirror
+from Render Key Value through `REDIS_URL`.
+
+If `REDIS_URL` is absent, or the scheduler has not written
+`dashboard:latest`, authenticated users see a clear `not_available` degraded
+state. This is intentional; the dashboard must not fabricate data.
 
 Supported Phase 9 runtime source:
 
@@ -60,6 +76,13 @@ Supported Phase 10.1 runtime source:
   External QuantConnect Object Store execution remains `not_run` unless
   operator-configured credentials exist outside repository files. Local/offline
   tests use `FakeObjectStoreWriter` and deterministic fixtures.
+
+Supported Phase 16.1 production source:
+
+- `shared_state` - a read-only Render Key Value mirror written by the scheduler
+  worker and read by the dashboard web service. QuantConnect remains
+  authoritative; shared state is for display, activity, and system-health
+  visibility only.
 
 The source path is configuration, not a credential. It must not contain tokens,
 passwords, account IDs, parent-directory traversal, remote URLs, deploy hooks,
@@ -82,6 +105,9 @@ real values only in Render or another approved external secret store:
 The Render Blueprint marks secret-bearing values with `sync: false`, so the
 repository names the required variables without committing their values.
 
+`REDIS_URL` is not a manually entered secret. Render injects it from
+`dahan-marketpilot-state` using `fromService.property: connectionString`.
+
 Non-secret runtime variables:
 
 - `PYTHON_VERSION=3.11.9`
@@ -98,6 +124,15 @@ python -m pytest tests/test_dashboard_render_config.py tests/test_dashboard_auth
 
 These tests are static and offline. They do not contact Render, QuantConnect,
 Telegram, brokers, market data providers, or the internet.
+
+After deployment, run read-only go-live checks from a configured environment:
+
+```powershell
+python scripts\verify_render_golive.py --require-dashboard-url --require-shared-state
+```
+
+This script does not mutate QuantConnect, Render, Telegram, dashboard data, or
+orders. Missing external evidence is reported as blocked/not-run, not passed.
 
 ## Dashboard Health Workflow
 

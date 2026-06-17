@@ -4,7 +4,11 @@ from decimal import Decimal
 from marketpilot.backtesting import BacktestRunStatus
 from marketpilot.notification_events import FakeNotificationCollector
 from marketpilot.paper_modes import PaperTradingMode
-from marketpilot.production_runner import ProductionRunnerDependencies, run_production_cycle
+from marketpilot.production_runner import (
+    ProductionRunnerDependencies,
+    build_production_dependencies_from_env,
+    run_production_cycle,
+)
 from marketpilot.quantconnect_paper import (
     QuantConnectAlgorithmStatus,
     QuantConnectDeploymentStatus,
@@ -186,3 +190,10 @@ def test_production_cycle_prevents_overlapping_runs(tmp_path):
     assert result.status == "skipped_overlap"
     assert result.job_results[0].details["locked_run_id"] == "existing-run"
 
+
+def test_production_dependencies_from_env_are_empty_without_external_secrets():
+    deps = build_production_dependencies_from_env(env={})
+
+    assert deps.dashboard_export_sink is None
+    assert deps.notification_sink is None
+    assert deps.lock_store is None

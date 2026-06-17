@@ -33,7 +33,7 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 - [x] **Phase 14: Data Sync & Dashboard Integration** â€” Reliable portfolio sync from QC with freshness-aware dashboard display (completed 2026-06-16)
 - [ ] **Phase 15: Paper Trading & Order Flow** â€” Signal delivery to live algorithm with full fill tracking and audit trail
 - [x] **Phase 16: Production Scheduler** â€” Autonomous market-hours pipeline execution with fault tolerance (local implementation complete 2026-06-17; deployed product gates remain Phase 16.1/16.2)
-- [ ] **Phase 16.1: Production Integration & Dashboard Go-Live** â€” Deployed personal autonomous Paper Trading product with dashboard, worker, durable data transport, Telegram, and secrets configured
+- [x] **Phase 16.1: Production Integration & Dashboard Go-Live** â€” Local implementation for deployed personal autonomous Paper Trading product is complete; external deployment evidence remains pending
 - [ ] **Phase 16.2: End-to-End UAT & Operational Burn-in** â€” Multi-session deployed-system proof under real QuantConnect Paper Trading conditions
 - [ ] **Phase 17: MTF Backtest Validation** â€” Automated comparative backtesting with regression detection
 
@@ -197,22 +197,22 @@ Plans:
 7. Production secrets are configured securely in Render/QuantConnect/Telegram environments and are never committed.
 8. The system continues operating while the local computer is off.
 
-**Plans**: 6 plans planned across 4 execution waves. Execution has not started.
+**Plans**: 6/6 plans complete across 4 execution waves. Local implementation and regression passed; deployed go-live evidence remains pending.
 
 **Execution Waves:**
 
 - Wave 1:
-  - [ ] 16.1-01-PLAN.md - Shared Render Key Value production state store
-  - [ ] 16.1-02-PLAN.md - Production runner wiring for shared state, durable lock, dashboard export, and Telegram
+  - [x] 16.1-01-PLAN.md - Shared Render Key Value production state store
+  - [x] 16.1-02-PLAN.md - Production runner wiring for shared state, durable lock, dashboard export, and Telegram
 - Wave 2:
-  - [ ] 16.1-03-PLAN.md - Dashboard production data source and controlled auto-refresh
-  - [ ] 16.1-04-PLAN.md - Render Blueprint, secrets, deployment docs, and operator runbook
+  - [x] 16.1-03-PLAN.md - Dashboard production data source and controlled auto-refresh
+  - [x] 16.1-04-PLAN.md - Render Blueprint, secrets, deployment docs, and operator runbook
 - Wave 3:
-  - [ ] 16.1-05-PLAN.md - External go-live verification scripts
+  - [x] 16.1-05-PLAN.md - External go-live verification scripts
 - Wave 4:
-  - [ ] 16.1-06-PLAN.md - Go-live evidence, UAT, verification, and residual gate closeout
+  - [x] 16.1-06-PLAN.md - Go-live evidence, UAT, verification, and residual gate closeout
 
-**Completion Gate:** Phase 16.1 cannot be marked complete from local tests alone. It requires sanitized deployed evidence for dashboard URL/auth, worker heartbeat, shared production data, Telegram runtime delivery, and local-computer independence.
+**Residual External Gate:** Phase 16.1 code/planning is complete, but production readiness is not externally complete until sanitized deployed evidence exists for dashboard URL/auth, worker heartbeat, shared production data, Telegram runtime delivery, and local-computer independence.
 
 ---
 

@@ -28,5 +28,5 @@ dashboard:
   stale_error_seconds: 1800
   gentle_poll_seconds: 120
   fx_stale_seconds: 86400
-  data_source_kind: none
+  data_source_kind: shared_state
   data_source_path:

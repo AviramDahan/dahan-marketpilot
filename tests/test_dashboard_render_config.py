@@ -71,6 +71,26 @@ def test_render_blueprint_defines_scheduler_background_worker():
         assert "value" not in env_vars[name]
 
 
+def test_render_blueprint_defines_shared_key_value_and_injects_redis_url():
+    keyvalue = _service_by_name("dahan-marketpilot-state")
+    dashboard_env = {item["key"]: item for item in _service_by_name("dahan-marketpilot-dashboard")["envVars"]}
+    worker_env = {item["key"]: item for item in _service_by_name("dahan-marketpilot-scheduler")["envVars"]}
+
+    assert keyvalue["type"] == "keyvalue"
+    assert keyvalue["persistenceMode"] == "journal-snapshot"
+    assert keyvalue["maxmemoryPolicy"] == "noeviction"
+    assert keyvalue["ipAllowList"] == []
+
+    for env_vars in (dashboard_env, worker_env):
+        redis_url = env_vars["REDIS_URL"]
+        assert redis_url["fromService"] == {
+            "name": "dahan-marketpilot-state",
+            "type": "keyvalue",
+            "property": "connectionString",
+        }
+        assert "value" not in redis_url
+
+
 def test_runtime_dependencies_are_limited_to_approved_packages():
     requirements = (ROOT / "requirements.txt").read_text(encoding="utf-8")
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
@@ -78,6 +98,8 @@ def test_runtime_dependencies_are_limited_to_approved_packages():
     assert "APScheduler>=3.10,<4" in requirements
     assert '"APScheduler>=3.10,<4"' in pyproject
     assert "PyYAML>=6.0.2" in requirements
+    assert "redis>=5.0,<6" in requirements
+    assert '"redis>=5.0,<6"' in pyproject
     assert "streamlit>=1.51,<2" in requirements
     assert "streamlit>=1.51,<2" in pyproject
     assert "Authlib" not in pyproject

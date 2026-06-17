@@ -12,6 +12,7 @@ license = { text = "MIT" }
 dependencies = [
   "APScheduler>=3.10,<4",
   "PyYAML>=6.0.2",
+  "redis>=5.0,<6",
   "streamlit>=1.51,<2",
   "tenacity>=9.0.0",
 ]

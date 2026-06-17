@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Phase 16.1 planned; Phase 15 order authority pending next market window
-stopped_at: Phase 16.1 planned across 6 plans and 4 waves; execution not started
-last_updated: "2026-06-17T03:05:00.0000000+03:00"
+status: Phase 16.1 local implementation complete; external deployment evidence and Phase 15 order authority pending
+stopped_at: Phase 16.1 executed across 6 plans and 4 waves; next eligible work is Render deployment evidence or Phase 15 order-authority follow-up during market window
+last_updated: "2026-06-17T10:39:00.0000000+03:00"
 last_activity: 2026-06-17
 progress:
   total_phases: 7
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 30
-  completed_plans: 17
-  percent: 71
+  completed_plans: 23
+  percent: 77
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-15)
 
 **Core value:** The system must provide an auditable paper-only swing-trading workflow where every signal, backtest, paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
-**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 16.1 production go-live is planned but not executed. Phase 15 is still waiting for the next valid US market-hours or next-open `/live/orders/read` order/fill/rejection verification. Phase 16.2 burn-in is not started.
+**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 16.1 local implementation is complete, but deployed external evidence is still pending. Phase 15 is still waiting for the next valid US market-hours or next-open `/live/orders/read` order/fill/rejection verification. Phase 16.2 burn-in is not started.
 
 ## Current Position
 
-Phase: 16.1 planned / Phase 15 external gate pending
-Plan: 16.1-01 through 16.1-06 planned; next Phase 15 action is order-authority verification during market window
-Status: Phase 16.1 planned; Phase 15 order authority pending next market window
+Phase: 16.1 local implementation complete / Phase 15 external gate pending
+Plan: 16.1-01 through 16.1-06 complete; next eligible work is Render deployment evidence or Phase 15 order-authority verification during market window
+Status: Phase 16.1 local implementation complete; external deployment evidence and Phase 15 order authority pending
 Last activity: 2026-06-17
 
-Progress: [███████░░░] 71%
+Progress: [████████░░] 77%
 
 ## Performance Metrics
 
@@ -57,11 +57,12 @@ Progress: [███████░░░] 71%
 | 10 | 4/4 | 45 min | 11 min |
 | 10.1 | 5/5 | - | - |
 | 16 | 5/5 | - | - |
+| 16.1 | 6/6 | - | - |
 
 **Recent Trend:**
 
-- Last 5 plans: 16-01, 16-02, 16-03, 16-04, 16-05
-- Trend: Phase 16 local scheduler implementation complete; Phase 15 external order authority remains pending
+- Last 5 plans: 16.1-02, 16.1-03, 16.1-04, 16.1-05, 16.1-06
+- Trend: Phase 16.1 local implementation complete; deployed evidence and Phase 15 external order authority remain pending
 
 *Updated after each plan completion*
 | Phase 04 P01 | 6 min | 2 tasks | 4 files |

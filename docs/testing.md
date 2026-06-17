@@ -409,3 +409,45 @@ signals, QuantConnect commands, or order code.
 Phase 16 does not close the Phase 15 `/live/orders/read` authority gate.
 Authoritative external order/fill/rejection verification still requires a
 valid US market-hours or next-open observation window.
+
+## Phase 16.1 Production Integration Tests
+
+Phase 16.1 tests are deterministic and offline unless explicitly labeled as
+operator-run external go-live checks. Run:
+
+```powershell
+python -m pytest tests/test_shared_state.py tests/test_dashboard_runtime_source.py tests/test_dashboard_app_rendering.py tests/test_dashboard_render_config.py tests/test_production_runner.py tests/test_phase16_1_golive_scripts.py -q
+```
+
+Current Phase 16.1 suites:
+
+- `tests/test_shared_state.py`
+- `tests/test_dashboard_runtime_source.py`
+- `tests/test_dashboard_app_rendering.py`
+- `tests/test_dashboard_render_config.py`
+- `tests/test_production_runner.py`
+- `tests/test_phase16_1_golive_scripts.py`
+
+These tests cover:
+
+- Render Key Value / Valkey shared state contracts.
+- Shared dashboard export mirror and activity records.
+- Deployment-wide scheduler lease locking through shared state.
+- Dashboard `shared_state` production source and degraded states.
+- Controlled Streamlit auto-refresh.
+- Render Blueprint Key Value wiring and `REDIS_URL` injection.
+- Go-live verification scripts that report missing external evidence as
+  blocked/not-run instead of passed.
+
+Operator-run external Phase 16.1 checks require Render and Telegram environment
+variables outside the repository:
+
+```powershell
+python scripts\verify_render_golive.py --require-dashboard-url --require-shared-state
+$env:MARKETPILOT_RUNTIME_TELEGRAM_SMOKE_ENABLED="1"
+python scripts\telegram_runtime_smoke.py
+```
+
+Phase 16.1 is not complete until deployed Render web/worker evidence,
+password-protected dashboard access, shared production data, Telegram runtime
+delivery, and local-computer independence are externally verified and recorded.

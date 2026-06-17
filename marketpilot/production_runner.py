@@ -36,7 +36,9 @@ from marketpilot.scheduler_jobs import (
 )
 from marketpilot.scheduler_lock import FileLockStore, SchedulerLockLease
 from marketpilot.scheduler_storage import JsonlSchedulerStorage, build_run_id
+from marketpilot.shared_state import RenderKeyValueStore
 from marketpilot.sync import SyncResult, read_last_sync_record, sync_portfolio
+from marketpilot.telegram import TelegramDeliveryService, load_telegram_config
 
 
 _logger = logging.getLogger("marketpilot.production_runner")
@@ -49,6 +51,14 @@ class DashboardExportSink(Protocol):
 
 class NotificationSink(Protocol):
     def emit(self, event: NotificationDomainEvent) -> bool:
+        ...
+
+
+class SchedulerLockStore(Protocol):
+    def acquire(self, *, run_id: str, owner: str, now: datetime, ttl_seconds: int) -> object:
+        ...
+
+    def release(self, *, lease: SchedulerLockLease) -> bool:
         ...
 
 
@@ -67,6 +77,7 @@ class ProductionRunnerDependencies:
     poll_orders_func: PollOrdersCallable = poll_quantconnect_order_updates
     dashboard_export_sink: DashboardExportSink | None = None
     notification_sink: NotificationSink | None = None
+    lock_store: SchedulerLockStore | None = None
 
 
 @dataclass(frozen=True)
@@ -122,7 +133,7 @@ def run_production_cycle(
     run_id = build_run_id(scheduled_at)
     correlation_id = run_id
     storage = JsonlSchedulerStorage(config.scheduler_ledger_path)
-    lock_store = FileLockStore(config.lock_path)
+    lock_store = deps.lock_store or FileLockStore(config.lock_path)
     lock_owner = owner or _default_owner()
 
     acquire = lock_store.acquire(
@@ -514,7 +525,7 @@ def run_scheduler_forever(config: SchedulerConfig | None = None) -> None:
     scheduler = BlockingScheduler(timezone=resolved.timezone_name)
     trigger = CronTrigger(**build_apscheduler_cron_kwargs(resolved))
     scheduler.add_job(
-        lambda: run_production_cycle(resolved),
+        lambda: run_production_cycle(resolved, dependencies=build_production_dependencies_from_env()),
         trigger=trigger,
         id="marketpilot-production-cycle",
         max_instances=1,
@@ -523,6 +534,32 @@ def run_scheduler_forever(config: SchedulerConfig | None = None) -> None:
     )
     _logger.info("Starting MarketPilot scheduler worker")
     scheduler.start()
+
+
+def build_production_dependencies_from_env(
+    *,
+    env: Mapping[str, str] | None = None,
+) -> ProductionRunnerDependencies:
+    """Build optional production integrations from environment-only secrets."""
+
+    source = env if env is not None else os.environ
+    shared_store = None
+    if str(source.get("REDIS_URL") or "").strip():
+        shared_store = RenderKeyValueStore.from_env(env=source)
+
+    notification_sink = None
+    try:
+        telegram_config = load_telegram_config(env=source)
+    except (FileNotFoundError, ValueError):
+        telegram_config = None
+    if telegram_config is not None and telegram_config.can_deliver:
+        notification_sink = _TelegramNotificationSink(TelegramDeliveryService(telegram_config))
+
+    return ProductionRunnerDependencies(
+        dashboard_export_sink=shared_store,
+        notification_sink=notification_sink,
+        lock_store=shared_store,
+    )
 
 
 def _run_status(jobs: Iterable[SchedulerJobResult]) -> str:
@@ -571,6 +608,14 @@ def _release_lock(lock_store: FileLockStore, lease: SchedulerLockLease | None) -
         _logger.warning("Failed to release scheduler lock for run %s", lease.run_id)
 
 
+@dataclass(frozen=True)
+class _TelegramNotificationSink:
+    service: TelegramDeliveryService
+
+    def emit(self, event: NotificationDomainEvent) -> bool:
+        return self.service.deliver(event).delivered
+
+
 def _aware_utc(value: datetime, field_name: str) -> datetime:
     if value.tzinfo is None or value.utcoffset() is None:
         raise ValueError(f"{field_name} must be timezone-aware")
@@ -590,7 +635,7 @@ def _main(argv: list[str] | None = None) -> int:
     if args.command == "scheduler":
         run_scheduler_forever(config)
         return 0
-    result = run_production_cycle(config)
+    result = run_production_cycle(config, dependencies=build_production_dependencies_from_env())
     print(json.dumps(result.to_json_dict(), sort_keys=True))
     return 0 if result.status != "failed" else 2
 
@@ -607,4 +652,3 @@ __all__ = [
     "run_production_cycle",
     "run_scheduler_forever",
 ]
-

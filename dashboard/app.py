@@ -9,6 +9,22 @@ from dashboard.config import load_dashboard_config
 from dashboard.safety_view import build_dashboard_shell
 
 
+def maybe_enable_auto_refresh(st: object, *, seconds: int) -> None:
+    """Enable controlled dashboard refresh when Streamlit exposes the helper."""
+
+    if seconds <= 0:
+        return
+    fragment = getattr(st, "fragment", None)
+    if fragment is None:
+        return
+
+    @fragment(run_every=f"{seconds}s")
+    def _refresh_tick() -> None:
+        st.caption("Auto-refresh active")
+
+    _refresh_tick()
+
+
 def render_page_view(st: object, view: object) -> None:
     """Render a typed page view while preserving read-only display semantics."""
 
@@ -64,6 +80,7 @@ def main() -> None:
     if not shell.data_visible:
         return
 
+    maybe_enable_auto_refresh(st, seconds=config.gentle_poll_seconds)
     snapshot = load_dashboard_snapshot(config, now=datetime.now(timezone.utc))
     selected = st.tabs([page.title for page in PAGE_REGISTRY])
     for tab, page in zip(selected, PAGE_REGISTRY):

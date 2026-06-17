@@ -1,4 +1,10 @@
 services:
+  - type: keyvalue
+    name: dahan-marketpilot-state
+    plan: starter
+    maxmemoryPolicy: noeviction
+    persistenceMode: journal-snapshot
+    ipAllowList: []
   - type: web
     name: dahan-marketpilot-dashboard
     runtime: python
@@ -13,6 +19,11 @@ services:
         value: paper
       - key: MARKETPILOT_CONFIG_DIR
         value: config
+      - key: REDIS_URL
+        fromService:
+          name: dahan-marketpilot-state
+          type: keyvalue
+          property: connectionString
       - key: DASHBOARD_PASSWORD
         sync: false
       - key: QUANTCONNECT_USER_ID
@@ -46,6 +57,11 @@ services:
         value: "600"
       - key: MARKETPILOT_SCHEDULER_LOCK_TTL_SECONDS
         value: "900"
+      - key: REDIS_URL
+        fromService:
+          name: dahan-marketpilot-state
+          type: keyvalue
+          property: connectionString
       - key: QUANTCONNECT_USER_ID
         sync: false
       - key: QUANTCONNECT_API_TOKEN

@@ -58,15 +58,15 @@ def _sync_record(source_timestamp: datetime) -> dict[str, object]:
     }
 
 
-def test_default_runtime_source_is_explicit_not_configured():
+def test_default_runtime_source_is_shared_state_and_degrades_before_worker_writes():
     config = load_dashboard_config(ROOT / "config" / "dashboard.yaml", env={})
 
     snapshot = load_dashboard_snapshot(config, now=NOW)
 
-    assert config.data_source_kind == "none"
+    assert config.data_source_kind == "shared_state"
     assert config.data_source_path is None
-    assert snapshot.portfolio.status is DashboardSectionStatus.NOT_CONFIGURED
-    assert snapshot.source_metadata.reasons == ("dashboard_data_source",)
+    assert snapshot.portfolio.status is DashboardSectionStatus.NOT_AVAILABLE
+    assert snapshot.source_metadata.reasons == ("shared_state_no_data",)
 
 
 def test_configured_local_json_source_loads_typed_dashboard_snapshot(tmp_path):
@@ -190,6 +190,25 @@ def test_sync_jsonl_reads_last_line_and_loads_authoritative_portfolio(tmp_path):
     assert snapshot.source_metadata.freshness_status is DashboardFreshnessStatus.FRESH
     assert snapshot.portfolio.status is DashboardSectionStatus.AVAILABLE
     assert snapshot.portfolio.holdings[0].symbol == "AAPL"
+
+
+def test_shared_state_source_loads_latest_dashboard_payload(monkeypatch):
+    class FakeSharedSnapshot:
+        def __init__(self, payload):
+            self.payload = payload
+
+    def fake_loader():
+        return FakeSharedSnapshot(_portfolio_payload())
+
+    monkeypatch.setattr("marketpilot.shared_state.load_dashboard_payload_from_env", fake_loader)
+    config = DashboardConfig(data_source_kind="shared_state")
+
+    snapshot = load_dashboard_snapshot(config, now=NOW)
+
+    assert snapshot.source_metadata.source == "quantconnect"
+    assert snapshot.source_metadata.authority is DashboardAuthority.AUTHORITATIVE
+    assert snapshot.source_metadata.fixture_label == "runtime-export-fixture"
+    assert snapshot.portfolio.status is DashboardSectionStatus.AVAILABLE
 
 
 @pytest.mark.parametrize(

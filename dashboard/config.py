@@ -160,11 +160,15 @@ def _reject_raw_password_fields(raw: Mapping[str, object]) -> None:
 
 
 def _validate_data_source(kind: str, path: str | None) -> None:
-    if kind not in {"none", "local_json", "object_store", "sync_jsonl"}:
-        raise ValueError("dashboard.data_source_kind must be none, local_json, object_store, or sync_jsonl.")
+    if kind not in {"none", "local_json", "object_store", "sync_jsonl", "shared_state"}:
+        raise ValueError("dashboard.data_source_kind must be none, local_json, object_store, sync_jsonl, or shared_state.")
     if kind == "none":
         if path is not None:
             raise ValueError("dashboard.data_source_path must be empty when data_source_kind is none.")
+        return
+    if kind == "shared_state":
+        if path is not None:
+            raise ValueError("dashboard.data_source_path must be empty when data_source_kind is shared_state.")
         return
     if kind == "object_store":
         if not path:
