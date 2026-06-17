@@ -198,7 +198,9 @@ Plans:
 7. Production secrets are configured securely in Render/QuantConnect/Telegram environments and are never committed.
 8. The system continues operating while the local computer is off.
 
-**Plans**: 6/6 plans complete across 4 execution waves. Local implementation and regression passed; deployed go-live evidence remains pending.
+**Plans**: 6/6 plans complete across 4 execution waves. Local implementation,
+regression, Render deployment, password-authenticated dashboard data, shared
+state, and Telegram runtime delivery are verified.
 
 **Execution Waves:**
 
@@ -213,7 +215,9 @@ Plans:
 - Wave 4:
   - [x] 16.1-06-PLAN.md - Go-live evidence, UAT, verification, and residual gate closeout
 
-**Residual External Gate:** Phase 16.1 code/planning is complete, but production readiness is not externally complete until sanitized deployed evidence exists for dashboard URL/auth, worker heartbeat, shared production data, Telegram runtime delivery, and local-computer independence.
+**Residual External Gate:** None for Phase 16.1. Multi-session operational
+burn-in, restart recovery, missed-run monitoring, and complete signal -> order
+-> fill -> dashboard -> Telegram proof move to Phase 16.2.
 
 ---
 
@@ -297,18 +301,18 @@ Plans:
 | SCHED-05 | 16 | Complete |
 | SCHED-06 | 16 | Complete |
 | SAFE-03 | 16 | Complete |
-| PROD-01 | 16.1 | Pending |
-| PROD-02 | 16.1 | Pending |
-| PROD-03 | 16.1 | Pending |
-| PROD-04 | 16.1 | Pending |
-| PROD-05 | 16.1 | Pending |
-| PROD-06 | 16.1 | Pending |
-| PROD-07 | 16.1 | Pending |
-| PROD-08 | 16.1 | Pending |
-| PROD-09 | 16.1 | Pending |
-| PROD-10 | 16.1 | Pending |
-| SAFE-06 | 16.1 | Pending |
-| SAFE-07 | 16.1 | Pending |
+| PROD-01 | 16.1 | Complete |
+| PROD-02 | 16.1 | Complete |
+| PROD-03 | 16.1 | Complete |
+| PROD-04 | 16.1 | Complete |
+| PROD-05 | 16.1 | Complete |
+| PROD-06 | 16.1 | Complete |
+| PROD-07 | 16.1 | Complete |
+| PROD-08 | 16.1 | Complete |
+| PROD-09 | 16.1 | Complete |
+| PROD-10 | 16.1 | Complete |
+| SAFE-06 | 16.1 | Complete |
+| SAFE-07 | 16.1 | Complete |
 | UAT-01 | 16.2 | Pending |
 | UAT-02 | 16.2 | Pending |
 | UAT-03 | 16.2 | Pending |
