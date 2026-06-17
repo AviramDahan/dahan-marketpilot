@@ -64,7 +64,8 @@ def build_report(phase_dir: Path) -> dict[str, object]:
     uat_path = phase_dir / "16.2-UAT.md"
     ledger_path = phase_dir / "16.2-BURN-IN-LEDGER.md"
     readiness_path = phase_dir / "16.2-OPERATIONAL-READINESS.md"
-    files = [uat_path, ledger_path, readiness_path]
+    verification_path = phase_dir / "16.2-VERIFICATION.md"
+    files = [uat_path, ledger_path, readiness_path, verification_path]
     secret_hits = _secret_hits(files)
     rows = parse_uat_rows(uat_path) if uat_path.exists() else ()
     row_map = {row.item: row for row in rows}
@@ -143,4 +144,3 @@ def _secret_hits(paths: list[Path]) -> list[dict[str, object]]:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

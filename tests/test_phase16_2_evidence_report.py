@@ -76,3 +76,23 @@ def test_report_fails_when_secret_like_value_is_recorded(tmp_path, capsys):
     assert output["status"] == "failed"
     assert output["secret_scan"]["status"] == "failed"
 
+
+def test_report_scans_verification_file_for_secrets(tmp_path, capsys):
+    rows = "\n".join(
+        f"| {item} | passed | external | Sanitized evidence | Complete |"
+        for item in phase16_2_evidence_report.REQUIRED_ITEMS
+    )
+    (tmp_path / "16.2-UAT.md").write_text(
+        f"| Item | Status | Provider | Evidence | Next Action |\n|---|---|---|---|---|\n{rows}\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "16.2-BURN-IN-LEDGER.md").write_text("# Ledger\n", encoding="utf-8")
+    (tmp_path / "16.2-OPERATIONAL-READINESS.md").write_text("# Report\n", encoding="utf-8")
+    (tmp_path / "16.2-VERIFICATION.md").write_text("api_token=abcdef1234567890\n", encoding="utf-8")
+
+    result = phase16_2_evidence_report.main(["--phase-dir", str(tmp_path)])
+
+    output = json.loads(capsys.readouterr().out)
+    assert result == 2
+    assert output["status"] == "failed"
+    assert output["secret_scan"]["hits"][0]["path"].endswith("16.2-VERIFICATION.md")
