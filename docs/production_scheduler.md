@@ -41,11 +41,16 @@ Operational scheduler values:
 - `MARKETPILOT_SCHEDULER_CADENCE_MINUTES=5`
 - `MARKETPILOT_SCHEDULER_STALE_AFTER_SECONDS=600`
 - `MARKETPILOT_SCHEDULER_LOCK_TTL_SECONDS=900`
+- `MARKETPILOT_TELEGRAM_ENABLED=1`
 
 Telegram variables may be configured now, but production delivery verification belongs to Phase 16.1:
 
 - `TELEGRAM_BOT_TOKEN`
 - `TELEGRAM_CHAT_ID`
+
+`MARKETPILOT_TELEGRAM_ENABLED=1` is the production-only opt-in that lets the
+runtime build a real Telegram notification sink while keeping
+`config/notifications.yaml` disabled by default for repository safety.
 
 Phase 16.1 production shared state:
 
@@ -139,4 +144,6 @@ python scripts\telegram_runtime_smoke.py
 ```
 
 The Telegram smoke uses the production runtime notification dependency path.
-It is disabled unless the explicit smoke env var is set.
+It is disabled unless the explicit smoke env var is set, and it can deliver
+only when `MARKETPILOT_TELEGRAM_ENABLED=1`, `TELEGRAM_BOT_TOKEN`, and
+`TELEGRAM_CHAT_ID` are present in the environment.

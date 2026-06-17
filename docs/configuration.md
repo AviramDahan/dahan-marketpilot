@@ -218,6 +218,12 @@ may name `token_env_var` and `chat_id_env_var`. It must never contain bot token
 or chat target values. Those values come only from approved external secret
 stores or environment variables outside repository files.
 
+Production runtime Telegram delivery remains disabled unless the external
+environment explicitly sets `MARKETPILOT_TELEGRAM_ENABLED=1` alongside
+`TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`. This keeps repository defaults
+safe while allowing the Render Background Worker to deliver real operational
+notifications.
+
 ## Dashboard Configuration
 
 `config/dashboard.yaml` defines Render dashboard invariants only. It must keep:
@@ -254,3 +260,4 @@ and must be filled in Render or another approved external secret store:
 - `QUANTCONNECT_LIVE_DEPLOY_ID`
 - `TELEGRAM_BOT_TOKEN`
 - `TELEGRAM_CHAT_ID`
+- `MARKETPILOT_TELEGRAM_ENABLED`

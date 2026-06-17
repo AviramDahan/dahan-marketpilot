@@ -101,6 +101,7 @@ real values only in Render or another approved external secret store:
 - `QUANTCONNECT_LIVE_DEPLOY_ID`
 - `TELEGRAM_BOT_TOKEN`
 - `TELEGRAM_CHAT_ID`
+- `MARKETPILOT_TELEGRAM_ENABLED`
 
 The Render Blueprint marks secret-bearing values with `sync: false`, so the
 repository names the required variables without committing their values.
@@ -114,6 +115,11 @@ Non-secret runtime variables:
 - `PYTHONPATH=.`
 - `MARKETPILOT_ENV=paper`
 - `MARKETPILOT_CONFIG_DIR=config`
+- `MARKETPILOT_TELEGRAM_ENABLED=1`
+
+`MARKETPILOT_TELEGRAM_ENABLED=1` is non-secret. It is required in the Render
+runtime to activate Telegram delivery after the token and chat ID are stored as
+external secrets.
 
 ## Deployment Evidence
 

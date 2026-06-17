@@ -23,6 +23,7 @@ from marketpilot.notification_events import (
 DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[1] / "config" / "notifications.yaml"
 DEFAULT_TOKEN_ENV_VAR = "TELEGRAM_BOT_TOKEN"
 DEFAULT_CHAT_ID_ENV_VAR = "TELEGRAM_CHAT_ID"
+DEFAULT_ENABLED_ENV_VAR = "MARKETPILOT_TELEGRAM_ENABLED"
 
 _SECRET_HINTS = ("secret", "token", "password", "credential", "api_key", "chat_id")
 _ALLOWED_SECRET_REFERENCE_SUFFIXES = ("_env_var", "_secret_ref", "_secret_name")
@@ -290,7 +291,7 @@ def load_telegram_config(
 
     return TelegramConfig(
         paper_trading_only=True,
-        telegram_enabled=raw.get("telegram_enabled") is True,
+        telegram_enabled=(raw.get("telegram_enabled") is True) or _env_flag_enabled(secret_source, DEFAULT_ENABLED_ENV_VAR),
         delivery_required_for_safety=False,
         token_env_var=token_env_var,
         chat_id_env_var=chat_id_env_var,
@@ -335,6 +336,10 @@ def _blank_to_none(value: object) -> str | None:
         return None
     text = str(value).strip()
     return text or None
+
+
+def _env_flag_enabled(source: Mapping[str, str], name: str) -> bool:
+    return str(source.get(name) or "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def _post_json(*, url: str, payload: Mapping[str, object], timeout_seconds: int) -> Mapping[str, object]:

@@ -29,6 +29,7 @@ from marketpilot.telegram import (
     TelegramDeliveryService,
     TelegramDeliveryStatus,
     format_telegram_message,
+    load_telegram_config,
 )
 
 
@@ -174,3 +175,24 @@ def test_formatted_messages_include_paper_warning_and_remove_unsafe_content():
     assert "must-not-render" not in text
     assert "guaranteed profit" not in text.lower()
     assert "[removed unsafe claim]" in text
+
+
+def test_env_flag_enables_telegram_without_changing_safe_config_default():
+    default_config = load_telegram_config(
+        env={
+            "TELEGRAM_BOT_TOKEN": "fake-token-from-external-store",
+            "TELEGRAM_CHAT_ID": "-100123",
+        }
+    )
+    enabled_config = load_telegram_config(
+        env={
+            "MARKETPILOT_TELEGRAM_ENABLED": "1",
+            "TELEGRAM_BOT_TOKEN": "fake-token-from-external-store",
+            "TELEGRAM_CHAT_ID": "-100123",
+        }
+    )
+
+    assert default_config.telegram_enabled is False
+    assert default_config.can_deliver is False
+    assert enabled_config.telegram_enabled is True
+    assert enabled_config.can_deliver is True
