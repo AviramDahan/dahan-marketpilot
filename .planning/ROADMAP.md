@@ -241,7 +241,7 @@ burn-in, restart recovery, missed-run monitoring, and complete signal -> order
 **Plans**:
 
 - Wave 1:
-  - [ ] 16.2-01-PLAN.md - Burn-in evidence ledger and reporting scaffold
+  - [x] 16.2-01-PLAN.md - Burn-in evidence ledger and reporting scaffold
 - Wave 2 *(blocked on Wave 1 completion)*:
   - [ ] 16.2-02-PLAN.md - Deployed session observation
   - [ ] 16.2-03-PLAN.md - Authoritative end-to-end Paper flow trace
