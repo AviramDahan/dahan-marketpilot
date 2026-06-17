@@ -192,3 +192,17 @@ and Object Store writes are externally verified:
 - As of Phase 15-11, Object Store fallback smokes stop temporary Paper
   deployments by default after polling. Use `--keep-running` only for an
   explicit operator-approved next-open or market-hours observation window.
+- As of Phase 15-12, the Object Store smoke filters `/live/orders/read` by the
+  exact expected order tag for the current signal so stale MarketPilot orders
+  from older deployments cannot create false-positive authority. `lean/main.py`
+  also defers an accepted Object Store signal when the target symbol has no
+  tradeable price yet, keeping the signal unprocessed so the next scheduled poll
+  can retry after market data arrives.
+- A credentialed market-hours smoke on 2026-06-17 compiled and deployed
+  successfully, observed Object Store receipt and acceptance, and QuantConnect
+  live logs showed both `Submitted` and `Filled` order events for SPY quantity
+  1 at fill price `$751.31`. However, `/live/orders/read` for the current
+  deployment did not return an order with the exact current tag; it returned
+  only an older tagged order from deployment `L-103091222fcd6eee4aae06e1de635e38`.
+  Therefore live-log fill evidence is stronger than before, but the
+  `/live/orders/read` authority gate remains open.

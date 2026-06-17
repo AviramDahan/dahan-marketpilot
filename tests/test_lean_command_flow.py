@@ -406,6 +406,37 @@ def test_object_store_signal_poll_accepts_fresh_payload_through_shared_validatio
     assert len(algorithm.market_orders) == 1
 
 
+def test_object_store_signal_waits_for_tradeable_price_before_processing(monkeypatch):
+    algorithm = _algorithm(monkeypatch)
+    key = "123/marketpilot/signals/wait-for-price.json"
+    algorithm.marketpilot_object_store_signal_key = key
+    algorithm.object_store = FakeObjectStore({key: json.dumps(_payload(idempotency_key="object-store-wait"))})
+    algorithm.securities = {"MSFT": SimpleNamespace(has_data=False, price=0)}
+
+    accepted = algorithm.poll_marketpilot_object_store_signal()
+
+    assert accepted is False
+    assert key not in algorithm.marketpilot_processed_object_store_keys
+    assert algorithm.marketpilot_seen_command_keys == set()
+    assert getattr(algorithm, "market_orders", []) == []
+    assert algorithm.latest_command_pending_evidence == {
+        "pending": True,
+        "reason": "symbol_price_not_ready",
+        "symbol": "MSFT",
+        "source": "object_store",
+    }
+
+    algorithm.securities["MSFT"] = SimpleNamespace(has_data=True, price=250.0)
+
+    accepted = algorithm.poll_marketpilot_object_store_signal()
+
+    assert accepted is True
+    assert key in algorithm.marketpilot_processed_object_store_keys
+    assert algorithm.market_orders == [
+        {"symbol": "MSFT", "quantity": 12, "tag": "mp:sig-001:object-store-wait"}
+    ]
+
+
 def test_object_store_signal_poll_rejects_stale_without_order(monkeypatch):
     algorithm = _algorithm(monkeypatch)
     key = "123/marketpilot/signals/stale.json"

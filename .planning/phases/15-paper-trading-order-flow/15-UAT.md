@@ -22,7 +22,8 @@ SIMULATED PAPER TRADING ONLY - NOT FINANCIAL ADVICE.
 | Phase 15-09 full Object Store fallback smoke | object_store_written_no_algorithm_receipt_observed | Full fallback smoke wrote the signal object, compiled successfully, deployed Paper algorithm `L-35940c556bcc768d5ca186f28d868441`, restored `main.py`, cleaned up the object, and stopped the temporary deployment. Eighteen polls showed 0 live logs, 0 tagged orders, and no receipt marker. |
 | Phase 15-10 live-log corrected Object Store smoke | object_store_delivery_receipt_or_rejection_observed | Corrected `/live/logs/read` request fields to `startLine`/`endLine`. Full fallback smoke observed Object Store receipt, acceptance, and a QuantConnect paper order event with status `Submitted`; `/live/orders/read` still returned 0 orders during the polling window. |
 | Phase 15-11 Object Store smoke deployment safety | passed_external_auto_stop | Added default auto-stop for temporary Paper deployments and explicit `--keep-running` override. A short credentialed smoke created a Paper deployment and returned `stop_success=true`. |
-| Phase 15 full pass / phase-complete | partial_external_receipt_and_submitted_event | Offline tests, cloud sync, compile, live create, read-only smoke, command API acceptance, Object Store write, and Object Store signal receipt are verified. Authoritative `/live/orders/read` order/fill/rejection polling is still not externally complete. |
+| Phase 15-12 market-hours Object Store order-authority follow-up | live_logs_filled_but_orders_read_current_tag_missing | Added exact current-tag filtering to the smoke and LEAN price-data deferral. Credentialed market-hours smoke for deployment `L-3eccd7fbf41cc4b0aa944d500f760a90` observed Object Store receipt, acceptance, and QuantConnect live-log `Submitted` and `Filled` events for SPY quantity 1 at fill price `$751.31`. `/live/orders/read` still returned only an older tagged order from deployment `L-103091222fcd6eee4aae06e1de635e38`, not the current expected tag. Deployment stop succeeded. |
+| Phase 15 full pass / phase-complete | partial_external_live_log_fill_only | Offline tests, cloud sync, compile, live create, read-only smoke, command API acceptance, Object Store write, Object Store signal receipt, and live-log Submitted/Filled evidence are verified. Authoritative `/live/orders/read` order/fill/rejection polling for the current tagged order is still not externally complete. |
 
 ## Offline User Acceptance Checks
 
@@ -120,12 +121,24 @@ the Object Store smoke. Leaving a deployment active for next-open observation
 now requires the explicit `--keep-running` flag and operator approval. A short
 credentialed smoke verified `stop_success=true`.
 
+Phase 15-12 ran during US market hours. The first run exposed a false-positive
+hazard: `/live/orders/read` returned a stale MarketPilot-tagged order from a
+prior deployment, so the smoke now requires an exact current-run order tag. A
+second run exposed an early price-data gap; `lean/main.py` now defers accepted
+Object Store signals until the symbol has a tradeable price instead of marking
+the Object Store key processed. The final credentialed run compiled and deployed
+`L-3eccd7fbf41cc4b0aa944d500f760a90`, observed Object Store receipt and
+acceptance, and live logs showed `Submitted` and `Filled` for SPY quantity 1 at
+fill price `$751.31`. `/live/orders/read` still returned no order with the
+current expected tag, so the authority gate remains open. The temporary
+deployment was stopped successfully.
+
 ## Human Verification Gate
 
 Before Phase 15 can be marked fully passed, an operator must resolve why
-QuantConnect's submitted Paper order from the Object Store fallback does not yet
-appear in `/live/orders/read` during the smoke window, then rerun the smallest
-safe order/fill/rejection polling smoke.
+QuantConnect's submitted/filled Paper order from the Object Store fallback does
+not yet appear in `/live/orders/read` with the current expected tag, then rerun
+the smallest safe order/fill/rejection polling smoke.
 The resulting evidence must be sanitized and must include only safe identifiers,
 timestamps, paper-only status, command delivery status, and observed
 QuantConnect order/fill/rejection trace status. Secrets must never be recorded.

@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Phase 15 Plan 12 gap plan ready; Phase 15 order authority and Phase 16.1 external go-live evidence pending
-stopped_at: Phase 15 Plan 12 planned for market-hours or next-open `/live/orders/read` order/fill/rejection authority verification
-last_updated: "2026-06-17T15:55:00.000+03:00"
+status: Phase 15 Plan 12 executed; live-log fill observed but `/live/orders/read` current-tag authority still pending
+stopped_at: Phase 15 Plan 12 executed; next eligible work is a narrow QuantConnect order-authority endpoint semantics follow-up
+last_updated: "2026-06-17T17:05:00.000+03:00"
 last_activity: 2026-06-17
 progress:
   total_phases: 7
@@ -244,6 +244,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-17T15:55:00.000+03:00
-Stopped at: Phase 15 Plan 12 planned
-Resume file: .planning/phases/15-paper-trading-order-flow/15-12-PLAN.md
+Last session: 2026-06-17T17:05:00.000+03:00
+Stopped at: Phase 15 Plan 12 executed; live-log fill observed, `/live/orders/read` current-tag authority still pending
+Resume file: .planning/phases/15-paper-trading-order-flow/15-12-SUMMARY.md

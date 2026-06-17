@@ -34,6 +34,7 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         self.latest_object_store_receipt_evidence = None
         self.latest_order_event_evidence = None
         self.latest_command_rejection_evidence = None
+        self.latest_command_pending_evidence = None
         self.marketpilot_object_store_signal_key = self._marketpilot_object_store_signal_key()
         self.marketpilot_processed_object_store_keys = set()
 
@@ -133,8 +134,9 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         }
         self.debug("MarketPilot Object Store signal received.")
         accepted = self._handle_marketpilot_payload(payload, source="object_store")
-        self.marketpilot_processed_object_store_keys.add(key)
-        return accepted
+        if accepted is not None:
+            self.marketpilot_processed_object_store_keys.add(key)
+        return bool(accepted)
 
     def _handle_marketpilot_payload(self, data, *, source):
         normalized = normalize_marketpilot_command(data)
@@ -162,7 +164,20 @@ class DahanMarketPilotRuntime(QCAlgorithm):
             self.debug(f"MarketPilot command rejected: {validation.reason}")
             return False
 
+        if not self._marketpilot_symbol_has_tradeable_data(validation.symbol):
+            self.latest_command_pending_evidence = {
+                "pending": True,
+                "reason": "symbol_price_not_ready",
+                "symbol": validation.symbol,
+                "source": source,
+            }
+            self.debug(f"MarketPilot command pending: {validation.symbol} price_not_ready")
+            if normalized.command.idempotency_key in self.marketpilot_seen_command_keys:
+                self.marketpilot_seen_command_keys.remove(normalized.command.idempotency_key)
+            return None
+
         self.market_order(validation.symbol, validation.quantity, tag=validation.tag)
+        self.latest_command_pending_evidence = None
         self.latest_command_rejection_evidence = None
         self.debug(f"MarketPilot {source} accepted: {validation.symbol} {validation.quantity}")
         return True
@@ -202,6 +217,25 @@ class DahanMarketPilotRuntime(QCAlgorithm):
             order = getter(order_id)
             return getattr(order, "tag", getattr(order, "Tag", None))
         return None
+
+    def _marketpilot_symbol_has_tradeable_data(self, symbol):
+        securities = getattr(self, "securities", getattr(self, "Securities", None))
+        security = None
+        if securities is not None:
+            try:
+                security = securities[symbol]
+            except Exception:
+                getter = getattr(securities, "get", getattr(securities, "Get", None))
+                if callable(getter):
+                    security = getter(symbol)
+        if security is None:
+            return True
+        has_data = getattr(security, "has_data", getattr(security, "HasData", True))
+        price = getattr(security, "price", getattr(security, "Price", 0))
+        try:
+            return bool(has_data) and float(price or 0) > 0
+        except (TypeError, ValueError):
+            return False
 
     def _marketpilot_object_store_signal_key(self):
         configured = str(getattr(self, "MARKETPILOT_OBJECT_STORE_SIGNAL_KEY", "") or "").strip()

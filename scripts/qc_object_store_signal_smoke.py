@@ -120,6 +120,7 @@ def run_smoke(
     project_id = _read_int_env("QC_PROJECT_ID", default=32900381 if dry_run else None)
     key = build_object_store_key(project_id=project_id, now_utc=now)
     signal = build_object_store_signal(now_utc=now)
+    expected_order_tag = f"mp:{signal['signal_id']}:{signal['idempotency_key']}"
     result: dict[str, object] = {
         "status": "dry_run" if dry_run else "running",
         "checked_at_utc": now.isoformat(),
@@ -134,6 +135,7 @@ def run_smoke(
         "stop_after_deploy": stop_after_deploy,
         "environment": summarize_env(),
         "signal_preview": sanitize(signal),
+        "expected_order_tag": expected_order_tag,
     }
     if dry_run:
         return result
@@ -233,11 +235,16 @@ def run_smoke(
         raw_orders = orders.get("orders") or []
         order_rows = list(raw_orders.values()) if isinstance(raw_orders, dict) else list(raw_orders)
         receipt_observed = any(marker in str(live_logs) for marker in RECEIPT_MARKERS)
-        tagged_orders = [
+        marketpilot_orders = [
             order
             for order in order_rows
             if isinstance(order, Mapping)
             and str(order.get("tag") or order.get("Tag") or "").startswith("mp:")
+        ]
+        tagged_orders = [
+            order
+            for order in marketpilot_orders
+            if str(order.get("tag") or order.get("Tag") or "") == expected_order_tag
         ]
         observations.append(
             {
@@ -246,11 +253,12 @@ def run_smoke(
                 "receipt_observed": receipt_observed,
                 "live_logs_tail": sanitize(live_logs[-10:] if isinstance(live_logs, list) else live_logs),
                 "order_count": len(order_rows),
+                "marketpilot_order_count": len(marketpilot_orders),
                 "tagged_order_count": len(tagged_orders),
                 "tagged_orders": sanitize(tagged_orders[:5]),
             }
         )
-        if receipt_observed or tagged_orders:
+        if tagged_orders:
             break
 
     result["observations"] = observations

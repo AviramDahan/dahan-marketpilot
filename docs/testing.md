@@ -369,6 +369,28 @@ only for an explicit operator-approved next-open or market-hours observation.
 A short credentialed auto-stop check created a Paper deployment, cleaned the
 probe object, and returned `stop_success=true`.
 
+Phase 15-12 tightens the order-authority smoke:
+
+- `qc_object_store_signal_smoke.py` now matches `/live/orders/read` rows only
+  when the order tag exactly equals the current run's expected
+  `mp:<signal_id>:<idempotency_key>` value.
+- Stale MarketPilot-tagged orders from older deployments are counted separately
+  and cannot satisfy the authority gate.
+- `lean/main.py` defers an accepted Object Store signal when the symbol has no
+  tradeable price yet, leaving the Object Store key unprocessed so a later
+  scheduled poll can retry after data arrives.
+
+Credentialed Phase 15-12 market-hours evidence: Object Store write, compile,
+Paper deploy, original-file restore, object cleanup, and deployment stop all
+succeeded. Live logs for deployment `L-3eccd7fbf41cc4b0aa944d500f760a90`
+showed Object Store receipt, Object Store acceptance, `Submitted`, and `Filled`
+for SPY quantity 1 at fill price `$751.31`. `/live/orders/read` still did not
+return the current run's exact order tag; it returned only an older tagged order
+from deployment `L-103091222fcd6eee4aae06e1de635e38`. Record this status as
+`live_logs_filled_but_orders_read_current_tag_missing`; Phase 15 remains open
+until the official orders endpoint returns the current tagged order, fill, or
+rejection, or an approved QuantConnect-authority alternative is documented.
+
 ## Phase 16 Production Scheduler Tests
 
 Phase 16 tests are deterministic and offline. They verify the autonomous
