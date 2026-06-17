@@ -55,8 +55,8 @@ class FakeAuthStreamlit(FakeStreamlit):
         self.calls.append(("text_input", f"{label}:{type}"))
         return self.password
 
-    def button(self, label: str, *, disabled: bool = False) -> bool:
-        self.calls.append(("button", f"{label}:{disabled}"))
+    def button(self, label: str) -> bool:
+        self.calls.append(("button", label))
         return self.login_clicked
 
 
@@ -100,7 +100,7 @@ def test_resolve_dashboard_auth_requires_explicit_login_click():
 
     assert auth.authenticated is False
     assert not_clicked.session_state["dashboard_authenticated"] is False
-    assert ("button", "Login:False") in not_clicked.calls
+    assert ("button", "Login") in not_clicked.calls
 
     clicked = FakeAuthStreamlit(password="strong-test-password", login_clicked=True)
 
