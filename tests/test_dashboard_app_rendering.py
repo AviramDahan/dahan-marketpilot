@@ -1,4 +1,5 @@
-from dashboard.app import maybe_enable_auto_refresh, render_page_view
+from dashboard.app import maybe_enable_auto_refresh, render_page_view, resolve_dashboard_auth
+from dashboard.config import DashboardConfig
 from dashboard.models import DashboardSectionStatus
 from dashboard.pages import PageView
 
@@ -43,6 +44,22 @@ class FakeRefreshStreamlit(FakeStreamlit):
         return decorator
 
 
+class FakeAuthStreamlit(FakeStreamlit):
+    def __init__(self, *, password: str = "", login_clicked: bool = False) -> None:
+        super().__init__()
+        self.password = password
+        self.login_clicked = login_clicked
+        self.session_state = {"dashboard_authenticated": False}
+
+    def text_input(self, label: str, *, type: str) -> str:
+        self.calls.append(("text_input", f"{label}:{type}"))
+        return self.password
+
+    def button(self, label: str, *, disabled: bool = False) -> bool:
+        self.calls.append(("button", f"{label}:{disabled}"))
+        return self.login_clicked
+
+
 def test_render_page_view_uses_color_coded_freshness_banner():
     for level, method in (
         ("fresh", "success"),
@@ -73,3 +90,21 @@ def test_auto_refresh_uses_streamlit_fragment_when_available():
 
     assert ("fragment", "120s") in fake.calls
     assert ("caption", "Auto-refresh active") in fake.calls
+
+
+def test_resolve_dashboard_auth_requires_explicit_login_click():
+    config = DashboardConfig(password="strong-test-password")
+    not_clicked = FakeAuthStreamlit(password="strong-test-password", login_clicked=False)
+
+    auth = resolve_dashboard_auth(not_clicked, config)
+
+    assert auth.authenticated is False
+    assert not_clicked.session_state["dashboard_authenticated"] is False
+    assert ("button", "Login:False") in not_clicked.calls
+
+    clicked = FakeAuthStreamlit(password="strong-test-password", login_clicked=True)
+
+    auth = resolve_dashboard_auth(clicked, config)
+
+    assert auth.authenticated is True
+    assert clicked.session_state["dashboard_authenticated"] is True

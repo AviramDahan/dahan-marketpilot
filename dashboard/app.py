@@ -50,6 +50,20 @@ def render_page_view(st: object, view: object) -> None:
         st.write(line)
 
 
+def resolve_dashboard_auth(st: object, config: object) -> DashboardAuth:
+    """Resolve dashboard authentication through an explicit login action."""
+
+    if st.session_state["dashboard_authenticated"]:
+        return DashboardAuth(status=AuthStatus.AUTHENTICATED, authenticated=True)
+
+    password = st.text_input("Dashboard password", type="password")
+    login_clicked = st.button("Login", disabled=not bool(password))
+    auth = authenticate_dashboard(config, password) if login_clicked else DashboardAuth.from_config(config)
+    if auth.authenticated:
+        st.session_state["dashboard_authenticated"] = True
+    return auth
+
+
 def main() -> None:
     try:
         import streamlit as st
@@ -62,13 +76,7 @@ def main() -> None:
     if "dashboard_authenticated" not in st.session_state:
         st.session_state["dashboard_authenticated"] = False
 
-    if st.session_state["dashboard_authenticated"]:
-        auth = DashboardAuth(status=AuthStatus.AUTHENTICATED, authenticated=True)
-    else:
-        password = st.text_input("Dashboard password", type="password")
-        auth = authenticate_dashboard(config, password) if password else DashboardAuth.from_config(config)
-        if auth.authenticated:
-            st.session_state["dashboard_authenticated"] = True
+    auth = resolve_dashboard_auth(st, config)
 
     shell = build_dashboard_shell(config=config, auth=auth)
     st.title(shell.title)
