@@ -1,0 +1,139 @@
+"""Read-only Phase 16.2 deployed-session observer."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Mapping
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from marketpilot.scheduler_health import SchedulerHealthStatus, evaluate_scheduler_heartbeat
+from marketpilot.shared_state import load_dashboard_payload_from_env
+
+from scripts.verify_render_golive import _check_dashboard_url
+
+
+DEFAULT_DASHBOARD_URL = "https://dahan-marketpilot-dashboard.onrender.com"
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Observe Phase 16.2 deployed session evidence.")
+    parser.add_argument("--dashboard-url", default=os.environ.get("DASHBOARD_HEALTH_URL", DEFAULT_DASHBOARD_URL))
+    parser.add_argument("--heartbeat-path", default=os.environ.get("SCHEDULER_HEARTBEAT_PATH", "data/scheduler_heartbeat.jsonl"))
+    parser.add_argument("--max-heartbeat-age-seconds", type=int, default=900)
+    parser.add_argument("--require-shared-state", action="store_true")
+    parser.add_argument("--require-heartbeat", action="store_true")
+    parser.add_argument("--timeout-seconds", type=int, default=10)
+    args = parser.parse_args(argv)
+
+    result = observe_deployed_session(
+        dashboard_url=args.dashboard_url,
+        heartbeat_path=Path(args.heartbeat_path),
+        max_heartbeat_age_seconds=args.max_heartbeat_age_seconds,
+        require_shared_state=args.require_shared_state,
+        require_heartbeat=args.require_heartbeat,
+        timeout_seconds=args.timeout_seconds,
+    )
+    print(json.dumps(result, sort_keys=True))
+    return 0 if result["status"] == "passed" else 2
+
+
+def observe_deployed_session(
+    *,
+    dashboard_url: str | None,
+    heartbeat_path: Path,
+    max_heartbeat_age_seconds: int,
+    require_shared_state: bool,
+    require_heartbeat: bool,
+    timeout_seconds: int,
+) -> dict[str, object]:
+    checks = {
+        "dashboard_url": _check_dashboard_url(dashboard_url, timeout_seconds=timeout_seconds),
+        "shared_state": _check_shared_state(),
+        "heartbeat": _check_heartbeat(heartbeat_path, max_age_seconds=max_heartbeat_age_seconds),
+        "local_computer_independence": {
+            "status": "operator_evidence_required",
+            "detail": "Confirm Render worker generated heartbeat/shared-state while local scheduler is not running.",
+        },
+    }
+    status = _overall_status(
+        checks,
+        require_shared_state=require_shared_state,
+        require_heartbeat=require_heartbeat,
+    )
+    return {
+        "status": status,
+        "checked_at": datetime.now(timezone.utc).isoformat(),
+        "paper_trading_only": True,
+        "market_session_observation": status == "passed",
+        "checks": checks,
+    }
+
+
+def _check_shared_state() -> dict[str, object]:
+    try:
+        snapshot = load_dashboard_payload_from_env()
+    except Exception as exc:
+        return {"status": "failed", "reason": type(exc).__name__, "detail": _redact_text(str(exc))}
+    if snapshot is None:
+        return {"status": "not_run", "reason": "REDIS_URL_missing_or_dashboard_payload_absent"}
+    payload = dict(snapshot.payload)
+    return {
+        "status": "passed",
+        "key": snapshot.key,
+        "source": payload.get("source"),
+        "authority": payload.get("authority"),
+        "source_timestamp": payload.get("source_timestamp"),
+        "freshness_level": payload.get("freshness_level"),
+        "paper_trading_only": payload.get("paper_trading_only") is True,
+    }
+
+
+def _check_heartbeat(path: Path, *, max_age_seconds: int) -> dict[str, object]:
+    check = evaluate_scheduler_heartbeat(path, max_age_seconds=max_age_seconds)
+    payload = check.to_json_dict()
+    payload["status"] = "passed" if check.status is SchedulerHealthStatus.OK else check.status.value
+    payload["monitor_only"] = True
+    payload["controls_scheduler"] = False
+    payload["controls_orders"] = False
+    return payload
+
+
+def _overall_status(
+    checks: Mapping[str, Mapping[str, object]],
+    *,
+    require_shared_state: bool,
+    require_heartbeat: bool,
+) -> str:
+    if any(check.get("status") == "failed" for check in checks.values()):
+        return "failed"
+    required = [
+        checks["dashboard_url"],
+        checks["shared_state"],
+        checks["heartbeat"],
+    ]
+    if require_shared_state:
+        required.append(checks["shared_state"])
+    if require_heartbeat:
+        required.append(checks["heartbeat"])
+    if all(check.get("status") == "passed" for check in required):
+        return "passed"
+    return "blocked_external_not_verified"
+
+
+def _redact_text(value: str) -> str:
+    redacted = value
+    for key in ("REDIS_URL", "DASHBOARD_PASSWORD", "TOKEN", "SECRET", "PASSWORD"):
+        redacted = redacted.replace(key.lower(), "[redacted]").replace(key, "[redacted]")
+    return redacted
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
