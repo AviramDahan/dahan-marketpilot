@@ -156,6 +156,26 @@ def test_production_cycle_runs_signal_to_order_poll_with_fakes(tmp_path):
     assert {job.job_id for job in result.job_results} == set(SchedulerJobId)
 
 
+def test_production_cycle_exports_dashboard_after_sync_without_runtime_input(tmp_path):
+    dashboard = FakeDashboardSink()
+    config = _config(tmp_path)
+
+    result = run_production_cycle(
+        config,
+        now=datetime(2026, 6, 16, 14, 0, tzinfo=timezone.utc),
+        dependencies=ProductionRunnerDependencies(
+            sync_func=_sync_success,
+            dashboard_export_sink=dashboard,
+        ),
+    )
+
+    jobs = {job.job_id: job for job in result.job_results}
+    assert jobs[SchedulerJobId.QC_SYNC].status is SchedulerJobStatus.SUCCESS
+    assert jobs[SchedulerJobId.RUNTIME_EVALUATION].status is SchedulerJobStatus.SKIPPED
+    assert jobs[SchedulerJobId.DASHBOARD_EXPORT].status is SchedulerJobStatus.SUCCESS
+    assert dashboard.payloads
+
+
 def test_production_cycle_skips_closed_market_without_qc_calls(tmp_path):
     calls = {"sync": 0}
 

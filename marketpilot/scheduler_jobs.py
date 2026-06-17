@@ -108,7 +108,7 @@ DEFAULT_JOB_DEPENDENCIES: dict[SchedulerJobId, tuple[SchedulerJobId, ...]] = {
     SchedulerJobId.RUNTIME_EVALUATION: (SchedulerJobId.QC_SYNC,),
     SchedulerJobId.PAPER_DELIVERY_GATE: (SchedulerJobId.RUNTIME_EVALUATION,),
     SchedulerJobId.ORDER_AUTHORITY_POLL: (SchedulerJobId.PAPER_DELIVERY_GATE,),
-    SchedulerJobId.DASHBOARD_EXPORT: (SchedulerJobId.QC_SYNC, SchedulerJobId.RUNTIME_EVALUATION),
+    SchedulerJobId.DASHBOARD_EXPORT: (SchedulerJobId.QC_SYNC,),
     SchedulerJobId.NOTIFICATION_EMISSION: (SchedulerJobId.RUNTIME_EVALUATION,),
     SchedulerJobId.HEARTBEAT: (),
 }
@@ -180,4 +180,3 @@ __all__ = [
     "SchedulerSkipReason",
     "run_dependency_aware_jobs",
 ]
-
