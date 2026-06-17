@@ -17,6 +17,7 @@ if str(ROOT) not in sys.path:
 from marketpilot.scheduler_health import SchedulerHealthStatus, evaluate_scheduler_heartbeat
 from marketpilot.shared_state import load_dashboard_payload_from_env
 
+from scripts.check_scheduler_heartbeat import _annotate_monitor_window, _read_remote_heartbeat, _remote_heartbeat_ok
 from scripts.verify_render_golive import _check_dashboard_url
 
 
@@ -27,6 +28,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Observe Phase 16.2 deployed session evidence.")
     parser.add_argument("--dashboard-url", default=os.environ.get("DASHBOARD_HEALTH_URL", DEFAULT_DASHBOARD_URL))
     parser.add_argument("--heartbeat-path", default=os.environ.get("SCHEDULER_HEARTBEAT_PATH", "data/scheduler_heartbeat.jsonl"))
+    parser.add_argument("--heartbeat-url", default=os.environ.get("HEARTBEAT_HEALTH_URL"))
     parser.add_argument("--max-heartbeat-age-seconds", type=int, default=900)
     parser.add_argument("--require-shared-state", action="store_true")
     parser.add_argument("--require-heartbeat", action="store_true")
@@ -36,6 +38,7 @@ def main(argv: list[str] | None = None) -> int:
     result = observe_deployed_session(
         dashboard_url=args.dashboard_url,
         heartbeat_path=Path(args.heartbeat_path),
+        heartbeat_url=args.heartbeat_url,
         max_heartbeat_age_seconds=args.max_heartbeat_age_seconds,
         require_shared_state=args.require_shared_state,
         require_heartbeat=args.require_heartbeat,
@@ -49,6 +52,7 @@ def observe_deployed_session(
     *,
     dashboard_url: str | None,
     heartbeat_path: Path,
+    heartbeat_url: str | None,
     max_heartbeat_age_seconds: int,
     require_shared_state: bool,
     require_heartbeat: bool,
@@ -57,7 +61,12 @@ def observe_deployed_session(
     checks = {
         "dashboard_url": _check_dashboard_url(dashboard_url, timeout_seconds=timeout_seconds),
         "shared_state": _check_shared_state(),
-        "heartbeat": _check_heartbeat(heartbeat_path, max_age_seconds=max_heartbeat_age_seconds),
+        "heartbeat": _check_heartbeat(
+            heartbeat_path,
+            heartbeat_url=heartbeat_url,
+            max_age_seconds=max_heartbeat_age_seconds,
+            timeout_seconds=timeout_seconds,
+        ),
         "local_computer_independence": {
             "status": "operator_evidence_required",
             "detail": "Confirm Render worker generated heartbeat/shared-state while local scheduler is not running.",
@@ -96,13 +105,25 @@ def _check_shared_state() -> dict[str, object]:
     }
 
 
-def _check_heartbeat(path: Path, *, max_age_seconds: int) -> dict[str, object]:
+def _check_heartbeat(
+    path: Path,
+    *,
+    heartbeat_url: str | None,
+    max_age_seconds: int,
+    timeout_seconds: int,
+) -> dict[str, object]:
+    if heartbeat_url:
+        payload = _read_remote_heartbeat(heartbeat_url, timeout_seconds=timeout_seconds)
+        payload = _annotate_monitor_window(payload, now=None)
+        payload["status"] = "passed" if _remote_heartbeat_ok(payload, now=None) else payload.get("status", "failed")
+        return payload
     check = evaluate_scheduler_heartbeat(path, max_age_seconds=max_age_seconds)
     payload = check.to_json_dict()
     payload["status"] = "passed" if check.status is SchedulerHealthStatus.OK else check.status.value
     payload["monitor_only"] = True
     payload["controls_scheduler"] = False
     payload["controls_orders"] = False
+    payload["controls_recovery"] = False
     return payload
 
 
@@ -114,11 +135,7 @@ def _overall_status(
 ) -> str:
     if any(check.get("status") == "failed" for check in checks.values()):
         return "failed"
-    required = [
-        checks["dashboard_url"],
-        checks["shared_state"],
-        checks["heartbeat"],
-    ]
+    required = [checks["dashboard_url"], checks["shared_state"], checks["heartbeat"]]
     if require_shared_state:
         required.append(checks["shared_state"])
     if require_heartbeat:
