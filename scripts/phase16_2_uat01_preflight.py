@@ -20,13 +20,13 @@ from marketpilot.telegram import load_telegram_config
 from scripts.phase16_2_observe_deployed_session import DEFAULT_DASHBOARD_URL, observe_deployed_session
 
 
-REQUIRED_ENV_VARS = (
-    "QUANTCONNECT_USER_ID",
-    "QUANTCONNECT_API_TOKEN",
-    "QC_PROJECT_ID",
-    "QC_DEPLOY_ID",
-    "TELEGRAM_BOT_TOKEN",
-    "TELEGRAM_CHAT_ID",
+REQUIRED_ENV_GROUPS = (
+    ("QUANTCONNECT_USER_ID",),
+    ("QUANTCONNECT_API_TOKEN",),
+    ("QC_PROJECT_ID", "QUANTCONNECT_PROJECT_ID"),
+    ("QC_DEPLOY_ID", "QUANTCONNECT_LIVE_DEPLOY_ID"),
+    ("TELEGRAM_BOT_TOKEN",),
+    ("TELEGRAM_CHAT_ID",),
 )
 
 
@@ -94,7 +94,7 @@ def run_preflight(
 
 
 def _check_environment(env: Mapping[str, str]) -> dict[str, object]:
-    present = {name: bool(str(env.get(name) or "").strip()) for name in REQUIRED_ENV_VARS}
+    present = {"|".join(group): _env_group_value(env, group) is not None for group in REQUIRED_ENV_GROUPS}
     missing = [name for name, exists in present.items() if not exists]
     return {
         "status": "passed" if not missing else "missing_required_env",
@@ -132,8 +132,8 @@ def _check_telegram_configuration(env: Mapping[str, str]) -> dict[str, object]:
 
 def _check_quantconnect_deployment(env: Mapping[str, str]) -> dict[str, object]:
     try:
-        project_id = int(str(env.get("QC_PROJECT_ID") or "").strip())
-        deploy_id = str(env.get("QC_DEPLOY_ID") or "").strip()
+        project_id = int(str(_env_group_value(env, ("QC_PROJECT_ID", "QUANTCONNECT_PROJECT_ID")) or "").strip())
+        deploy_id = str(_env_group_value(env, ("QC_DEPLOY_ID", "QUANTCONNECT_LIVE_DEPLOY_ID")) or "").strip()
         if not deploy_id:
             raise ValueError("QC_DEPLOY_ID_missing")
         snapshot = QCApiClient().read_live_algorithm(project_id=project_id, deploy_id=deploy_id)
@@ -167,6 +167,14 @@ def _check_quantconnect_deployment(env: Mapping[str, str]) -> dict[str, object]:
 
 def _check_passed(value: object) -> bool:
     return isinstance(value, Mapping) and value.get("status") == "passed"
+
+
+def _env_group_value(env: Mapping[str, str], names: tuple[str, ...]) -> str | None:
+    for name in names:
+        value = str(env.get(name) or "").strip()
+        if value:
+            return value
+    return None
 
 
 def _safe_detail(value: str) -> str:

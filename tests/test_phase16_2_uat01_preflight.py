@@ -51,3 +51,20 @@ def test_preflight_detects_temporary_probe_configuration():
     assert result["status"] == "blocked_external_not_verified"
     assert result["checks"]["operator_probe_disabled"]["status"] == "temporary_uat_configuration_present"
     assert result["checks"]["operator_probe_disabled"]["restore_runtime_input_kind"] == "none"
+
+
+def test_preflight_accepts_quantconnect_env_aliases():
+    env = {
+        "QUANTCONNECT_USER_ID": "configured",
+        "QUANTCONNECT_API_TOKEN": "configured",
+        "QUANTCONNECT_PROJECT_ID": "123",
+        "QUANTCONNECT_LIVE_DEPLOY_ID": "L-paper",
+        "TELEGRAM_BOT_TOKEN": "configured",
+        "TELEGRAM_CHAT_ID": "configured",
+    }
+
+    check = phase16_2_uat01_preflight._check_environment(env)
+
+    assert check["status"] == "passed"
+    assert check["present"]["QC_PROJECT_ID|QUANTCONNECT_PROJECT_ID"] is True
+    assert check["present"]["QC_DEPLOY_ID|QUANTCONNECT_LIVE_DEPLOY_ID"] is True
