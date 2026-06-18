@@ -282,6 +282,21 @@ def test_initialize_schedules_object_store_polling_when_key_parameter_exists(mon
     base.parameter_values = {}
 
 
+def test_initialize_does_not_schedule_object_store_polling_by_default(monkeypatch):
+    module = _load_lean_main(monkeypatch)
+    base = module.DahanMarketPilotRuntime.__mro__[1]
+    base.parameter_values = {}
+    algorithm = module.DahanMarketPilotRuntime()
+    algorithm.schedule = module.FakeSchedule()
+    algorithm.date_rules = module.FakeDateRules()
+    algorithm.time_rules = module.FakeTimeRules()
+
+    algorithm.initialize()
+
+    assert algorithm.marketpilot_object_store_signal_key == ""
+    assert algorithm.schedule.calls == []
+
+
 def test_initialize_creates_command_idempotency_and_order_event_evidence(monkeypatch):
     algorithm = _algorithm(monkeypatch)
 

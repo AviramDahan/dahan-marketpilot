@@ -8,7 +8,7 @@ class DahanMarketPilotRuntime(QCAlgorithm):
     """Self-contained QuantConnect Paper adapter for MarketPilot commands."""
 
     MARKETPILOT_OBJECT_STORE_SIGNAL_KEY = ""
-    DEFAULT_MARKETPILOT_OBJECT_STORE_SIGNAL_KEY = "32900381/marketpilot/signals/operator-probe.json"
+    DEFAULT_MARKETPILOT_OBJECT_STORE_SIGNAL_KEY = ""
 
     def initialize(self):
         self.set_start_date(2026, 1, 1)
