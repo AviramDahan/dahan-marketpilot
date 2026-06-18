@@ -388,6 +388,44 @@ def test_on_command_accepts_quantconnect_payload_data_object_envelope(monkeypatc
     ]
 
 
+def test_on_command_accepts_quantconnect_payload_data_to_string_envelope(monkeypatch):
+    algorithm = _algorithm(monkeypatch)
+
+    class DotNetPayload:
+        def ToString(self):
+            return json.dumps(_payload(idempotency_key="order-intent-qc-dotnet-envelope"))
+
+    accepted = algorithm.on_command({"payload_data": DotNetPayload()})
+
+    assert accepted is True
+    assert algorithm.market_orders == [
+        {
+            "symbol": "MSFT",
+            "quantity": 12,
+            "tag": "mp:sig-001:order-intent-qc-dotnet-envelope",
+        }
+    ]
+
+
+def test_on_command_accepts_quantconnect_payload_data_mapping_envelope(monkeypatch):
+    algorithm = _algorithm(monkeypatch)
+
+    class MappingPayload:
+        def items(self):
+            return _payload(idempotency_key="order-intent-qc-mapping-envelope").items()
+
+    accepted = algorithm.on_command({"PayloadData": MappingPayload()})
+
+    assert accepted is True
+    assert algorithm.market_orders == [
+        {
+            "symbol": "MSFT",
+            "quantity": 12,
+            "tag": "mp:sig-001:order-intent-qc-mapping-envelope",
+        }
+    ]
+
+
 @pytest.mark.parametrize(
     "payload",
     [

@@ -311,12 +311,32 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         return payload
 
     def _payload_value_to_dict(self, value):
+        items = getattr(value, "items", None)
+        if callable(items):
+            try:
+                return {str(key): item_value for key, item_value in items()}
+            except Exception:
+                pass
+        keys = getattr(value, "Keys", getattr(value, "keys", None))
+        if keys is not None:
+            try:
+                return {str(key): value[key] for key in keys}
+            except Exception:
+                pass
         try:
             decoded = json.loads(str(value))
         except (TypeError, ValueError):
             decoded = None
         if isinstance(decoded, dict):
             return decoded
+        to_string = getattr(value, "ToString", None)
+        if callable(to_string):
+            try:
+                decoded = json.loads(str(to_string()))
+            except (TypeError, ValueError):
+                decoded = None
+            if isinstance(decoded, dict):
+                return decoded
         if isinstance(value, (bool, int, float, bytes, bytearray)):
             return {}
         try:
