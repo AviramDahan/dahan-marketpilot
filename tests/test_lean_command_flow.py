@@ -309,6 +309,28 @@ def test_on_command_accepts_fresh_marketpilot_signal(monkeypatch):
     }
 
 
+def test_on_command_accepts_quantconnect_capitalized_keys(monkeypatch):
+    algorithm = _algorithm(monkeypatch)
+    payload = {
+        "Command_type": "marketpilot_signal",
+        "Correlation_id": "corr-001",
+        "Signal_id": "sig-001",
+        "Idempotency_key": "order-intent-qc-case",
+        "Symbol": "MSFT",
+        "Quantity": 12,
+        "Signal_time_utc": "2026-06-16T14:20:00+00:00",
+        "Expires_at_utc": "2026-06-16T14:40:00+00:00",
+        "Paper_trading_only": True,
+    }
+
+    accepted = algorithm.on_command(payload)
+
+    assert accepted is True
+    assert algorithm.market_orders == [
+        {"symbol": "MSFT", "quantity": 12, "tag": "mp:sig-001:order-intent-qc-case"}
+    ]
+
+
 @pytest.mark.parametrize(
     "payload",
     [

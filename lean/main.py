@@ -34,7 +34,7 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         self.latest_command_receipt_evidence = {
             "received": True,
             "payload_kind": type(data).__name__,
-            "has_command_type": "command_type" in self._payload_dict(data),
+            "has_command_type": self._payload_get(self._payload_dict(data), "command_type") is not None,
             "has_type": "$type" in self._payload_dict(data) or "type" in self._payload_dict(data),
         }
         self.debug("MarketPilot command received.")
@@ -90,7 +90,7 @@ class DahanMarketPilotRuntime(QCAlgorithm):
             "received": True,
             "key": key,
             "payload_kind": type(payload).__name__,
-            "has_command_type": "command_type" in payload,
+            "has_command_type": self._payload_get(payload, "command_type") is not None,
         }
         self.debug("MarketPilot Object Store signal received.")
         accepted = self._handle_marketpilot_payload(payload, source="object_store")
@@ -100,7 +100,7 @@ class DahanMarketPilotRuntime(QCAlgorithm):
 
     def _handle_marketpilot_payload(self, data, *, source):
         payload = self._payload_dict(data)
-        command_type = str(payload.get("command_type") or payload.get("CommandType") or "").strip()
+        command_type = str(self._payload_get(payload, "command_type") or "").strip()
         if command_type != "marketpilot_signal":
             self.latest_command_rejection_evidence = {
                 "accepted": False,
@@ -110,7 +110,7 @@ class DahanMarketPilotRuntime(QCAlgorithm):
             self.debug("MarketPilot command rejected: unsupported_command_type")
             return False
 
-        if payload.get("paper_trading_only") is not True:
+        if self._payload_get(payload, "paper_trading_only") is not True:
             self.latest_command_rejection_evidence = {
                 "accepted": False,
                 "reason": "paper_trading_only_required",
@@ -124,8 +124,8 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         idempotency_key = self._required_text(payload, "idempotency_key")
         symbol = self._required_text(payload, "symbol").upper()
         quantity = self._required_int(payload, "quantity")
-        expires_at = self._parse_utc(payload.get("expires_at_utc"))
-        signal_time = self._parse_utc(payload.get("signal_time_utc"))
+        expires_at = self._parse_utc(self._payload_get(payload, "expires_at_utc"))
+        signal_time = self._parse_utc(self._payload_get(payload, "signal_time_utc"))
 
         if not correlation_id or not signal_id or not idempotency_key or not symbol:
             self.latest_command_rejection_evidence = {
@@ -275,13 +275,22 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         }
 
     def _required_text(self, payload, key):
-        return str(payload.get(key) or payload.get(_pascal(key)) or "").strip()
+        return str(self._payload_get(payload, key) or "").strip()
 
     def _required_int(self, payload, key):
         try:
-            return int(payload.get(key) or payload.get(_pascal(key)) or 0)
+            return int(self._payload_get(payload, key) or 0)
         except (TypeError, ValueError):
             return 0
+
+    def _payload_get(self, payload, key):
+        if not isinstance(payload, dict):
+            return None
+        wanted = _key_alias(key)
+        for candidate, value in payload.items():
+            if _key_alias(candidate) == wanted:
+                return value
+        return None
 
     def _parse_utc(self, value):
         if not value:
@@ -308,3 +317,7 @@ class DahanMarketPilotRuntime(QCAlgorithm):
 
 def _pascal(value):
     return "".join(part.capitalize() for part in str(value).split("_"))
+
+
+def _key_alias(value):
+    return str(value).replace("_", "").lower()
