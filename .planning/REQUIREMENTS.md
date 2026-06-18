@@ -73,12 +73,12 @@
 ## End-to-End UAT & Operational Burn-in
 
 - [ ] **UAT-01**: Deployed flow proves signal -> scoring -> risk decision -> Paper order -> authoritative order result -> fill -> sync -> dashboard -> Telegram
-- [ ] **UAT-02**: Scheduler heartbeat and missed-run monitoring are externally verified
-- [ ] **UAT-03**: Restart and redeployment recovery are externally verified
-- [ ] **UAT-04**: Duplicate-run prevention is externally verified
-- [ ] **UAT-05**: Stale-data handling is externally verified
-- [ ] **UAT-06**: Temporary QuantConnect failure handling is externally verified
-- [ ] **UAT-07**: Telegram delivery failure handling is externally verified without changing safety decisions
+- [x] **UAT-02**: Scheduler heartbeat and missed-run monitoring are externally verified
+- [x] **UAT-03**: Restart and redeployment recovery are externally verified
+- [x] **UAT-04**: Duplicate-run prevention is externally verified
+- [x] **UAT-05**: Stale-data handling is externally verified
+- [x] **UAT-06**: Temporary QuantConnect failure handling is externally verified
+- [x] **UAT-07**: Telegram delivery failure handling is externally verified without changing safety decisions
 - [ ] **UAT-08**: Burn-in covers multiple consecutive real US market sessions
 - [ ] **UAT-09**: Final operational-readiness report proves v1.1 is a working deployed product, not only code, tests, plans, or documentation
 
@@ -156,12 +156,12 @@
 | PROD-09 | 16.1 | Complete |
 | PROD-10 | 16.1 | Complete |
 | UAT-01 | 16.2 | Pending |
-| UAT-02 | 16.2 | Pending |
-| UAT-03 | 16.2 | Pending |
-| UAT-04 | 16.2 | Pending |
-| UAT-05 | 16.2 | Pending |
-| UAT-06 | 16.2 | Pending |
-| UAT-07 | 16.2 | Pending |
+| UAT-02 | 16.2 | Complete |
+| UAT-03 | 16.2 | Complete |
+| UAT-04 | 16.2 | Complete |
+| UAT-05 | 16.2 | Complete |
+| UAT-06 | 16.2 | Complete |
+| UAT-07 | 16.2 | Complete |
 | UAT-08 | 16.2 | Pending |
 | UAT-09 | 16.2 | Pending |
 | OPS-01 | 16.2 | Pending |

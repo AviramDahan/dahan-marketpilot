@@ -2,7 +2,7 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Phase 16.2 execution in progress; Plans 01-02 complete; UAT-02, UAT-03, UAT-04, UAT-05, UAT-06, and UAT-07 passed
+status: Phase 16.2 execution in progress; Plans 01, 02, and 04 complete; UAT-02, UAT-03, UAT-04, UAT-05, UAT-06, and UAT-07 passed
 stopped_at: Phase 16.2 heartbeat/missed-run monitor, redeploy recovery, duplicate-lock prevention, stale shared-state health behavior, fake QuantConnect fail-closed behavior, and Telegram failure isolation are verified; next eligible work is UAT-01 deployed Paper E2E trace during market hours and UAT-08 burn-in
 last_updated: "2026-06-18T09:04:00.000+03:00"
 last_activity: 2026-06-18 -- Phase 16.2 Render SSH resilience harness passed inside deployed worker on commit c76d8e5
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-15)
 ## Current Position
 
 Phase: 16.2 execution in progress
-Plan: 16.2-01 and 16.2-02 complete; next eligible work is 16.2-03 deployed E2E Paper trace and 16.2-05 burn-in closeout
+Plan: 16.2-01, 16.2-02, and 16.2-04 complete; next eligible work is 16.2-03 deployed E2E Paper trace and 16.2-05 burn-in closeout
 Status: UAT-02, UAT-03, UAT-04, UAT-05, UAT-06, and UAT-07 passed; UAT-01, UAT-08, UAT-09, and OPS-01 remain open; v1.1 remains active until UAT-01 through UAT-09 and OPS-01 pass
 Last activity: 2026-06-18 -- Phase 16.2 render-store resilience harness passed inside the deployed Render worker with isolated namespace and no scheduler/order/recovery controls
 
