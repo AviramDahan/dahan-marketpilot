@@ -28,6 +28,7 @@ from marketpilot.validation import ActivationApprovalState, evaluate_activation_
 class FakeSubmitResult:
     status = "command_delivered"
     command_delivered = True
+    idempotency_key = "order-intent-fake-submit"
 
 
 class FakePollResult:
@@ -133,6 +134,11 @@ def test_production_cycle_runs_signal_to_order_poll_with_fakes(tmp_path):
     dashboard = FakeDashboardSink()
     notifications = FakeNotificationCollector()
     config = _config(tmp_path)
+    poll_calls: list[dict[str, object]] = []
+
+    def poll_orders(**kwargs):
+        poll_calls.append(kwargs)
+        return FakePollResult()
 
     result = run_production_cycle(
         config,
@@ -141,7 +147,7 @@ def test_production_cycle_runs_signal_to_order_poll_with_fakes(tmp_path):
             sync_func=_sync_success,
             runtime_input_factory=_runtime_input,
             submit_signal_func=lambda **_kwargs: FakeSubmitResult(),
-            poll_orders_func=lambda **_kwargs: FakePollResult(),
+            poll_orders_func=poll_orders,
             dashboard_export_sink=dashboard,
             notification_sink=notifications,
         ),
@@ -151,6 +157,8 @@ def test_production_cycle_runs_signal_to_order_poll_with_fakes(tmp_path):
     assert result.order_intent_count == 1
     assert result.delivered_signal_count == 1
     assert result.observed_order_count == 1
+    assert poll_calls[0]["expected_signal_id"] == "mp-run-20260616T140000Z-sig-1"
+    assert poll_calls[0]["expected_idempotency_key"] == "order-intent-fake-submit"
     assert dashboard.payloads
     assert notifications.events
     assert {job.job_id for job in result.job_results} == set(SchedulerJobId)

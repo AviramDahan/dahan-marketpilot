@@ -288,6 +288,8 @@ def poll_quantconnect_order_updates(
     deploy_id: str,
     audit_journal_path: str | Path,
     correlation_id: str,
+    expected_signal_id: str | None = None,
+    expected_idempotency_key: str | None = None,
     client: QCApiClient | None = None,
     observed_at_utc: datetime | None = None,
 ) -> QuantConnectOrderPollResult:
@@ -297,7 +299,11 @@ def poll_quantconnect_order_updates(
     observed_at = _aware_utc(observed_at_utc or datetime.now(timezone.utc), "observed_at_utc")
     api_client = client or QCApiClient()
     raw_orders = api_client.read_live_orders(project_id=project_id, deploy_id=deploy_id)
-    observations = parse_quantconnect_live_orders(raw_orders)
+    observations = _filter_expected_observations(
+        parse_quantconnect_live_orders(raw_orders),
+        expected_signal_id=expected_signal_id,
+        expected_idempotency_key=expected_idempotency_key,
+    )
     journal = AppendOnlyJsonlAuditJournal(audit_journal_path)
 
     audit_count = 0
@@ -685,17 +691,34 @@ def _audit_payload_for_observation(
 
 def _map_qc_status(raw_status: str) -> OrderLifecycleState | None:
     normalized = raw_status.strip().lower().replace("_", "").replace(" ", "")
-    if normalized in {"new", "submitted", "submitpending", "updatesubmitted"}:
+    if normalized in {"0", "new", "1", "submitted", "submitpending", "updatesubmitted"}:
         return OrderLifecycleState.SUBMITTED
-    if normalized in {"partiallyfilled", "partialfill"}:
+    if normalized in {"2", "partiallyfilled", "partialfill"}:
         return OrderLifecycleState.PARTIALLY_FILLED
-    if normalized == "filled":
+    if normalized in {"3", "filled"}:
         return OrderLifecycleState.FILLED
-    if normalized in {"canceled", "cancelled", "cancelpending"}:
+    if normalized in {"5", "canceled", "cancelled", "cancelpending"}:
         return OrderLifecycleState.CANCELED
-    if normalized in {"invalid", "rejected", "reject", "brokeragerejected", "error"}:
+    if normalized in {"6", "invalid", "rejected", "reject", "brokeragerejected", "error"}:
         return OrderLifecycleState.REJECTED
     return None
+
+
+def _filter_expected_observations(
+    observations: tuple[QuantConnectOrderObservation, ...],
+    *,
+    expected_signal_id: str | None,
+    expected_idempotency_key: str | None,
+) -> tuple[QuantConnectOrderObservation, ...]:
+    signal = (expected_signal_id or "").strip()
+    key = (expected_idempotency_key or "").strip()
+    if not signal and not key:
+        return observations
+    return tuple(
+        observation
+        for observation in observations
+        if (signal and observation.signal_id == signal) or (key and observation.idempotency_key == key)
+    )
 
 
 def _order_string_field(payload: Mapping[str, object], *keys: str) -> str | None:

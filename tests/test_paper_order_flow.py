@@ -61,6 +61,16 @@ def test_live_order_parser_maps_status_and_marketpilot_tag():
     assert parsed.parse_warnings == ()
 
 
+def test_live_order_parser_maps_quantconnect_numeric_filled_status():
+    parsed = parse_quantconnect_live_order(
+        _qc_order_payload(status=3, quantityFilled=10, remainingQuantity=0, averageFillPrice="421.25")
+    )
+
+    assert parsed.lifecycle_state is OrderLifecycleState.FILLED
+    assert parsed.raw_status == "3"
+    assert parsed.filled_quantity == 10
+
+
 @pytest.mark.parametrize(
     ("raw_status", "filled_quantity", "remaining_quantity", "expected_state"),
     [
@@ -227,6 +237,56 @@ def test_fill_poll_appends_audit_record(tmp_path):
     assert unknown_payload["status"] == "unknown"
     assert unknown_payload["parse_warnings"] == ["unknown_order_status"]
     assert unknown_payload["raw_payload"]["status"] == "BrokeragePendingReview"
+
+
+def test_fill_poll_filters_to_expected_signal_and_idempotency_key(tmp_path):
+    audit_path = tmp_path / "paper_audit.jsonl"
+    client = FakeLiveOrdersClient(
+        [
+            _qc_order_payload(id=701, tag="mp:old-sig:old-key", status="Filled", quantityFilled=10, remainingQuantity=0),
+            _qc_order_payload(id=702, tag="mp:sig-expected:order-intent-expected", status=3, quantityFilled=10, remainingQuantity=0),
+        ]
+    )
+
+    result = poll_quantconnect_order_updates(
+        project_id=123,
+        deploy_id="L-paper-001",
+        audit_journal_path=audit_path,
+        correlation_id="corr-filter",
+        expected_signal_id="sig-expected",
+        expected_idempotency_key="order-intent-expected",
+        client=client,
+        observed_at_utc=datetime(2026, 6, 16, 13, 45, tzinfo=UTC),
+    )
+
+    assert result.observed_count == 1
+    assert result.audit_record_count == 1
+    assert result.observations[0].quantconnect_order_id == "702"
+    records = _audit_records(audit_path)
+    assert records[0]["payload"]["signal_id"] == "sig-expected"
+    assert records[0]["payload"]["idempotency_key"] == "order-intent-expected"
+
+
+def test_fill_poll_with_expected_signal_does_not_audit_unrelated_orders(tmp_path):
+    audit_path = tmp_path / "paper_audit.jsonl"
+    client = FakeLiveOrdersClient(
+        [_qc_order_payload(id=701, tag="mp:old-sig:old-key", status=3, quantityFilled=10, remainingQuantity=0)]
+    )
+
+    result = poll_quantconnect_order_updates(
+        project_id=123,
+        deploy_id="L-paper-001",
+        audit_journal_path=audit_path,
+        correlation_id="corr-filter-empty",
+        expected_signal_id="sig-current",
+        expected_idempotency_key="order-intent-current",
+        client=client,
+        observed_at_utc=datetime(2026, 6, 16, 13, 45, tzinfo=UTC),
+    )
+
+    assert result.observed_count == 0
+    assert result.audit_record_count == 0
+    assert not audit_path.exists()
 
 
 def test_fill_poll_does_not_append_fill_without_quantconnect_fill_data(tmp_path):

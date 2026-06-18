@@ -402,6 +402,12 @@ def _paper_delivery_job(
         statuses.append(status)
         if bool(getattr(response, "command_delivered", False)):
             delivered += 1
+            context.setdefault("submitted_signal_links", []).append(
+                {
+                    "signal_id": signal_id,
+                    "idempotency_key": str(getattr(response, "idempotency_key", "")),
+                }
+            )
     context["delivered_signal_count"] = delivered
     return SchedulerJobResult.success(
         SchedulerJobId.PAPER_DELIVERY_GATE,
@@ -433,6 +439,8 @@ def _order_poll_job(
         deploy_id=config.deploy_id,
         audit_journal_path=config.audit_journal_path,
         correlation_id=correlation_id,
+        expected_signal_id=_first_submitted_signal_value(context, "signal_id"),
+        expected_idempotency_key=_first_submitted_signal_value(context, "idempotency_key"),
         client=deps.client,
         observed_at_utc=now,
     )
@@ -448,6 +456,18 @@ def _order_poll_job(
             "warning_count": int(getattr(result, "warning_count", 0)),
         },
     )
+
+
+def _first_submitted_signal_value(context: dict[str, object], key: str) -> str | None:
+    links = context.get("submitted_signal_links")
+    if not isinstance(links, list):
+        return None
+    for link in links:
+        if isinstance(link, dict):
+            value = str(link.get(key) or "").strip()
+            if value:
+                return value
+    return None
 
 
 def _dashboard_export_job(
