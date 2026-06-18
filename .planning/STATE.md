@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
-status: Phase 16.2 execution in progress; Plans 01-02 complete; UAT-02, UAT-03, and UAT-05 passed
-stopped_at: Phase 16.2 heartbeat/missed-run monitor, redeploy recovery, and deployed stale shared-state health behavior are verified; next eligible work is UAT-01 deployed Paper E2E trace during market hours or UAT-04/UAT-06/UAT-07 deployed resilience evidence
-last_updated: "2026-06-18T01:35:00.000+03:00"
-last_activity: 2026-06-18 -- Phase 16.2 deployed dashboard-state health endpoint verified stale shared-state handling on commit 4f9b36b
+status: Phase 16.2 execution in progress; Plans 01-02 complete; UAT-02, UAT-03, UAT-04, UAT-05, UAT-06, and UAT-07 passed
+stopped_at: Phase 16.2 heartbeat/missed-run monitor, redeploy recovery, duplicate-lock prevention, stale shared-state health behavior, fake QuantConnect fail-closed behavior, and Telegram failure isolation are verified; next eligible work is UAT-01 deployed Paper E2E trace during market hours and UAT-08 burn-in
+last_updated: "2026-06-18T09:04:00.000+03:00"
+last_activity: 2026-06-18 -- Phase 16.2 Render SSH resilience harness passed inside deployed worker on commit c76d8e5
 progress:
   total_phases: 7
   completed_phases: 5
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-15)
 
 **Core value:** The system must provide an auditable paper-only swing-trading workflow where every signal, backtest, paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
-**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 15 order/fill authority is externally verified through `/live/orders/read` for simulated Paper Trading. Phase 16.1 deployed go-live is verified on Render with password-authenticated dashboard data and Telegram runtime delivery. Phase 16.2 execution has passed heartbeat/missed-run monitoring, redeploy recovery, and stale shared-state health behavior, while end-to-end Paper flow, remaining resilience proofs, burn-in, and final readiness remain open.
+**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 15 order/fill authority is externally verified through `/live/orders/read` for simulated Paper Trading. Phase 16.1 deployed go-live is verified on Render with password-authenticated dashboard data and Telegram runtime delivery. Phase 16.2 execution has passed heartbeat/missed-run monitoring, redeploy recovery, duplicate-lock prevention, stale shared-state health behavior, fake QuantConnect fail-closed behavior, and Telegram failure isolation, while end-to-end Paper flow, burn-in, and final readiness remain open.
 
 ## Current Position
 
 Phase: 16.2 execution in progress
-Plan: 16.2-01 and 16.2-02 complete; next eligible work is 16.2-03 deployed E2E Paper trace or remaining 16.2-04 deployed resilience evidence
-Status: UAT-02, UAT-03, and UAT-05 passed; UAT-01, UAT-04, UAT-06, UAT-07, UAT-08, UAT-09, and OPS-01 remain open; v1.1 remains active until UAT-01 through UAT-09 and OPS-01 pass
-Last activity: 2026-06-18 -- Phase 16.2 `/dashboard-state` health endpoint returned sanitized `dashboard_state_stale` deployed evidence on commit `4f9b36b`
+Plan: 16.2-01 and 16.2-02 complete; next eligible work is 16.2-03 deployed E2E Paper trace and 16.2-05 burn-in closeout
+Status: UAT-02, UAT-03, UAT-04, UAT-05, UAT-06, and UAT-07 passed; UAT-01, UAT-08, UAT-09, and OPS-01 remain open; v1.1 remains active until UAT-01 through UAT-09 and OPS-01 pass
+Last activity: 2026-06-18 -- Phase 16.2 render-store resilience harness passed inside the deployed Render worker with isolated namespace and no scheduler/order/recovery controls
 
 Progress: [█████████░] 85%
 
@@ -62,7 +62,7 @@ Progress: [█████████░] 85%
 **Recent Trend:**
 
 - Last 5 planned plans: 16.2-01, 16.2-02, 16.2-03, 16.2-04, 16.2-05
-- Trend: Phase 15 external order authority passed; Phase 16.1 deployed go-live verified; Phase 16.2 UAT-02 heartbeat/missed-run monitoring, off-hours monitor behavior, UAT-03 redeploy recovery, and UAT-05 stale shared-state health behavior passed; UAT-01 E2E Paper flow remains the main market-hours gate
+- Trend: Phase 15 external order authority passed; Phase 16.1 deployed go-live verified; Phase 16.2 UAT-02 heartbeat/missed-run monitoring, UAT-03 redeploy recovery, UAT-04 duplicate-lock prevention, UAT-05 stale shared-state health behavior, UAT-06 fake QuantConnect fail-closed behavior, and UAT-07 Telegram failure isolation passed; UAT-01 E2E Paper flow remains the main market-hours gate
 
 *Updated after each plan completion*
 | Phase 04 P01 | 6 min | 2 tasks | 4 files |
