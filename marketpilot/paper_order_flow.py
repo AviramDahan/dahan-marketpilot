@@ -4,6 +4,7 @@
 
 
 import json
+import os
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
@@ -470,7 +471,22 @@ def submit_signal_command(
         )
 
     api_client = client or QCApiClient()
-    delivered = bool(api_client.create_live_command(project_id=project_id, command=payload))
+    transport = os.environ.get("MARKETPILOT_QC_SIGNAL_TRANSPORT", "command").strip().lower()
+    if transport == "object_store":
+        organization_id = os.environ.get("QC_ORGANIZATION_ID", "").strip()
+        object_store_key = os.environ.get("MARKETPILOT_QC_OBJECT_STORE_SIGNAL_KEY", "").strip()
+        if not organization_id or not object_store_key:
+            delivered = False
+        else:
+            response = api_client.upload_object_store_file(
+                organization_id=organization_id,
+                project_id=project_id,
+                key=object_store_key,
+                content=json.dumps(payload, sort_keys=True).encode("utf-8"),
+            )
+            delivered = bool(response.get("success", False))
+    else:
+        delivered = bool(api_client.create_live_command(project_id=project_id, command=payload))
     _append_ledger_record(
         path,
         {
@@ -501,6 +517,7 @@ def submit_signal_command(
             "order_executed": False,
             "order_filled": False,
             "source_authority": "quantconnect",
+            "transport": transport,
             "local_authority": False,
             "paper_trading_only": True,
         },

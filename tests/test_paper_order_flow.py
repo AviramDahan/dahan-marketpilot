@@ -511,6 +511,7 @@ class FakeQCApiClient:
     def __init__(self) -> None:
         self.deploy_calls: list[dict[str, object]] = []
         self.command_calls: list[dict[str, object]] = []
+        self.object_store_uploads: list[dict[str, object]] = []
 
     def create_live_algorithm(self, **kwargs):
         self.deploy_calls.append(kwargs)
@@ -519,6 +520,10 @@ class FakeQCApiClient:
     def create_live_command(self, **kwargs):
         self.command_calls.append(kwargs)
         return True
+
+    def upload_object_store_file(self, **kwargs):
+        self.object_store_uploads.append(kwargs)
+        return {"success": True}
 
 
 def _write_sync_record(path, *, source_timestamp, sync_status="success", reconciliation_clean=True):
@@ -627,6 +632,42 @@ def test_submit_signal_command_delivers_after_fresh_clean_sync(tmp_path):
     assert records[-1]["event_type"] == "paper_signal_command_delivered"
     assert records[-1]["payload"]["command_delivered"] is True
     assert records[-1]["payload"]["order_executed"] is False
+
+
+def test_submit_signal_command_can_deliver_via_quantconnect_object_store(tmp_path, monkeypatch):
+    client = FakeQCApiClient()
+    now = datetime(2026, 6, 16, 13, 35, tzinfo=UTC)
+    sync_path = tmp_path / "portfolio_sync.jsonl"
+    audit_path = tmp_path / "paper_audit.jsonl"
+    ledger_path = tmp_path / "paper_signal_ledger.jsonl"
+    _write_sync_record(sync_path, source_timestamp=(now - timedelta(seconds=300)).isoformat())
+    monkeypatch.setenv("MARKETPILOT_QC_SIGNAL_TRANSPORT", "object_store")
+    monkeypatch.setenv("QC_ORGANIZATION_ID", "org-safe")
+    monkeypatch.setenv("MARKETPILOT_QC_OBJECT_STORE_SIGNAL_KEY", "123/marketpilot/signals/operator-probe.json")
+
+    result = submit_signal_command(
+        project_id=123,
+        deploy_id="L-paper-001",
+        intent=_order_intent(signal_time=now - timedelta(seconds=120)),
+        correlation_id="corr-object-store",
+        signal_id="sig-object-store",
+        expires_at_utc=now + timedelta(seconds=480),
+        sync_jsonl_path=sync_path,
+        ledger_path=ledger_path,
+        audit_journal_path=audit_path,
+        client=client,
+        now_utc=now,
+    )
+
+    assert result.status == "command_delivered"
+    assert result.command_delivered is True
+    assert client.command_calls == []
+    assert len(client.object_store_uploads) == 1
+    upload = client.object_store_uploads[0]
+    assert upload["key"] == "123/marketpilot/signals/operator-probe.json"
+    assert json.loads(upload["content"].decode("utf-8"))["correlation_id"] == "corr-object-store"
+    records = _audit_records(audit_path)
+    assert records[-1]["payload"]["transport"] == "object_store"
 
 
 def test_submit_signal_command_uses_latest_sync_record_only(tmp_path):

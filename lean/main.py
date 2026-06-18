@@ -8,6 +8,7 @@ class DahanMarketPilotRuntime(QCAlgorithm):
     """Self-contained QuantConnect Paper adapter for MarketPilot commands."""
 
     MARKETPILOT_OBJECT_STORE_SIGNAL_KEY = ""
+    DEFAULT_MARKETPILOT_OBJECT_STORE_SIGNAL_KEY = "32900381/marketpilot/signals/operator-probe.json"
 
     def initialize(self):
         self.set_start_date(2026, 1, 1)
@@ -215,8 +216,9 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         getter = getattr(self, "get_parameter", getattr(self, "GetParameter", None))
         if callable(getter):
             value = getter("marketpilot_object_store_signal_key")
-            return str(value or "").strip()
-        return ""
+            if str(value or "").strip():
+                return str(value or "").strip()
+        return str(getattr(self, "DEFAULT_MARKETPILOT_OBJECT_STORE_SIGNAL_KEY", "") or "").strip()
 
     def _schedule_marketpilot_object_store_polling(self):
         if not self.marketpilot_object_store_signal_key:
