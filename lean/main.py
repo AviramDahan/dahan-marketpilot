@@ -24,9 +24,11 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         self.latest_command_rejection_evidence = None
         self.latest_command_pending_evidence = None
         self.latest_order_event_evidence = None
+        self.marketpilot_last_object_store_poll_at = None
 
-        self.add_equity("SPY", Resolution.DAILY)
-        self.add_equity("QQQ", Resolution.DAILY)
+        minute = getattr(Resolution, "MINUTE", getattr(Resolution, "Minute", Resolution.DAILY))
+        self.add_equity("SPY", minute)
+        self.add_equity("QQQ", minute)
         self._schedule_marketpilot_object_store_polling()
 
         self.debug("SIMULATED PAPER TRADING ONLY - NOT FINANCIAL ADVICE")
@@ -40,6 +42,16 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         }
         self.debug("MarketPilot command received.")
         return self._handle_marketpilot_payload(data, source="command")
+
+    def on_data(self, data):
+        if not self.marketpilot_object_store_signal_key:
+            return
+        now = self._marketpilot_now_utc()
+        last_poll = self.marketpilot_last_object_store_poll_at
+        if last_poll is not None and (now - last_poll).total_seconds() < 20:
+            return
+        self.marketpilot_last_object_store_poll_at = now
+        self.poll_marketpilot_object_store_signal()
 
     def poll_marketpilot_object_store_signal(self):
         key = str(getattr(self, "marketpilot_object_store_signal_key", "") or "").strip()
