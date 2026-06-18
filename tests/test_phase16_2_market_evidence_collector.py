@@ -47,9 +47,10 @@ def test_collector_output_is_trace_gate_compatible_when_complete(tmp_path, capsy
     paths = {}
     payloads = {
         "signal": {"signal_preview": {"signal_id": "uat-cid"}},
-        "scoring": {"production_result": {"score": 91}},
-        "risk": {"risk_decision": "accepted"},
+        "scoring": {"correlation_id": "uat-cid", "production_result": {"score": 91}},
+        "risk": {"correlation_id": "uat-cid", "risk_decision": "accepted"},
         "qc": {
+            "correlation_id": "uat-cid",
             "authority_endpoint": "/live/orders/read",
             "quantconnect_order_id": "1",
             "expected_order_tag": "mp:uat-cid:order-1",
@@ -60,9 +61,9 @@ def test_collector_output_is_trace_gate_compatible_when_complete(tmp_path, capsy
             "source": "quantconnect",
             "paper_trading_only": True,
         },
-        "sync": {"source": "quantconnect", "source_timestamp": "2026-06-17T18:00:00+00:00"},
-        "dashboard": {"dashboard_url": "https://example.test"},
-        "telegram": {"status": "delivered", "telegram_message_id": "42"},
+        "sync": {"correlation_id": "uat-cid", "source": "quantconnect", "source_timestamp": "2026-06-17T18:00:00+00:00"},
+        "dashboard": {"correlation_id": "uat-cid", "dashboard_url": "https://example.test"},
+        "telegram": {"correlation_id": "uat-cid", "status": "delivered", "telegram_message_id": "42"},
     }
     for name, payload in payloads.items():
         path = tmp_path / f"{name}.json"

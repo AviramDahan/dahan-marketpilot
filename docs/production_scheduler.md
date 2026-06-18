@@ -107,6 +107,8 @@ Phase 16.1 extends this with Render Key Value / Valkey shared state:
 - Phase 16.2 UAT-01 fill evidence must come from sanitized `/live/orders/read`
   authority metadata. Generic `filled` fields or positive fill quantity alone
   are not sufficient.
+- UAT-01 E2E evidence requires the same non-empty correlation ID on signal/probe,
+  scoring, risk, QC authority, sync, dashboard, and Telegram segments.
 - UAT-01 preflight requires sanitized reconciliation readiness:
   `sync_status=success`, `reconciliation_clean=true`, `source=quantconnect`, a
   timezone-aware source timestamp, and fresh-enough data for the market gate.
@@ -114,6 +116,8 @@ Phase 16.1 extends this with Render Key Value / Valkey shared state:
   blocks only matching validation correlation/tag/idempotency, same symbol/side
   validation duplicates, leftover operator-probe orders, or ambiguous orders
   that cannot be safely distinguished from the planned probe.
+  Same-symbol/same-side orders with clearly different non-probe metadata are
+  allowed.
 
 ## Failure Behavior
 

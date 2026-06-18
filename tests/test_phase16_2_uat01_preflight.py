@@ -137,11 +137,27 @@ def test_probe_order_readiness_allows_no_orders_and_unrelated_protective_order()
     assert result["total_open_order_count"] == 1
 
 
-def test_probe_order_readiness_blocks_matching_correlation_tag_duplicate_leftover_and_ambiguous():
+def test_probe_order_readiness_allows_unrelated_same_symbol_side_with_clear_metadata():
+    order = SimpleNamespace(status="submitted", symbol="SPY", quantity=1, tag="mp:other-flow:other-order", idempotency_key="other-order", signal_id="other-flow")
+
+    result = phase16_2_uat01_preflight.evaluate_probe_order_readiness(
+        [order],
+        correlation_id="uat-cid",
+        expected_order_tag="mp:uat-cid:order-1",
+        idempotency_key="order-1",
+        symbol="SPY",
+        side="buy",
+    )
+
+    assert result["readiness_decision"] == "passed"
+    assert result["duplicate_symbol_side_count"] == 0
+
+
+def test_probe_order_readiness_blocks_matching_correlation_tag_idempotency_leftover_and_ambiguous():
     cases = [
         SimpleNamespace(status="submitted", symbol="SPY", quantity=1, tag="mp:other:order", idempotency_key="uat-cid", signal_id=None),
         SimpleNamespace(status="submitted", symbol="SPY", quantity=1, tag="mp:uat-cid:order-1", idempotency_key="other", signal_id=None),
-        SimpleNamespace(status="submitted", symbol="SPY", quantity=1, tag="mp:other:order", idempotency_key="other", signal_id=None),
+        SimpleNamespace(status="submitted", symbol="SPY", quantity=1, tag="mp:other:order", idempotency_key="order-1", signal_id=None),
         SimpleNamespace(status="submitted", symbol="MSFT", quantity=1, tag="operator-probe-old", idempotency_key="old-probe", signal_id=None),
         SimpleNamespace(status="submitted", symbol="SPY", quantity=1, tag=None, idempotency_key=None, signal_id=None),
     ]

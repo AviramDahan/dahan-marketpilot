@@ -44,6 +44,7 @@ def build_trace(payloads: list[Mapping[str, Any]]) -> dict[str, object]:
     partial_segments: dict[str, dict[str, object]] = {}
     correlation_ids: set[str] = set()
     segment_correlation_ids: set[str] = set()
+    missing_correlation_segments: list[str] = []
     for payload in payloads:
         sanitized = sanitize(payload)
         correlation_id = _extract_correlation_id(sanitized)
@@ -51,6 +52,14 @@ def build_trace(payloads: list[Mapping[str, Any]]) -> dict[str, object]:
             correlation_ids.add(correlation_id)
         for segment in REQUIRED_SEGMENTS:
             if _payload_proves_segment(segment, sanitized):
+                if not correlation_id:
+                    segments[segment] = {
+                        "status": "blocked_missing_correlation_id",
+                        "correlation_id": None,
+                        "evidence": _summarize_payload(segment, sanitized),
+                    }
+                    missing_correlation_segments.append(segment)
+                    continue
                 segments[segment] = {
                     "status": "passed",
                     "correlation_id": correlation_id,
@@ -76,6 +85,7 @@ def build_trace(payloads: list[Mapping[str, Any]]) -> dict[str, object]:
         "segment_correlation_ids": sorted(segment_correlation_ids),
         "correlation_mismatch": correlation_mismatch,
         "missing_segments": missing,
+        "missing_correlation_segments": sorted(set(missing_correlation_segments)),
         "partial_segments": partial_segments,
         "segments": segments,
     }

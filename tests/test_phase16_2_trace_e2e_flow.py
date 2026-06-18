@@ -46,6 +46,81 @@ def test_trace_passes_with_all_required_segments(tmp_path, capsys):
     assert output["correlation_mismatch"] is False
 
 
+def test_trace_blocks_dashboard_without_correlation_id(tmp_path, capsys):
+    base = tmp_path / "base.json"
+    dashboard = tmp_path / "dashboard.json"
+    base.write_text(json.dumps({k: v for k, v in _complete_fill_evidence().items() if k != "dashboard_url"}), encoding="utf-8")
+    dashboard.write_text(json.dumps({"dashboard_url": "https://example.test"}), encoding="utf-8")
+
+    result = phase16_2_trace_e2e_flow.main(["--evidence-json", str(base), "--evidence-json", str(dashboard)])
+
+    output = json.loads(capsys.readouterr().out)
+    assert result == 2
+    assert "dashboard" in output["missing_segments"]
+    assert "dashboard" in output["missing_correlation_segments"]
+
+
+def test_trace_blocks_telegram_without_correlation_id(tmp_path, capsys):
+    base = tmp_path / "base.json"
+    telegram = tmp_path / "telegram.json"
+    base_payload = {k: v for k, v in _complete_fill_evidence().items() if k not in {"status", "telegram_message_id"}}
+    base.write_text(json.dumps(base_payload), encoding="utf-8")
+    telegram.write_text(json.dumps({"status": "delivered", "telegram_message_id": "42"}), encoding="utf-8")
+
+    result = phase16_2_trace_e2e_flow.main(["--evidence-json", str(base), "--evidence-json", str(telegram)])
+
+    output = json.loads(capsys.readouterr().out)
+    assert result == 2
+    assert "telegram" in output["missing_segments"]
+    assert "telegram" in output["missing_correlation_segments"]
+
+
+def test_trace_blocks_sync_without_correlation_id(tmp_path, capsys):
+    base = tmp_path / "base.json"
+    sync = tmp_path / "sync.json"
+    base_payload = {k: v for k, v in _complete_fill_evidence().items() if k not in {"source_timestamp"}}
+    base.write_text(json.dumps(base_payload), encoding="utf-8")
+    sync.write_text(json.dumps({"source": "quantconnect", "source_timestamp": "2026-06-17T18:00:00+00:00"}), encoding="utf-8")
+
+    result = phase16_2_trace_e2e_flow.main(["--evidence-json", str(base), "--evidence-json", str(sync)])
+
+    output = json.loads(capsys.readouterr().out)
+    assert result == 2
+    assert "sync" in output["missing_segments"]
+    assert "sync" in output["missing_correlation_segments"]
+
+
+def test_trace_blocks_any_single_missing_segment_correlation(tmp_path, capsys):
+    payloads = _seven_segment_payloads("phase16-2-flow")
+    payloads["scoring"].pop("correlation_id")
+    paths = []
+    for segment, payload in payloads.items():
+        path = tmp_path / f"{segment}.json"
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        paths.append(path)
+
+    result = phase16_2_trace_e2e_flow.main([arg for path in paths for arg in ("--evidence-json", str(path))])
+
+    output = json.loads(capsys.readouterr().out)
+    assert result == 2
+    assert "scoring" in output["missing_correlation_segments"]
+
+
+def test_trace_passes_all_seven_segments_with_one_matching_id(tmp_path, capsys):
+    paths = []
+    for segment, payload in _seven_segment_payloads("phase16-2-flow").items():
+        path = tmp_path / f"{segment}.json"
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        paths.append(path)
+
+    result = phase16_2_trace_e2e_flow.main([arg for path in paths for arg in ("--evidence-json", str(path))])
+
+    output = json.loads(capsys.readouterr().out)
+    assert result == 0
+    assert output["segment_correlation_ids"] == ["phase16-2-flow"]
+    assert output["missing_correlation_segments"] == []
+
+
 def test_trace_blocks_rejected_order_as_partial_authority_only(tmp_path, capsys):
     evidence = {
         "status": "delivered",
@@ -268,3 +343,30 @@ def _complete_fill_evidence(**overrides):
     }
     evidence.update(overrides)
     return evidence
+
+
+def _seven_segment_payloads(correlation_id: str):
+    return {
+        "signal": {"correlation_id": correlation_id, "signal_preview": {"signal_id": correlation_id}},
+        "scoring": {"correlation_id": correlation_id, "production_result": {"score": 91}},
+        "risk": {"correlation_id": correlation_id, "risk_decision": "accepted"},
+        "qc": {
+            "correlation_id": correlation_id,
+            "authority_endpoint": "/live/orders/read",
+            "quantconnect_order_id": "1",
+            "expected_order_tag": f"mp:{correlation_id}:order-1",
+            "symbol": "SPY",
+            "orders_authority_status": "filled",
+            "filled_quantity": "1",
+            "filled_at": "2026-06-17T18:01:00+00:00",
+            "source": "quantconnect",
+            "paper_trading_only": True,
+        },
+        "sync": {
+            "correlation_id": correlation_id,
+            "source": "quantconnect",
+            "source_timestamp": "2026-06-17T18:00:00+00:00",
+        },
+        "dashboard": {"correlation_id": correlation_id, "dashboard_url": "https://example.test"},
+        "telegram": {"correlation_id": correlation_id, "status": "delivered", "telegram_message_id": "42"},
+    }

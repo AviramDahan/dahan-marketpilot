@@ -236,15 +236,15 @@ def evaluate_probe_order_readiness(
         matches_correlation = bool(correlation_id and correlation_id in {order_idempotency_key, order_signal_id})
         matches_tag = bool(expected_order_tag and order_tag == expected_order_tag)
         matches_idempotency = bool(idempotency_key and order_idempotency_key == idempotency_key)
-        symbol_side_duplicate = bool(symbol and order_symbol == symbol.upper() and side and order_side == side)
+        symbol_side_match = bool(symbol and order_symbol == symbol.upper() and side and order_side == side)
         is_probe_leftover = "operator" in order_tag.lower() or "probe" in order_tag.lower() or "operator" in order_idempotency_key.lower() or "probe" in order_idempotency_key.lower()
         if matches_correlation or matches_tag or matches_idempotency:
             matching_probe += 1
-        if symbol_side_duplicate:
+        if symbol_side_match and is_probe_leftover:
             duplicate += 1
         if is_probe_leftover and not (matches_correlation or matches_tag or matches_idempotency):
             leftover += 1
-        if symbol and order_symbol == symbol.upper() and not metadata_known:
+        if symbol_side_match and not metadata_known:
             ambiguous += 1
     readiness = "passed" if matching_probe == 0 and duplicate == 0 and leftover == 0 and ambiguous == 0 else "blocked"
     return {

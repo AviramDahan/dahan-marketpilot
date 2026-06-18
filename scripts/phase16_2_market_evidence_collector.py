@@ -62,7 +62,13 @@ def collect_evidence(*, correlation_id: str, payloads: Mapping[str, Mapping[str,
             bundle_segments[segment] = {"status": "invalid_payload"}
             continue
         payload_correlation_id = _extract_payload_correlation_id(sanitized)
-        if payload_correlation_id and payload_correlation_id != correlation_id:
+        if not payload_correlation_id:
+            bundle_segments[segment] = {
+                "status": "missing_correlation_id",
+                "expected_correlation_id": correlation_id,
+            }
+            continue
+        if payload_correlation_id != correlation_id:
             bundle_segments[segment] = {
                 "status": "correlation_mismatch",
                 "expected_correlation_id": correlation_id,
@@ -70,7 +76,6 @@ def collect_evidence(*, correlation_id: str, payloads: Mapping[str, Mapping[str,
             }
             continue
         normalized = dict(sanitized)
-        normalized.setdefault("correlation_id", correlation_id)
         sanitized_payloads.append(normalized)
         bundle_segments[segment] = {"status": "provided", "correlation_id": correlation_id}
 
@@ -81,7 +86,7 @@ def collect_evidence(*, correlation_id: str, payloads: Mapping[str, Mapping[str,
         "status": trace["status"],
         "checked_at": datetime.now(timezone.utc).isoformat(),
         "paper_trading_only": True,
-        "correlation_id": correlation_id,
+        "expected_correlation_id": correlation_id,
         "segments": bundle_segments,
         "trace": trace,
         "fabricated_segments": [],
@@ -96,7 +101,7 @@ def _load_segment_payloads(*, correlation_id: str, paths: Mapping[str, Path | No
         loaded = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(loaded, Mapping):
             raise SystemExit(f"{path} must contain a JSON object for {segment}")
-        payloads[segment] = {"correlation_id": correlation_id, **dict(loaded)}
+        payloads[segment] = dict(loaded)
     return payloads
 
 
@@ -105,11 +110,17 @@ def _extract_payload_correlation_id(payload: Mapping[str, Any]) -> str | None:
         value = payload.get(key)
         if value:
             return str(value)
+    signal_preview = payload.get("signal_preview")
+    if isinstance(signal_preview, Mapping):
+        return _extract_payload_correlation_id(signal_preview)
     return None
 
 
 def _combine_trace_payload(*, correlation_id: str, payloads: list[Mapping[str, Any]]) -> dict[str, object]:
-    combined: dict[str, object] = {"correlation_id": correlation_id}
+    combined: dict[str, object] = {}
+    observed_ids = {_extract_payload_correlation_id(payload) for payload in payloads}
+    if observed_ids == {correlation_id}:
+        combined["correlation_id"] = correlation_id
     for payload in payloads:
         for key, value in payload.items():
             if key == "correlation_id":
