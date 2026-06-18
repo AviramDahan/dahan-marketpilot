@@ -107,7 +107,10 @@ class DahanMarketPilotRuntime(QCAlgorithm):
                 "reason": "unsupported_command_type",
                 "source": source,
             }
-            self.debug("MarketPilot command rejected: unsupported_command_type")
+            self.debug(
+                "MarketPilot command rejected: unsupported_command_type "
+                f"payload_keys={self._safe_payload_keys(payload)}"
+            )
             return False
 
         if self._payload_get(payload, "paper_trading_only") is not True:
@@ -273,6 +276,11 @@ class DahanMarketPilotRuntime(QCAlgorithm):
             for name in dir(data)
             if not name.startswith("_") and not callable(getattr(data, name))
         }
+
+    def _safe_payload_keys(self, payload):
+        if not isinstance(payload, dict):
+            return []
+        return sorted(str(key) for key in payload.keys())[:30]
 
     def _required_text(self, payload, key):
         return str(self._payload_get(payload, key) or "").strip()
