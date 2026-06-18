@@ -396,7 +396,7 @@ def _paper_delivery_job(
             ledger_path=config.signal_ledger_path,
             audit_journal_path=config.audit_journal_path,
             client=deps.client,
-            now_utc=now,
+            now_utc=datetime.now(timezone.utc),
         )
         status = str(getattr(response, "status", "unknown"))
         statuses.append(status)
