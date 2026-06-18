@@ -331,6 +331,22 @@ def test_on_command_accepts_quantconnect_capitalized_keys(monkeypatch):
     ]
 
 
+def test_on_command_accepts_quantconnect_payload_data_envelope(monkeypatch):
+    algorithm = _algorithm(monkeypatch)
+    payload = {
+        "PayloadData": json.dumps(
+            _payload(idempotency_key="order-intent-qc-envelope")
+        )
+    }
+
+    accepted = algorithm.on_command(payload)
+
+    assert accepted is True
+    assert algorithm.market_orders == [
+        {"symbol": "MSFT", "quantity": 12, "tag": "mp:sig-001:order-intent-qc-envelope"}
+    ]
+
+
 @pytest.mark.parametrize(
     "payload",
     [
