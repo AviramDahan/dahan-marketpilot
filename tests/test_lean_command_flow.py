@@ -347,6 +347,32 @@ def test_on_command_accepts_quantconnect_payload_data_envelope(monkeypatch):
     ]
 
 
+def test_on_command_accepts_quantconnect_payload_data_object_envelope(monkeypatch):
+    algorithm = _algorithm(monkeypatch)
+
+    class PayloadObject:
+        def __init__(self, **values):
+            for key, value in values.items():
+                setattr(self, key, value)
+
+    payload = {
+        "PayloadData": PayloadObject(
+            **_payload(idempotency_key="order-intent-qc-object-envelope")
+        )
+    }
+
+    accepted = algorithm.on_command(payload)
+
+    assert accepted is True
+    assert algorithm.market_orders == [
+        {
+            "symbol": "MSFT",
+            "quantity": 12,
+            "tag": "mp:sig-001:order-intent-qc-object-envelope",
+        }
+    ]
+
+
 @pytest.mark.parametrize(
     "payload",
     [

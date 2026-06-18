@@ -304,7 +304,29 @@ class DahanMarketPilotRuntime(QCAlgorithm):
                     return payload
                 if isinstance(decoded, dict):
                     return self._unwrap_payload_envelope(decoded)
+            if value is not None:
+                decoded = self._payload_value_to_dict(value)
+                if decoded:
+                    return self._unwrap_payload_envelope(decoded)
         return payload
+
+    def _payload_value_to_dict(self, value):
+        try:
+            decoded = json.loads(str(value))
+        except (TypeError, ValueError):
+            decoded = None
+        if isinstance(decoded, dict):
+            return decoded
+        if isinstance(value, (bool, int, float, bytes, bytearray)):
+            return {}
+        try:
+            return {
+                name: getattr(value, name)
+                for name in dir(value)
+                if not name.startswith("_") and not callable(getattr(value, name))
+            }
+        except Exception:
+            return {}
 
     def _safe_payload_keys(self, payload):
         if not isinstance(payload, dict):
