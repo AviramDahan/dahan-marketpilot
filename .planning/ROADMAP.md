@@ -231,7 +231,7 @@ burn-in, restart recovery, missed-run monitoring, and complete signal -> order
 
 **Success Criteria** (what must be TRUE):
 
-1. Deployed flow proves signal -> scoring -> risk decision -> Paper order -> authoritative order result -> fill -> sync -> dashboard -> Telegram.
+1. Deployed flow proves signal -> scoring -> risk decision -> Paper order -> authoritative QuantConnect Paper order result followed by a real Paper fill -> sync -> dashboard -> Telegram. Submitted, rejected, or cancelled order evidence is partial only unless requirements are explicitly changed.
 2. Scheduler heartbeat and missed-run monitoring are externally verified, including strict market-hours freshness and off-hours no-false-positive behavior.
 3. Restart and redeployment recovery are externally verified.
 4. Duplicate-run prevention, stale-data handling, temporary QuantConnect failure handling, and Telegram delivery failure handling are verified.

@@ -72,7 +72,7 @@
 
 ## End-to-End UAT & Operational Burn-in
 
-- [ ] **UAT-01**: Deployed flow proves signal -> scoring -> risk decision -> Paper order -> authoritative order result -> fill -> sync -> dashboard -> Telegram
+- [ ] **UAT-01**: Deployed flow proves signal -> scoring -> risk decision -> Paper order -> authoritative QuantConnect Paper order result followed by a real Paper fill -> sync -> dashboard -> Telegram; submitted, rejected, or cancelled order evidence is partial only unless this requirement is explicitly changed
 - [x] **UAT-02**: Scheduler heartbeat and missed-run monitoring are externally verified
 - [x] **UAT-03**: Restart and redeployment recovery are externally verified
 - [x] **UAT-04**: Duplicate-run prevention is externally verified

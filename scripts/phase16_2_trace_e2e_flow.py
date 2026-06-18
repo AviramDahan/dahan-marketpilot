@@ -20,6 +20,7 @@ REQUIRED_SEGMENTS = (
     "telegram",
 )
 SECRET_KEY_HINTS = ("token", "secret", "password", "credential", "api_key", "chat_id")
+PARTIAL_QC_ORDER_AUTHORITY_STATUSES = {"submitted", "rejected", "cancelled", "canceled"}
 SECRET_VALUE_PATTERNS = (
     re.compile(r"\b\d{8,12}:[A-Za-z0-9_-]{25,}\b"),
     re.compile(r"\b[a-f0-9]{48,}\b", re.IGNORECASE),
@@ -39,6 +40,7 @@ def main(argv: list[str] | None = None) -> int:
 
 def build_trace(payloads: list[Mapping[str, Any]]) -> dict[str, object]:
     segments: dict[str, dict[str, object]] = {name: {"status": "not_run"} for name in REQUIRED_SEGMENTS}
+    partial_segments: dict[str, dict[str, object]] = {}
     correlation_ids: set[str] = set()
     segment_correlation_ids: set[str] = set()
     for payload in payloads:
@@ -55,6 +57,13 @@ def build_trace(payloads: list[Mapping[str, Any]]) -> dict[str, object]:
                 }
                 if correlation_id:
                     segment_correlation_ids.add(correlation_id)
+            elif segment == "qc_order_authority" and _payload_partially_proves_qc_order_authority(sanitized):
+                partial_segments[segment] = {
+                    "status": "partial",
+                    "correlation_id": correlation_id,
+                    "evidence": _summarize_payload(segment, sanitized),
+                    "reason": "QuantConnect order authority was observed without a Paper fill; UAT-01 still requires a real fill.",
+                }
     missing = [name for name, segment in segments.items() if segment["status"] != "passed"]
     correlation_mismatch = len(segment_correlation_ids) > 1
     status = "passed" if not missing and len(segment_correlation_ids) == 1 else "blocked_external_not_verified"
@@ -66,6 +75,7 @@ def build_trace(payloads: list[Mapping[str, Any]]) -> dict[str, object]:
         "segment_correlation_ids": sorted(segment_correlation_ids),
         "correlation_mismatch": correlation_mismatch,
         "missing_segments": missing,
+        "partial_segments": partial_segments,
         "segments": segments,
     }
 
@@ -122,10 +132,9 @@ def _payload_proves_segment(segment: str, payload: Mapping[str, Any]) -> bool:
             return risk.strip().lower() in {"accepted", "rejected", "blocked", "passed"}
         return bool(payload.get("order_intent"))
     if segment == "qc_order_authority":
-        if payload.get("orders_authority_status") in {"submitted", "filled", "rejected", "passed"}:
+        if _payload_has_authoritative_fill(payload):
             return True
-        order_status = str(payload.get("order_status") or payload.get("status") or "").lower()
-        return order_status in {"submitted", "filled", "rejected", "passed"}
+        return False
     if segment == "sync":
         return bool(payload.get("source") == "quantconnect" and payload.get("source_timestamp"))
     if segment == "dashboard":
@@ -133,6 +142,24 @@ def _payload_proves_segment(segment: str, payload: Mapping[str, Any]) -> bool:
     if segment == "telegram":
         return status == "delivered" or payload.get("telegram_message_id") is not None
     return False
+
+
+def _payload_has_authoritative_fill(payload: Mapping[str, Any]) -> bool:
+    orders_authority_status = str(payload.get("orders_authority_status") or "").strip().lower()
+    order_status = str(payload.get("order_status") or payload.get("status") or "").strip().lower()
+    if orders_authority_status == "filled" or order_status == "filled":
+        return True
+    filled_quantity = payload.get("filled_quantity", payload.get("quantity_filled"))
+    try:
+        return filled_quantity is not None and float(str(filled_quantity)) > 0
+    except (TypeError, ValueError):
+        return False
+
+
+def _payload_partially_proves_qc_order_authority(payload: Mapping[str, Any]) -> bool:
+    orders_authority_status = str(payload.get("orders_authority_status") or "").strip().lower()
+    order_status = str(payload.get("order_status") or payload.get("status") or "").strip().lower()
+    return orders_authority_status in PARTIAL_QC_ORDER_AUTHORITY_STATUSES or order_status in PARTIAL_QC_ORDER_AUTHORITY_STATUSES
 
 
 def _summarize_payload(segment: str, payload: Mapping[str, Any]) -> dict[str, object]:
@@ -143,6 +170,8 @@ def _summarize_payload(segment: str, payload: Mapping[str, Any]) -> dict[str, ob
         "expected_order_tag",
         "order_status",
         "orders_authority_status",
+        "filled_quantity",
+        "quantity_filled",
         "source",
         "source_timestamp",
         "freshness_level",

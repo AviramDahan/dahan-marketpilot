@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-15)
 ## Current Position
 
 Phase: 16.2 execution in progress
-Plan: 16.2-01, 16.2-02, and 16.2-04 complete; next eligible work is 16.2-03 deployed E2E Paper trace and 16.2-05 burn-in closeout
+Plan: 16.2-01, 16.2-02, and 16.2-04 complete; off-hours prep hardened 16.2-03 evidence collection; next eligible market-hours work is 16.2-03 deployed E2E Paper trace and 16.2-05 burn-in closeout
 Status: UAT-02, UAT-03, UAT-04, UAT-05, UAT-06, and UAT-07 passed; UAT-01, UAT-08, UAT-09, and OPS-01 remain open; v1.1 remains active until UAT-01 through UAT-09 and OPS-01 pass
 Last activity: 2026-06-18 -- Phase 16.2 render-store resilience harness passed inside the deployed Render worker with isolated namespace and no scheduler/order/recovery controls
 
@@ -63,6 +63,7 @@ Progress: [█████████░] 85%
 
 - Last 5 planned plans: 16.2-01, 16.2-02, 16.2-03, 16.2-04, 16.2-05
 - Trend: Phase 15 external order authority passed; Phase 16.1 deployed go-live verified; Phase 16.2 UAT-02 heartbeat/missed-run monitoring, UAT-03 redeploy recovery, UAT-04 duplicate-lock prevention, UAT-05 stale shared-state health behavior, UAT-06 fake QuantConnect fail-closed behavior, and UAT-07 Telegram failure isolation passed; UAT-01 E2E Paper flow remains the main market-hours gate
+- Off-hours Phase 16.2 prep: UAT-01 acceptance now requires an authoritative QuantConnect Paper fill; rejected/submitted/cancelled evidence is partial only. Preflight/evidence-collector tooling is prepared without closing UAT-01, UAT-08, UAT-09, OPS-01, Phase 16.2, or v1.1.
 
 *Updated after each plan completion*
 | Phase 04 P01 | 6 min | 2 tasks | 4 files |

@@ -593,11 +593,11 @@ def _runtime_input_factory_from_env(source: Mapping[str, str]) -> RuntimeInputFa
 
     data_dir = Path(str(source.get("MARKETPILOT_DATA_DIR") or "data"))
     sync_path = data_dir / "portfolio_sync.jsonl"
-    symbol = str(source.get("MARKETPILOT_OPERATOR_PAPER_PROBE_SYMBOL") or "MSFT").strip().upper()
+    symbol = _required_probe_text(source, "MARKETPILOT_OPERATOR_PAPER_PROBE_SYMBOL").upper()
     sector = str(source.get("MARKETPILOT_OPERATOR_PAPER_PROBE_SECTOR") or "Technology").strip() or "Technology"
-    entry = _optional_positive_decimal(source.get("MARKETPILOT_OPERATOR_PAPER_PROBE_ENTRY_PRICE"), Decimal("750"))
-    stop = _optional_positive_decimal(source.get("MARKETPILOT_OPERATOR_PAPER_PROBE_STOP_PRICE"), Decimal("700"))
-    target = _optional_positive_decimal(source.get("MARKETPILOT_OPERATOR_PAPER_PROBE_TARGET_PRICE"), Decimal("850"))
+    entry = _required_positive_decimal(source, "MARKETPILOT_OPERATOR_PAPER_PROBE_ENTRY_PRICE")
+    stop = _required_positive_decimal(source, "MARKETPILOT_OPERATOR_PAPER_PROBE_STOP_PRICE")
+    target = _required_positive_decimal(source, "MARKETPILOT_OPERATOR_PAPER_PROBE_TARGET_PRICE")
     if stop >= entry or target <= entry:
         raise ValueError("operator paper probe requires stop < entry < target.")
 
@@ -772,9 +772,17 @@ def _decimal_from_mapping(mapping: Mapping[str, object], key: str) -> Decimal | 
         return None
 
 
-def _optional_positive_decimal(value: object, default: Decimal) -> Decimal:
+def _required_probe_text(source: Mapping[str, str], key: str) -> str:
+    value = str(source.get(key) or "").strip()
+    if not value:
+        raise ValueError(f"{key} is required when operator paper probe is enabled.")
+    return value
+
+
+def _required_positive_decimal(source: Mapping[str, str], key: str) -> Decimal:
+    value = source.get(key)
     if value is None or str(value).strip() == "":
-        return default
+        raise ValueError(f"{key} is required when operator paper probe is enabled.")
     parsed = Decimal(str(value))
     if parsed <= 0:
         raise ValueError("operator paper probe price inputs must be positive.")

@@ -261,6 +261,10 @@ def test_production_dependencies_from_env_builds_operator_probe_factory(tmp_path
             "MARKETPILOT_RUNTIME_INPUT_KIND": "operator_paper_probe",
             "MARKETPILOT_OPERATOR_PAPER_PROBE_ENABLED": "1",
             "MARKETPILOT_DATA_DIR": str(tmp_path),
+            "MARKETPILOT_OPERATOR_PAPER_PROBE_SYMBOL": "MSFT",
+            "MARKETPILOT_OPERATOR_PAPER_PROBE_ENTRY_PRICE": "750",
+            "MARKETPILOT_OPERATOR_PAPER_PROBE_STOP_PRICE": "700",
+            "MARKETPILOT_OPERATOR_PAPER_PROBE_TARGET_PRICE": "850",
         }
     )
 
@@ -294,6 +298,10 @@ def test_operator_probe_factory_refuses_unclean_sync(tmp_path):
             "MARKETPILOT_RUNTIME_INPUT_KIND": "operator_paper_probe",
             "MARKETPILOT_OPERATOR_PAPER_PROBE_ENABLED": "1",
             "MARKETPILOT_DATA_DIR": str(tmp_path),
+            "MARKETPILOT_OPERATOR_PAPER_PROBE_SYMBOL": "MSFT",
+            "MARKETPILOT_OPERATOR_PAPER_PROBE_ENTRY_PRICE": "750",
+            "MARKETPILOT_OPERATOR_PAPER_PROBE_STOP_PRICE": "700",
+            "MARKETPILOT_OPERATOR_PAPER_PROBE_TARGET_PRICE": "850",
         }
     )
 
@@ -310,8 +318,22 @@ def test_operator_probe_factory_rejects_invalid_price_shape(tmp_path):
                 "MARKETPILOT_RUNTIME_INPUT_KIND": "operator_paper_probe",
                 "MARKETPILOT_OPERATOR_PAPER_PROBE_ENABLED": "1",
                 "MARKETPILOT_DATA_DIR": str(tmp_path),
+                "MARKETPILOT_OPERATOR_PAPER_PROBE_SYMBOL": "MSFT",
                 "MARKETPILOT_OPERATOR_PAPER_PROBE_ENTRY_PRICE": "750",
                 "MARKETPILOT_OPERATOR_PAPER_PROBE_STOP_PRICE": "800",
                 "MARKETPILOT_OPERATOR_PAPER_PROBE_TARGET_PRICE": "850",
+            }
+        )
+
+
+def test_operator_probe_factory_requires_explicit_market_inputs(tmp_path):
+    import pytest
+
+    with pytest.raises(ValueError, match="MARKETPILOT_OPERATOR_PAPER_PROBE_SYMBOL is required"):
+        build_production_dependencies_from_env(
+            env={
+                "MARKETPILOT_RUNTIME_INPUT_KIND": "operator_paper_probe",
+                "MARKETPILOT_OPERATOR_PAPER_PROBE_ENABLED": "1",
+                "MARKETPILOT_DATA_DIR": str(tmp_path),
             }
         )
