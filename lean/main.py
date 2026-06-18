@@ -121,7 +121,8 @@ class DahanMarketPilotRuntime(QCAlgorithm):
             }
             self.debug(
                 "MarketPilot command rejected: unsupported_command_type "
-                f"payload_keys={self._safe_payload_keys(payload)}"
+                f"payload_keys={self._safe_payload_keys(payload)} "
+                f"envelope_types={self._safe_envelope_types(payload)}"
             )
             return False
 
@@ -352,6 +353,22 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         if not isinstance(payload, dict):
             return []
         return sorted(str(key) for key in payload.keys())[:30]
+
+    def _safe_envelope_types(self, payload):
+        if not isinstance(payload, dict):
+            return []
+        values = []
+        for key in ("payload_data", "PayloadData", "payloadData"):
+            if key not in payload:
+                continue
+            value = payload.get(key)
+            preview = ""
+            try:
+                preview = str(value)[:80]
+            except Exception:
+                preview = "<unprintable>"
+            values.append(f"{key}:{type(value).__name__}:{preview}")
+        return values[:5]
 
     def _required_text(self, payload, key):
         return str(self._payload_get(payload, key) or "").strip()
