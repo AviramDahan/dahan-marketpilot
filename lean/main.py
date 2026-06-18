@@ -285,11 +285,37 @@ class DahanMarketPilotRuntime(QCAlgorithm):
                 return self._unwrap_payload_envelope(loaded) if isinstance(loaded, dict) else {}
             except (TypeError, ValueError):
                 return {}
+        dynamic_payload = self._dynamic_payload_dict(data)
+        if dynamic_payload:
+            return dynamic_payload
         return self._unwrap_payload_envelope({
             name: getattr(data, name)
             for name in dir(data)
             if not name.startswith("_") and not callable(getattr(data, name))
         })
+
+    def _dynamic_payload_dict(self, data):
+        keys = (
+            "command_type",
+            "correlation_id",
+            "signal_id",
+            "idempotency_key",
+            "symbol",
+            "quantity",
+            "signal_time_utc",
+            "expires_at_utc",
+            "paper_trading_only",
+        )
+        values = {}
+        for key in keys:
+            for candidate in (key, key[:1].upper() + key[1:]):
+                try:
+                    value = data[candidate]
+                except Exception:
+                    continue
+                values[key] = value
+                break
+        return values
 
     def _unwrap_payload_envelope(self, payload):
         if not isinstance(payload, dict):

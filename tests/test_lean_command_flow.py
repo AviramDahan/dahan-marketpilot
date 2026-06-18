@@ -426,6 +426,34 @@ def test_on_command_accepts_quantconnect_payload_data_mapping_envelope(monkeypat
     ]
 
 
+def test_on_command_accepts_quantconnect_dynamic_indexer_payload(monkeypatch):
+    algorithm = _algorithm(monkeypatch)
+    payload_values = {
+        key[:1].upper() + key[1:]: value
+        for key, value in _payload(
+            idempotency_key="order-intent-qc-dynamic-indexer"
+        ).items()
+    }
+
+    class DynamicPayload:
+        PayloadData = None
+        payload_data = None
+
+        def __getitem__(self, key):
+            return payload_values[key]
+
+    accepted = algorithm.on_command(DynamicPayload())
+
+    assert accepted is True
+    assert algorithm.market_orders == [
+        {
+            "symbol": "MSFT",
+            "quantity": 12,
+            "tag": "mp:sig-001:order-intent-qc-dynamic-indexer",
+        }
+    ]
+
+
 @pytest.mark.parametrize(
     "payload",
     [
