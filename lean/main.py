@@ -8,7 +8,7 @@ class DahanMarketPilotRuntime(QCAlgorithm):
     """Self-contained QuantConnect Paper adapter for MarketPilot commands."""
 
     MARKETPILOT_OBJECT_STORE_SIGNAL_KEY = ""
-    DEFAULT_MARKETPILOT_OBJECT_STORE_SIGNAL_KEY = ""
+    DEFAULT_MARKETPILOT_OBJECT_STORE_SIGNAL_KEY = "32900381/marketpilot/signals/phase16-2-live.json"
 
     def initialize(self):
         self.set_start_date(2026, 1, 1)
@@ -108,7 +108,22 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         accepted = self._handle_marketpilot_payload(payload, source="object_store")
         if accepted is not None:
             self.marketpilot_processed_object_store_keys.add(key)
+            self._delete_marketpilot_object_store_signal(key)
         return bool(accepted)
+
+    def _delete_marketpilot_object_store_signal(self, key):
+        object_store = getattr(self, "object_store", getattr(self, "ObjectStore", None))
+        if object_store is None:
+            return False
+        for name in ("delete", "Delete"):
+            remover = getattr(object_store, name, None)
+            if callable(remover):
+                try:
+                    remover(key)
+                    return True
+                except Exception:
+                    return False
+        return False
 
     def _handle_marketpilot_payload(self, data, *, source):
         payload = self._payload_dict(data)

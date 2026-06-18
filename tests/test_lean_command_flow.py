@@ -282,7 +282,7 @@ def test_initialize_schedules_object_store_polling_when_key_parameter_exists(mon
     base.parameter_values = {}
 
 
-def test_initialize_does_not_schedule_object_store_polling_by_default(monkeypatch):
+def test_initialize_schedules_replay_safe_default_object_store_polling(monkeypatch):
     module = _load_lean_main(monkeypatch)
     base = module.DahanMarketPilotRuntime.__mro__[1]
     base.parameter_values = {}
@@ -293,8 +293,10 @@ def test_initialize_does_not_schedule_object_store_polling_by_default(monkeypatc
 
     algorithm.initialize()
 
-    assert algorithm.marketpilot_object_store_signal_key == ""
-    assert algorithm.schedule.calls == []
+    assert algorithm.marketpilot_object_store_signal_key == (
+        "32900381/marketpilot/signals/phase16-2-live.json"
+    )
+    assert len(algorithm.schedule.calls) == 1
 
 
 def test_initialize_creates_command_idempotency_and_order_event_evidence(monkeypatch):
@@ -517,6 +519,7 @@ class FakeObjectStore:
     def __init__(self, payloads):
         self.payloads = payloads
         self.clear_called = False
+        self.deleted_keys = []
 
     def clear(self):
         self.clear_called = True
@@ -526,6 +529,10 @@ class FakeObjectStore:
 
     def read(self, key):
         return self.payloads[key]
+
+    def delete(self, key):
+        self.deleted_keys.append(key)
+        self.payloads.pop(key, None)
 
 
 def test_object_store_signal_poll_accepts_fresh_payload_through_shared_validation(monkeypatch):
@@ -538,6 +545,7 @@ def test_object_store_signal_poll_accepts_fresh_payload_through_shared_validatio
 
     assert accepted is True
     assert algorithm.object_store.clear_called is True
+    assert algorithm.object_store.deleted_keys == [key]
     assert algorithm.latest_object_store_receipt_evidence == {
         "received": True,
         "key": key,
