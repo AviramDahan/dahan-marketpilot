@@ -4,8 +4,8 @@ milestone: v1.1
 milestone_name: QuantConnect Live Paper Trading
 status: Phase 16.2 execution in progress; Plans 01, 02, and 04 complete; UAT-02, UAT-03, UAT-04, UAT-05, UAT-06, and UAT-07 passed
 stopped_at: Phase 16.2 heartbeat/missed-run monitor, redeploy recovery, duplicate-lock prevention, stale shared-state health behavior, fake QuantConnect fail-closed behavior, and Telegram failure isolation are verified; UAT-01 has partial real QuantConnect Paper fill authority evidence but still needs a complete same-correlation seven-segment trace; UAT-08 has session 1 candidate and still needs the next consecutive market session
-last_updated: "2026-06-18T22:44:00.000+03:00"
-last_activity: 2026-06-18 -- Phase 16.2 market-session attempts hardened LEAN command/Object Store handling through commit 103acd2 and produced a real Paper Submitted/Filled SPY live-log event for Object Store probe mp-run-20260618T194013Z; UAT-01 remains blocked because /live/orders/read did not return the required authoritative order row for that fill
+last_updated: "2026-06-19T00:00:00.000+03:00"
+last_activity: 2026-06-19 -- Phase 16.2 off-hours diagnostics hardened `/live/orders/read` parsing, pagination, sanitized deploy identity diagnostics, and bounded read-only order polling. No Paper order was submitted and the operator probe remained disabled; UAT-01 remains blocked until a market-session `/live/orders/read` row returns the required order id, tag/correlation/idempotency, fill status, quantity, symbol, and timestamp.
 progress:
   total_phases: 7
   completed_phases: 5
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-06-15)
 Phase: 16.2 execution in progress
 Plan: 16.2-01, 16.2-02, and 16.2-04 complete; 16.2-03 has partial real Paper fill authority evidence but remains open; 16.2-05 has session 1 burn-in candidate but remains open until the next consecutive valid US market session
 Status: UAT-02, UAT-03, UAT-04, UAT-05, UAT-06, and UAT-07 passed; UAT-01 remains blocked_external_not_verified; UAT-08 remains blocked_external_not_verified with one session candidate; UAT-09 and OPS-01 remain open; v1.1 remains active until UAT-01 through UAT-09 and OPS-01 pass
-Last activity: 2026-06-18 -- Phase 16.2 market-session execution hardened LEAN command envelope handling, made the Object Store probe key replay-safe, delivered Object Store probe `mp-run-20260618T194013Z`, and observed a real Paper Submitted/Filled SPY event in QuantConnect live logs. UAT-01 remains blocked because `/live/orders/read` returned an empty order page after the fill and the complete same-correlation seven-segment trace was not durably assembled.
+Last activity: 2026-06-19 -- Phase 16.2 off-hours work added sanitized QuantConnect project/deploy identity diagnostics, paginated `/live/orders/read` parsing, bounded read-only order-authority retry metadata, and trace-gate tests proving live-log fills plus empty `/live/orders/read` remain partial evidence only. No Paper order was submitted and UAT-01/UAT-08 remain open.
 
 Progress: [█████████░] 85%
 

@@ -543,17 +543,31 @@ class QCApiClient:
         self, *, project_id: int, deploy_id: str
     ) -> tuple[QuantConnectPaperOrder, ...]:
         """Read live orders and return typed order objects."""
-        response = self.read_live_orders_page(
-            project_id=project_id,
-            deploy_id=deploy_id,
-            start=0,
-            end=100,
-        )
-        raw_orders = response.get("orders", {})
         orders: list[QuantConnectPaperOrder] = []
-        for _oid, o in raw_orders.items() if isinstance(raw_orders, dict) else enumerate(raw_orders):
-            if isinstance(o, dict):
-                orders.append(_parse_live_order(_oid, o))
+        page_size = 100
+        max_pages = 10
+        for page in range(max_pages):
+            start = page * page_size
+            end = start + page_size
+            response = self.read_live_orders_page(
+                project_id=project_id,
+                deploy_id=deploy_id,
+                start=start,
+                end=end,
+            )
+            raw_orders = response.get("orders", {})
+            page_orders: list[QuantConnectPaperOrder] = []
+            for _oid, o in raw_orders.items() if isinstance(raw_orders, dict) else enumerate(raw_orders):
+                if isinstance(o, dict):
+                    page_orders.append(_parse_live_order(_oid, o))
+            orders.extend(page_orders)
+            length = response.get("length")
+            if not page_orders:
+                break
+            if isinstance(length, int) and end >= length:
+                break
+            if len(page_orders) < page_size:
+                break
         return tuple(orders)
 
     def read_live_orders_page(

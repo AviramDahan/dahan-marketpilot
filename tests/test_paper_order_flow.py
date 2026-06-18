@@ -177,6 +177,19 @@ class FakeLiveOrdersClient:
         return self.orders
 
 
+class SequencedLiveOrdersClient:
+    def __init__(self, responses) -> None:
+        self.responses = list(responses)
+        self.calls: list[dict[str, object]] = []
+
+    def read_live_orders(self, **kwargs):
+        self.calls.append(kwargs)
+        response = self.responses.pop(0)
+        if isinstance(response, Exception):
+            raise response
+        return response
+
+
 def _audit_records(path):
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
 
@@ -287,6 +300,112 @@ def test_fill_poll_with_expected_signal_does_not_audit_unrelated_orders(tmp_path
     assert result.observed_count == 0
     assert result.audit_record_count == 0
     assert not audit_path.exists()
+    assert result.status == "not_found"
+    assert result.reason == "matching_order_not_found"
+    assert result.attempts[0]["order_count"] == 1
+    assert result.attempts[0]["matching_order_count"] == 0
+    assert result.attempts[0]["deploy_id_preview"] == "L-paper-001"
+
+
+def test_fill_poll_retries_until_matching_order_appears(tmp_path):
+    audit_path = tmp_path / "paper_audit.jsonl"
+    client = SequencedLiveOrdersClient(
+        [
+            [],
+            [_qc_order_payload(id=702, tag="mp:sig-expected:order-intent-expected", status="Filled", quantityFilled=3, remainingQuantity=0)],
+        ]
+    )
+
+    result = poll_quantconnect_order_updates(
+        project_id=123,
+        deploy_id="L-paper-001",
+        audit_journal_path=audit_path,
+        correlation_id="corr-delayed",
+        expected_signal_id="sig-expected",
+        expected_idempotency_key="order-intent-expected",
+        client=client,
+        observed_at_utc=datetime(2026, 6, 16, 13, 45, tzinfo=UTC),
+        max_attempts=2,
+    )
+
+    assert len(client.calls) == 2
+    assert result.status == "completed"
+    assert result.observed_count == 1
+    assert result.attempt_count == 2
+    assert result.attempts[0]["matching_order_count"] == 0
+    assert result.attempts[1]["matching_order_count"] == 1
+
+
+def test_fill_poll_stops_cleanly_when_order_never_appears(tmp_path):
+    audit_path = tmp_path / "paper_audit.jsonl"
+    client = SequencedLiveOrdersClient([[], [], []])
+
+    result = poll_quantconnect_order_updates(
+        project_id=123,
+        deploy_id="L-paper-001",
+        audit_journal_path=audit_path,
+        correlation_id="corr-never",
+        expected_signal_id="sig-expected",
+        client=client,
+        observed_at_utc=datetime(2026, 6, 16, 13, 45, tzinfo=UTC),
+        max_attempts=3,
+    )
+
+    assert len(client.calls) == 3
+    assert result.status == "not_found"
+    assert result.reason == "matching_order_not_found"
+    assert result.audit_record_count == 0
+    assert not audit_path.exists()
+
+
+def test_fill_poll_records_temporary_api_error_then_success(tmp_path):
+    audit_path = tmp_path / "paper_audit.jsonl"
+    client = SequencedLiveOrdersClient(
+        [
+            RuntimeError("temporary outage"),
+            [_qc_order_payload(id=702, tag="mp:sig-expected:order-intent-expected", status="Filled", quantityFilled=3, remainingQuantity=0)],
+        ]
+    )
+
+    result = poll_quantconnect_order_updates(
+        project_id=123,
+        deploy_id="L-paper-001",
+        audit_journal_path=audit_path,
+        correlation_id="corr-retry",
+        expected_signal_id="sig-expected",
+        expected_idempotency_key="order-intent-expected",
+        client=client,
+        observed_at_utc=datetime(2026, 6, 16, 13, 45, tzinfo=UTC),
+        max_attempts=2,
+    )
+
+    assert result.status == "completed"
+    assert result.attempts[0]["status"] == "api_error"
+    assert result.attempts[0]["reason"] == "RuntimeError"
+    assert result.attempts[1]["status"] == "read"
+    assert result.observed_count == 1
+
+
+def test_fill_poll_reports_permanent_api_error_without_mutation(tmp_path):
+    audit_path = tmp_path / "paper_audit.jsonl"
+    client = SequencedLiveOrdersClient([RuntimeError("wrong deploy"), RuntimeError("wrong deploy")])
+
+    result = poll_quantconnect_order_updates(
+        project_id=123,
+        deploy_id="L-wrong-deploy-id",
+        audit_journal_path=audit_path,
+        correlation_id="corr-error",
+        expected_signal_id="sig-expected",
+        client=client,
+        observed_at_utc=datetime(2026, 6, 16, 13, 45, tzinfo=UTC),
+        max_attempts=2,
+    )
+
+    assert result.status == "api_error"
+    assert result.reason == "RuntimeError"
+    assert result.audit_record_count == 0
+    assert result.attempts[-1]["deploy_id_preview"] == "L-wron...loy-id"
+    assert all(call == {"project_id": 123, "deploy_id": "L-wrong-deploy-id"} for call in client.calls)
 
 
 def test_fill_poll_does_not_append_fill_without_quantconnect_fill_data(tmp_path):

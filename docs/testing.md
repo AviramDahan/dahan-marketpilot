@@ -404,6 +404,17 @@ order id `1`, status `3`, Submitted and Filled events, fill quantity `1`, fill
 price `$750.08`, object cleanup success, and deployment stop success. Phase 15
 order authority is passed for simulated Paper Trading only.
 
+Phase 16.2 keeps a stricter deployed-product UAT gate. QuantConnect live logs
+can support the narrative for a Paper order event, but they are partial evidence
+only. UAT-01 requires a sanitized `/live/orders/read` row with non-empty order
+id, matching tag/correlation/idempotency context, symbol, filled quantity,
+filled status, timezone-aware timestamp, and Paper-only confirmation, plus the
+same non-empty correlation id across signal/probe, scoring, risk, sync,
+dashboard, and Telegram segments. Off-hours diagnostics added paginated
+`/live/orders/read` parsing, bounded read-only retry metadata, and preflight
+deploy-id source/hash diagnostics; none of these helpers submit orders or
+convert live-log fills into authority evidence.
+
 ## Phase 16 Production Scheduler Tests
 
 Phase 16 tests are deterministic and offline. They verify the autonomous

@@ -213,6 +213,48 @@ def test_check_quantconnect_deployment_resolves_deployed_aliases_and_fails_close
     assert invalid["values_printed"] is False
 
 
+def test_identity_diagnostics_reports_sanitized_deploy_source_and_shapes():
+    fake = _FakeQCApiClient()
+    observer = {
+        "checks": {
+            "heartbeat": {
+                "market_window_status": "closed",
+                "latest_heartbeat_at": "2026-06-18T19:40:00+00:00",
+            },
+            "shared_state": {"source_timestamp": "2026-06-18T19:40:00+00:00"},
+        }
+    }
+
+    with patch("scripts.phase16_2_uat01_preflight.QCApiClient", return_value=fake):
+        result = phase16_2_uat01_preflight._check_identity_diagnostics(
+            {
+                "QUANTCONNECT_PROJECT_ID": "456",
+                "QUANTCONNECT_LIVE_DEPLOY_ID": "L-1234567890abcdef",
+            },
+            observer,
+        )
+
+    assert result["status"] == "passed"
+    assert result["project_id_present"] is True
+    assert result["project_id_source"] == "QUANTCONNECT_PROJECT_ID"
+    assert result["deploy_id_source"] == "QUANTCONNECT_LIVE_DEPLOY_ID"
+    assert result["deploy_id_preview"] == "L-1234...abcdef"
+    assert len(result["deploy_id_hash"]) == 12
+    assert result["deployment_read_shape"]["status"] == "read"
+    assert result["order_read_shape"] == {
+        "status": "read",
+        "order_count": 0,
+        "filled_count": 0,
+        "raw_payload_exposed": False,
+    }
+    assert result["market_window_status"] == "closed"
+    assert result["values_printed"] is False
+    assert fake.calls == [
+        ("read_live_algorithm", 456, "L-1234567890abcdef"),
+        ("read_live_orders", 456, "L-1234567890abcdef"),
+    ]
+
+
 class _FakeQCApiClient:
     def __init__(self):
         self.calls = []

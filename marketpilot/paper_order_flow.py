@@ -5,6 +5,8 @@
 
 import json
 import os
+import time
+import hashlib
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
@@ -82,6 +84,10 @@ class QuantConnectOrderPollResult:
     audit_record_count: int
     warning_count: int
     observations: tuple[QuantConnectOrderObservation, ...]
+    attempt_count: int = 1
+    attempts: tuple[Mapping[str, object], ...] = ()
+    status: str = "completed"
+    reason: str | None = None
 
 
 def deploy_paper_algorithm(
@@ -293,18 +299,24 @@ def poll_quantconnect_order_updates(
     expected_idempotency_key: str | None = None,
     client: QCApiClient | None = None,
     observed_at_utc: datetime | None = None,
+    max_attempts: int = 1,
+    retry_sleep_seconds: float = 0.0,
 ) -> QuantConnectOrderPollResult:
     """Poll authoritative QuantConnect live orders and mirror evidence to JSONL."""
 
     _assert_paper_only()
     observed_at = _aware_utc(observed_at_utc or datetime.now(timezone.utc), "observed_at_utc")
     api_client = client or QCApiClient()
-    raw_orders = api_client.read_live_orders(project_id=project_id, deploy_id=deploy_id)
-    observations = _filter_expected_observations(
-        parse_quantconnect_live_orders(raw_orders),
+    attempts = _read_live_orders_with_bounded_retries(
+        api_client,
+        project_id=project_id,
+        deploy_id=deploy_id,
         expected_signal_id=expected_signal_id,
         expected_idempotency_key=expected_idempotency_key,
+        max_attempts=max_attempts,
+        retry_sleep_seconds=retry_sleep_seconds,
     )
+    observations = attempts[-1].get("observations", ()) if attempts else ()
     journal = AppendOnlyJsonlAuditJournal(audit_journal_path)
 
     audit_count = 0
@@ -325,12 +337,97 @@ def poll_quantconnect_order_updates(
         audit_count += 1
 
     warning_count = sum(1 for observation in observations if observation.parse_warnings)
+    reason = None
+    status = "completed"
+    if attempts and attempts[-1].get("status") == "api_error":
+        status = "api_error"
+        reason = str(attempts[-1].get("reason") or "api_error")
+    elif not observations:
+        status = "not_found"
+        reason = "matching_order_not_found"
     return QuantConnectOrderPollResult(
         observed_count=len(observations),
         audit_record_count=audit_count,
         warning_count=warning_count,
         observations=observations,
+        attempt_count=len(attempts),
+        attempts=tuple(_sanitize_order_read_attempt(attempt) for attempt in attempts),
+        status=status,
+        reason=reason,
     )
+
+
+def _read_live_orders_with_bounded_retries(
+    api_client: QCApiClient,
+    *,
+    project_id: int,
+    deploy_id: str,
+    expected_signal_id: str | None,
+    expected_idempotency_key: str | None,
+    max_attempts: int,
+    retry_sleep_seconds: float,
+) -> list[dict[str, object]]:
+    attempts: list[dict[str, object]] = []
+    bounded_attempts = max(1, int(max_attempts or 1))
+    sleep_seconds = max(0.0, float(retry_sleep_seconds or 0.0))
+    for attempt_number in range(1, bounded_attempts + 1):
+        observed_at = datetime.now(timezone.utc)
+        try:
+            raw_orders = api_client.read_live_orders(project_id=project_id, deploy_id=deploy_id)
+            parsed = parse_quantconnect_live_orders(raw_orders)
+            observations = _filter_expected_observations(
+                parsed,
+                expected_signal_id=expected_signal_id,
+                expected_idempotency_key=expected_idempotency_key,
+            )
+            attempts.append(
+                {
+                    "attempt": attempt_number,
+                    "status": "read",
+                    "observed_at_utc": _utc_iso(observed_at),
+                    "deploy_id_preview": _safe_deploy_id_preview(deploy_id),
+                    "deploy_id_hash": _safe_deploy_id_hash(deploy_id),
+                    "order_count": len(parsed),
+                    "matching_order_count": len(observations),
+                    "observations": observations,
+                    "read_only": True,
+                }
+            )
+            if observations:
+                break
+        except Exception as exc:
+            attempts.append(
+                {
+                    "attempt": attempt_number,
+                    "status": "api_error",
+                    "observed_at_utc": _utc_iso(observed_at),
+                    "deploy_id_preview": _safe_deploy_id_preview(deploy_id),
+                    "deploy_id_hash": _safe_deploy_id_hash(deploy_id),
+                    "order_count": 0,
+                    "matching_order_count": 0,
+                    "reason": type(exc).__name__,
+                    "read_only": True,
+                }
+            )
+            if attempt_number == bounded_attempts:
+                break
+        if attempt_number < bounded_attempts and sleep_seconds > 0:
+            time.sleep(sleep_seconds)
+    return attempts
+
+
+def _sanitize_order_read_attempt(attempt: Mapping[str, object]) -> dict[str, object]:
+    return {
+        "attempt": attempt.get("attempt"),
+        "status": attempt.get("status"),
+        "observed_at_utc": attempt.get("observed_at_utc"),
+        "deploy_id_preview": attempt.get("deploy_id_preview"),
+        "deploy_id_hash": attempt.get("deploy_id_hash"),
+        "order_count": attempt.get("order_count"),
+        "matching_order_count": attempt.get("matching_order_count"),
+        "reason": attempt.get("reason"),
+        "read_only": True,
+    }
 
 
 def read_signal_order_fill_trace(
@@ -810,6 +907,20 @@ def _optional_utc_iso(value: datetime | None) -> str | None:
     if value is None:
         return None
     return _utc_iso(value)
+
+
+def _safe_deploy_id_preview(deploy_id: str) -> str:
+    value = str(deploy_id or "").strip()
+    if len(value) <= 12:
+        return value
+    return f"{value[:6]}...{value[-6:]}"
+
+
+def _safe_deploy_id_hash(deploy_id: str) -> str:
+    value = str(deploy_id or "").strip()
+    if not value:
+        return ""
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()[:12]
 
 
 def _assert_paper_only() -> None:

@@ -277,6 +277,43 @@ def test_trace_blocks_when_only_paper_flag_claims_risk_decision(tmp_path, capsys
     assert "risk_decision" in output["missing_segments"]
 
 
+def test_live_log_fill_alone_remains_partial_not_qc_authority(tmp_path, capsys):
+    evidence = _complete_fill_evidence(
+        authority_endpoint="/live/logs/read",
+        source_endpoint="/live/logs/read",
+        quantconnect_order_id="",
+        orders_authority_status="filled",
+        live_log_fill_observed=True,
+    )
+    path = tmp_path / "live-log-fill.json"
+    path.write_text(json.dumps(evidence), encoding="utf-8")
+
+    result = phase16_2_trace_e2e_flow.main(["--evidence-json", str(path)])
+
+    output = json.loads(capsys.readouterr().out)
+    assert result == 2
+    assert output["status"] == "blocked_external_not_verified"
+    assert "qc_order_authority" in output["missing_segments"]
+
+
+def test_live_log_fill_plus_empty_live_orders_read_remains_blocked(tmp_path, capsys):
+    evidence = _complete_fill_evidence(
+        quantconnect_order_id="",
+        orders_authority_status="not_found",
+        order_read_shape={"success": True, "length": 0, "orders": []},
+        live_log_fill_observed=True,
+    )
+    path = tmp_path / "empty-orders.json"
+    path.write_text(json.dumps(evidence), encoding="utf-8")
+
+    result = phase16_2_trace_e2e_flow.main(["--evidence-json", str(path)])
+
+    output = json.loads(capsys.readouterr().out)
+    assert result == 2
+    assert output["status"] == "blocked_external_not_verified"
+    assert "qc_order_authority" in output["missing_segments"]
+
+
 def test_trace_blocks_when_segments_have_different_correlation_ids(tmp_path, capsys):
     shared = {
         "status": "delivered",

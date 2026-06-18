@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -80,6 +81,7 @@ def run_preflight(
         "operator_probe_disabled": _check_operator_probe_disabled(env),
         "telegram_configuration": _check_telegram_configuration(env),
         "deployment": _check_quantconnect_deployment(env),
+        "identity_diagnostics": _check_identity_diagnostics(env, deployed_observer),
         "deployed_observer": deployed_observer,
         "reconciliation": _check_reconciliation(shared_state if isinstance(shared_state, Mapping) else {}, max_age_seconds=max_heartbeat_age_seconds),
     }
@@ -175,6 +177,59 @@ def _check_quantconnect_deployment(env: Mapping[str, str]) -> dict[str, object]:
         "open_order_count": len(open_orders),
         "order_readiness": order_readiness,
         "values_printed": False,
+    }
+
+
+def _check_identity_diagnostics(env: Mapping[str, str], deployed_observer: Mapping[str, object]) -> dict[str, object]:
+    project_source = _env_group_source(env, ("QC_PROJECT_ID", "QUANTCONNECT_PROJECT_ID"))
+    deploy_source = _env_group_source(env, ("QC_DEPLOY_ID", "QUANTCONNECT_LIVE_DEPLOY_ID"))
+    project_present = project_source is not None
+    deploy_id = str(_env_group_value(env, ("QC_DEPLOY_ID", "QUANTCONNECT_LIVE_DEPLOY_ID")) or "").strip()
+    observer_checks = deployed_observer.get("checks") if isinstance(deployed_observer, Mapping) else {}
+    heartbeat = observer_checks.get("heartbeat") if isinstance(observer_checks, Mapping) else {}
+    shared_state = observer_checks.get("shared_state") if isinstance(observer_checks, Mapping) else {}
+    deployment_read_shape: dict[str, object] = {"status": "not_run"}
+    order_read_shape: dict[str, object] = {"status": "not_run"}
+    if project_present and deploy_id:
+        try:
+            project_id = int(str(_env_group_value(env, ("QC_PROJECT_ID", "QUANTCONNECT_PROJECT_ID")) or "").strip())
+            client = QCApiClient()
+            snapshot = client.read_live_algorithm(project_id=project_id, deploy_id=deploy_id)
+            deployment_read_shape = {
+                "status": "read",
+                "deployment_status": snapshot.deployment_status.value,
+                "algorithm_status": snapshot.algorithm_status.value,
+                "orders_count": len(snapshot.orders),
+                "fills_count": len(snapshot.fills),
+            }
+            orders = client.read_live_orders(project_id=project_id, deploy_id=deploy_id)
+            order_read_shape = {
+                "status": "read",
+                "order_count": len(orders),
+                "filled_count": sum(1 for order in orders if str(getattr(order, "status", "")).lower() == "filled"),
+                "raw_payload_exposed": False,
+            }
+        except Exception as exc:
+            order_read_shape = {
+                "status": "read_failed",
+                "reason": type(exc).__name__,
+                "raw_payload_exposed": False,
+            }
+    return {
+        "status": "passed" if project_present and deploy_id else "missing_identity",
+        "project_id_present": project_present,
+        "project_id_source": project_source,
+        "deploy_id_source": deploy_source,
+        "deploy_id_preview": _safe_deploy_id_preview(deploy_id),
+        "deploy_id_hash": _safe_hash(deploy_id),
+        "deployment_read_shape": deployment_read_shape,
+        "order_read_shape": order_read_shape,
+        "market_window_status": heartbeat.get("market_window_status") if isinstance(heartbeat, Mapping) else None,
+        "heartbeat_source_timestamp": heartbeat.get("latest_heartbeat_at") if isinstance(heartbeat, Mapping) else None,
+        "shared_state_source_timestamp": shared_state.get("source_timestamp") if isinstance(shared_state, Mapping) else None,
+        "deploy_id_rotation_possible": True,
+        "values_printed": False,
+        "read_only": True,
     }
 
 
@@ -287,6 +342,28 @@ def _env_group_value(env: Mapping[str, str], names: tuple[str, ...]) -> str | No
         if value:
             return value
     return None
+
+
+def _env_group_source(env: Mapping[str, str], names: tuple[str, ...]) -> str | None:
+    for name in names:
+        value = str(env.get(name) or "").strip()
+        if value:
+            return name
+    return None
+
+
+def _safe_deploy_id_preview(deploy_id: str) -> str:
+    value = str(deploy_id or "").strip()
+    if len(value) <= 12:
+        return value
+    return f"{value[:6]}...{value[-6:]}"
+
+
+def _safe_hash(value: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
 
 
 def _safe_detail(value: str) -> str:

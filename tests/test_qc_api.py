@@ -388,6 +388,120 @@ def test_read_live_orders_returns_tuple_of_orders():
     assert rejected.remaining_quantity == 5
 
 
+def test_read_live_orders_handles_empty_orders_response():
+    client = _make_client_with_mocked_auth()
+    with patch.object(client, "_make_request", return_value={"success": True, "length": 0, "orders": []}):
+        result = client.read_live_orders(project_id=99999, deploy_id="L-paper")
+
+    assert result == ()
+
+
+def test_read_live_orders_parses_common_terminal_statuses():
+    client = _make_client_with_mocked_auth()
+    fixture = {
+        "success": True,
+        "length": 4,
+        "orders": {
+            "1001": {
+                "id": 1001,
+                "symbol": {"value": "SPY"},
+                "status": "Submitted",
+                "quantity": 3,
+                "quantityFilled": 0,
+                "remainingQuantity": 3,
+                "createdTime": "2026-06-18T19:40:00Z",
+                "tag": "mp:sig-001:idem-001",
+            },
+            "1002": {
+                "id": 1002,
+                "symbol": {"value": "SPY"},
+                "status": "Filled",
+                "quantity": 3,
+                "quantityFilled": 3,
+                "remainingQuantity": 0,
+                "averageFillPrice": "746.90",
+                "createdTime": "2026-06-18T19:40:00Z",
+                "lastFillTime": "2026-06-18T19:41:00Z",
+                "tag": "mp:sig-002:idem-002",
+            },
+            "1003": {
+                "id": 1003,
+                "symbol": {"value": "QQQ"},
+                "status": "Canceled",
+                "quantity": 1,
+                "createdTime": "2026-06-18T19:40:00Z",
+                "tag": "mp:sig-003:idem-003",
+            },
+            "1004": {
+                "id": 1004,
+                "symbol": {"value": "IWM"},
+                "status": "Invalid",
+                "quantity": 1,
+                "createdTime": "2026-06-18T19:40:00Z",
+                "message": "rejected",
+                "tag": "mp:sig-004:idem-004",
+            },
+        },
+    }
+    with patch.object(client, "_make_request", return_value=fixture):
+        result = client.read_live_orders(project_id=99999, deploy_id="L-paper")
+
+    assert [order.raw_status for order in result] == ["Submitted", "Filled", "Canceled", "Invalid"]
+    assert result[1].quantconnect_order_id == "1002"
+    assert result[1].signal_id == "sig-002"
+    assert result[1].idempotency_key == "idem-002"
+    assert result[1].filled_quantity == 3
+    assert result[3].rejection_reason == "rejected"
+
+
+def test_read_live_orders_paginates_until_length_is_reached():
+    client = _make_client_with_mocked_auth()
+    first = {
+        "success": True,
+        "length": 101,
+        "orders": {
+            str(index): {
+                "id": index,
+                "symbol": {"value": "SPY"},
+                "status": "Submitted",
+                "quantity": 1,
+                "createdTime": "2026-06-18T19:40:00Z",
+            }
+            for index in range(100)
+        },
+    }
+    second = {
+        "success": True,
+        "length": 101,
+        "orders": {
+            "100": {
+                "id": 100,
+                "symbol": {"value": "SPY"},
+                "status": "Filled",
+                "quantity": 1,
+                "quantityFilled": 1,
+                "createdTime": "2026-06-18T19:40:00Z",
+                "tag": "mp:sig-100:idem-100",
+            }
+        },
+    }
+    with patch.object(client, "_make_request", side_effect=[first, second]) as mock_request:
+        result = client.read_live_orders(project_id=99999, deploy_id="L-paper")
+
+    assert len(result) == 101
+    assert result[-1].signal_id == "sig-100"
+    assert mock_request.call_args_list[0].args[1]["start"] == 0
+    assert mock_request.call_args_list[1].args[1]["start"] == 100
+
+
+def test_read_live_orders_unexpected_shape_fails_closed_to_empty_tuple():
+    client = _make_client_with_mocked_auth()
+    with patch.object(client, "_make_request", return_value={"success": True, "length": 1, "orders": "unexpected"}):
+        result = client.read_live_orders(project_id=99999, deploy_id="L-paper")
+
+    assert result == ()
+
+
 def test_read_live_logs_uses_algorithm_id_payload():
     client = _make_client_with_mocked_auth()
     with patch.object(client, "_make_request", return_value={"success": True, "LiveLogs": []}) as mock_request:
