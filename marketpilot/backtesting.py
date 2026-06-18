@@ -1,6 +1,6 @@
-"""Backtesting contracts and deterministic safety checks."""
-
 from __future__ import annotations
+
+"""Backtesting contracts and deterministic safety checks."""
 
 from dataclasses import dataclass, field
 from datetime import datetime

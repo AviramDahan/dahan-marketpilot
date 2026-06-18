@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Fail-closed safety validation for Dahan MarketPilot configuration."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any, Iterable

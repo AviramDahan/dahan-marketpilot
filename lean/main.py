@@ -3,21 +3,9 @@ from datetime import datetime, timedelta, timezone
 
 from AlgorithmImports import QCAlgorithm, Resolution
 
-from marketpilot.lean_command_receiver import (
-    normalize_marketpilot_command,
-    validate_marketpilot_command,
-)
-from marketpilot.lean_bridge import (
-    LeanRuntimeBridge,
-    initialize_runtime_bridge,
-    map_quantconnect_bar_to_completed_bar,
-)
-from marketpilot.paper_command_models import parse_order_tag
-from marketpilot.timeframes import BarTimeframe
-
 
 class DahanMarketPilotRuntime(QCAlgorithm):
-    """Thin QuantConnect adapter for the MarketPilot runtime bridge."""
+    """Self-contained QuantConnect Paper adapter for MarketPilot commands."""
 
     MARKETPILOT_OBJECT_STORE_SIGNAL_KEY = ""
 
@@ -26,65 +14,35 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         self.set_end_date(2026, 1, 31)
         self.set_cash(27027.03)
 
-        self.runtime_bridge: LeanRuntimeBridge = initialize_runtime_bridge()
-        self.latest_runtime_result = None
-        self.latest_dashboard_export_evidence = self.runtime_bridge.export_dashboard_evidence(None)
-        self.marketpilot_seen_command_keys = set()
-        self.latest_command_receipt_evidence = None
-        self.latest_object_store_receipt_evidence = None
-        self.latest_order_event_evidence = None
-        self.latest_command_rejection_evidence = None
-        self.latest_command_pending_evidence = None
+        self.marketpilot_seen_idempotency_keys = set()
+        self.marketpilot_seen_command_keys = self.marketpilot_seen_idempotency_keys
         self.marketpilot_object_store_signal_key = self._marketpilot_object_store_signal_key()
         self.marketpilot_processed_object_store_keys = set()
+        self.latest_command_receipt_evidence = None
+        self.latest_object_store_receipt_evidence = None
+        self.latest_command_rejection_evidence = None
+        self.latest_command_pending_evidence = None
+        self.latest_order_event_evidence = None
 
         self.add_equity("SPY", Resolution.DAILY)
         self.add_equity("QQQ", Resolution.DAILY)
-        self.add_universe(self.select_dynamic_universe)
         self._schedule_marketpilot_object_store_polling()
 
         self.debug("SIMULATED PAPER TRADING ONLY - NOT FINANCIAL ADVICE")
-
-    def select_dynamic_universe(self, coarse):
-        return self.runtime_bridge.select_dynamic_universe(coarse)
-
-    def on_securities_changed(self, changes):
-        return self.runtime_bridge.on_securities_changed(changes)
-
-    def on_completed_daily_bar(self, sender, bar):
-        completed_bar = map_quantconnect_bar_to_completed_bar(
-            bar,
-            timeframe=BarTimeframe.DAILY,
-            exchange_timezone="America/New_York",
-            source_resolution="daily",
-            is_closed=True,
-        )
-        symbol = getattr(bar, "Symbol", "")
-        result = self.runtime_bridge.on_completed_bar(
-            symbol=symbol,
-            bar=completed_bar,
-            setup_results=(),
-            correlation_id=f"lean-{symbol}-{completed_bar.time.isoformat()}",
-        )
-        self.latest_runtime_result = result
-        self.latest_dashboard_export_evidence = self.runtime_bridge.export_dashboard_evidence(result)
-        return result
 
     def on_command(self, data):
         self.latest_command_receipt_evidence = {
             "received": True,
             "payload_kind": type(data).__name__,
-            "has_command_type": _has_safe_field(data, "command_type", "CommandType"),
-            "has_type": _has_safe_field(data, "$type", "type", "Type"),
+            "has_command_type": "command_type" in self._payload_dict(data),
+            "has_type": "$type" in self._payload_dict(data) or "type" in self._payload_dict(data),
         }
         self.debug("MarketPilot command received.")
         return self._handle_marketpilot_payload(data, source="command")
 
     def poll_marketpilot_object_store_signal(self):
         key = str(getattr(self, "marketpilot_object_store_signal_key", "") or "").strip()
-        if not key:
-            return False
-        if key in self.marketpilot_processed_object_store_keys:
+        if not key or key in self.marketpilot_processed_object_store_keys:
             return False
 
         object_store = getattr(self, "object_store", getattr(self, "ObjectStore", None))
@@ -94,6 +52,7 @@ class DahanMarketPilotRuntime(QCAlgorithm):
                 "key": key,
                 "reason": "object_store_unavailable",
             }
+            self.debug("MarketPilot Object Store signal rejected: object_store_unavailable")
             return False
 
         clearer = getattr(object_store, "clear", getattr(object_store, "Clear", None))
@@ -111,6 +70,7 @@ class DahanMarketPilotRuntime(QCAlgorithm):
                 "key": key,
                 "reason": "object_store_read_unavailable",
             }
+            self.debug("MarketPilot Object Store signal rejected: object_store_read_unavailable")
             return False
 
         raw_payload = reader(key)
@@ -130,7 +90,7 @@ class DahanMarketPilotRuntime(QCAlgorithm):
             "received": True,
             "key": key,
             "payload_kind": type(payload).__name__,
-            "has_command_type": _has_safe_field(payload, "command_type", "CommandType"),
+            "has_command_type": "command_type" in payload,
         }
         self.debug("MarketPilot Object Store signal received.")
         accepted = self._handle_marketpilot_payload(payload, source="object_store")
@@ -139,103 +99,111 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         return bool(accepted)
 
     def _handle_marketpilot_payload(self, data, *, source):
-        normalized = normalize_marketpilot_command(data)
-        if not normalized.accepted:
+        payload = self._payload_dict(data)
+        command_type = str(payload.get("command_type") or payload.get("CommandType") or "").strip()
+        if command_type != "marketpilot_signal":
             self.latest_command_rejection_evidence = {
                 "accepted": False,
-                "reason": normalized.reason,
+                "reason": "unsupported_command_type",
                 "source": source,
             }
-            self.debug(f"MarketPilot command rejected: {normalized.reason}")
+            self.debug("MarketPilot command rejected: unsupported_command_type")
             return False
 
-        validation = validate_marketpilot_command(
-            normalized.command,
-            seen_idempotency_keys=self.marketpilot_seen_command_keys,
-            now_utc=self._marketpilot_now_utc(),
-        )
-        if not validation.accepted:
+        if payload.get("paper_trading_only") is not True:
             self.latest_command_rejection_evidence = {
                 "accepted": False,
-                "reason": validation.reason,
-                "symbol": validation.symbol,
+                "reason": "paper_trading_only_required",
                 "source": source,
             }
-            self.debug(f"MarketPilot command rejected: {validation.reason}")
+            self.debug("MarketPilot command rejected: paper_trading_only_required")
             return False
 
-        if not self._marketpilot_symbol_has_tradeable_data(validation.symbol):
+        correlation_id = self._required_text(payload, "correlation_id")
+        signal_id = self._required_text(payload, "signal_id")
+        idempotency_key = self._required_text(payload, "idempotency_key")
+        symbol = self._required_text(payload, "symbol").upper()
+        quantity = self._required_int(payload, "quantity")
+        expires_at = self._parse_utc(payload.get("expires_at_utc"))
+        signal_time = self._parse_utc(payload.get("signal_time_utc"))
+
+        if not correlation_id or not signal_id or not idempotency_key or not symbol:
+            self.latest_command_rejection_evidence = {
+                "accepted": False,
+                "reason": "missing_required_field",
+                "source": source,
+            }
+            self.debug("MarketPilot command rejected: missing_required_field")
+            return False
+        if quantity <= 0:
+            self.latest_command_rejection_evidence = {
+                "accepted": False,
+                "reason": "invalid_quantity",
+                "symbol": symbol,
+                "source": source,
+            }
+            self.debug("MarketPilot command rejected: invalid_quantity")
+            return False
+        if signal_time is None:
+            self.latest_command_rejection_evidence = {
+                "accepted": False,
+                "reason": "invalid_signal_time",
+                "symbol": symbol,
+                "source": source,
+            }
+            self.debug("MarketPilot command rejected: invalid_signal_time")
+            return False
+        if expires_at is None or expires_at < self._marketpilot_now_utc():
+            self.latest_command_rejection_evidence = {
+                "accepted": False,
+                "reason": "expired_signal",
+                "symbol": symbol,
+                "source": source,
+            }
+            self.debug("MarketPilot command rejected: expired_signal")
+            return False
+        if idempotency_key in self.marketpilot_seen_idempotency_keys:
+            self.latest_command_rejection_evidence = {
+                "accepted": False,
+                "reason": "duplicate_idempotency_key",
+                "symbol": symbol,
+                "source": source,
+            }
+            self.debug("MarketPilot command rejected: duplicate_idempotency_key")
+            return False
+        if not self._marketpilot_symbol_has_tradeable_data(symbol):
             self.latest_command_pending_evidence = {
                 "pending": True,
                 "reason": "symbol_price_not_ready",
-                "symbol": validation.symbol,
+                "symbol": symbol,
                 "source": source,
             }
-            self.debug(f"MarketPilot command pending: {validation.symbol} price_not_ready")
-            if normalized.command.idempotency_key in self.marketpilot_seen_command_keys:
-                self.marketpilot_seen_command_keys.remove(normalized.command.idempotency_key)
+            self.debug(f"MarketPilot command pending: {symbol} price_not_ready")
             return None
 
-        self.market_order(validation.symbol, validation.quantity, tag=validation.tag)
+        tag = f"mp:{signal_id}:{idempotency_key}"
+        self.marketpilot_seen_idempotency_keys.add(idempotency_key)
+        self.market_order(symbol, quantity, tag=tag)
         self.latest_command_pending_evidence = None
         self.latest_command_rejection_evidence = None
-        self.debug(f"MarketPilot {source} accepted: {validation.symbol} {validation.quantity}")
+        self.debug(f"MarketPilot {source} accepted: {symbol} {quantity}")
         return True
 
     def on_order_event(self, order_event):
-        order_id = _safe_attr(order_event, "order_id", "OrderId")
+        order_id = self._safe_attr(order_event, "order_id", "OrderId")
         tag = self._marketpilot_order_tag(order_id)
-        tag_parts = parse_order_tag(tag) if tag else None
+        parts = str(tag or "").split(":")
         evidence = {
             "order_id": order_id,
-            "status": str(_safe_attr(order_event, "status", "Status")),
-            "fill_quantity": _safe_attr(order_event, "fill_quantity", "FillQuantity"),
-            "fill_price": _safe_attr(order_event, "fill_price", "FillPrice"),
+            "status": str(self._safe_attr(order_event, "status", "Status")),
+            "fill_quantity": self._safe_attr(order_event, "fill_quantity", "FillQuantity"),
+            "fill_price": self._safe_attr(order_event, "fill_price", "FillPrice"),
             "tag": tag,
-            "signal_id": (tag_parts or {}).get("signal_id"),
-            "idempotency_key": (tag_parts or {}).get("idempotency_key"),
+            "signal_id": parts[1] if len(parts) == 3 and parts[0] == "mp" else None,
+            "idempotency_key": parts[2] if len(parts) == 3 and parts[0] == "mp" else None,
         }
         self.latest_order_event_evidence = evidence
         return evidence
-
-    def _marketpilot_now_utc(self):
-        value = getattr(self, "time", getattr(self, "Time", None))
-        if isinstance(value, datetime):
-            if value.tzinfo is None:
-                return value.replace(tzinfo=timezone.utc)
-            return value.astimezone(timezone.utc)
-        return datetime.now(timezone.utc)
-
-    def _marketpilot_order_tag(self, order_id):
-        transactions = getattr(self, "transactions", getattr(self, "Transactions", None))
-        getter = getattr(transactions, "get_order_by_id", None)
-        if callable(getter):
-            order = getter(order_id)
-            return getattr(order, "tag", getattr(order, "Tag", None))
-        getter = getattr(transactions, "GetOrderById", None)
-        if callable(getter):
-            order = getter(order_id)
-            return getattr(order, "tag", getattr(order, "Tag", None))
-        return None
-
-    def _marketpilot_symbol_has_tradeable_data(self, symbol):
-        securities = getattr(self, "securities", getattr(self, "Securities", None))
-        security = None
-        if securities is not None:
-            try:
-                security = securities[symbol]
-            except Exception:
-                getter = getattr(securities, "get", getattr(securities, "Get", None))
-                if callable(getter):
-                    security = getter(symbol)
-        if security is None:
-            return True
-        has_data = getattr(security, "has_data", getattr(security, "HasData", True))
-        price = getattr(security, "price", getattr(security, "Price", 0))
-        try:
-            return bool(has_data) and float(price or 0) > 0
-        except (TypeError, ValueError):
-            return False
 
     def _marketpilot_object_store_signal_key(self):
         configured = str(getattr(self, "MARKETPILOT_OBJECT_STORE_SIGNAL_KEY", "") or "").strip()
@@ -258,21 +226,85 @@ class DahanMarketPilotRuntime(QCAlgorithm):
         on_method = getattr(schedule, "on", getattr(schedule, "On", None))
         every_day = getattr(date_rules, "every_day", getattr(date_rules, "EveryDay", None))
         every = getattr(time_rules, "every", getattr(time_rules, "Every", None))
-        if not callable(on_method) or not callable(every_day) or not callable(every):
+        if callable(on_method) and callable(every_day) and callable(every):
+            on_method(every_day(), every(timedelta(minutes=1)), self.poll_marketpilot_object_store_signal)
+            return True
+        return False
+
+    def _marketpilot_symbol_has_tradeable_data(self, symbol):
+        securities = getattr(self, "securities", getattr(self, "Securities", None))
+        security = None
+        if securities is not None:
+            try:
+                security = securities[symbol]
+            except Exception:
+                getter = getattr(securities, "get", getattr(securities, "Get", None))
+                if callable(getter):
+                    security = getter(symbol)
+        if security is None:
+            return True
+        has_data = getattr(security, "has_data", getattr(security, "HasData", True))
+        price = getattr(security, "price", getattr(security, "Price", 0))
+        try:
+            return bool(has_data) and float(price or 0) > 0
+        except (TypeError, ValueError):
             return False
-        on_method(every_day(), every(timedelta(minutes=1)), self.poll_marketpilot_object_store_signal)
-        return True
+
+    def _marketpilot_order_tag(self, order_id):
+        transactions = getattr(self, "transactions", getattr(self, "Transactions", None))
+        for name in ("get_order_by_id", "GetOrderById"):
+            getter = getattr(transactions, name, None)
+            if callable(getter):
+                order = getter(order_id)
+                return getattr(order, "tag", getattr(order, "Tag", None))
+        return None
+
+    def _payload_dict(self, data):
+        if isinstance(data, dict):
+            return data
+        if isinstance(data, str):
+            try:
+                loaded = json.loads(data)
+                return loaded if isinstance(loaded, dict) else {}
+            except (TypeError, ValueError):
+                return {}
+        return {
+            name: getattr(data, name)
+            for name in dir(data)
+            if not name.startswith("_") and not callable(getattr(data, name))
+        }
+
+    def _required_text(self, payload, key):
+        return str(payload.get(key) or payload.get(_pascal(key)) or "").strip()
+
+    def _required_int(self, payload, key):
+        try:
+            return int(payload.get(key) or payload.get(_pascal(key)) or 0)
+        except (TypeError, ValueError):
+            return 0
+
+    def _parse_utc(self, value):
+        if not value:
+            return None
+        try:
+            parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        if parsed.tzinfo is None:
+            return None
+        return parsed.astimezone(timezone.utc)
+
+    def _marketpilot_now_utc(self):
+        value = getattr(self, "time", getattr(self, "Time", None))
+        if isinstance(value, datetime):
+            if value.tzinfo is None:
+                return value.replace(tzinfo=timezone.utc)
+            return value.astimezone(timezone.utc)
+        return datetime.now(timezone.utc)
+
+    def _safe_attr(self, value, snake_name, pascal_name):
+        return getattr(value, snake_name, getattr(value, pascal_name, None))
 
 
-def _safe_attr(obj, *names):
-    for name in names:
-        if hasattr(obj, name):
-            return getattr(obj, name)
-    return None
-
-
-def _has_safe_field(obj, *names):
-    if isinstance(obj, dict):
-        lowered = {str(key).lower() for key in obj}
-        return any(name in obj or name.lower() in lowered for name in names)
-    return any(hasattr(obj, name) for name in names)
+def _pascal(value):
+    return "".join(part.capitalize() for part in str(value).split("_"))

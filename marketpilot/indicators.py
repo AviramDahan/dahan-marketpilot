@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Deterministic offline indicator helpers for Phase 2 readiness checks."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum

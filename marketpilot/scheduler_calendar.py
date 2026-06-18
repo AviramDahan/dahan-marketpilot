@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """NYSE/ET market-session guard for autonomous paper scheduling."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone

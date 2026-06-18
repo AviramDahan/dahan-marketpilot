@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Read-only HTTP health surface for deployed scheduler heartbeat evidence."""
 
-from __future__ import annotations
 
 import argparse
 import json

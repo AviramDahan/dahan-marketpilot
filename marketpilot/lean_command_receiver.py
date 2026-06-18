@@ -1,6 +1,6 @@
-"""Pure LEAN command receiver helpers for MarketPilot signal commands."""
-
 from __future__ import annotations
+
+"""Pure LEAN command receiver helpers for MarketPilot signal commands."""
 
 import re
 from dataclasses import dataclass

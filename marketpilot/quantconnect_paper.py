@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """QuantConnect Cloud Paper Trading prerequisite and operator-command contracts."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime

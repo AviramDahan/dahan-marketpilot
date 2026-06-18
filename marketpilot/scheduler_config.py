@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Configuration boundary for the MarketPilot production scheduler."""
 
-from __future__ import annotations
 
 import os
 from dataclasses import dataclass

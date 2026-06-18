@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Local simulated paper deployment and signal submission gates."""
 
-from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field

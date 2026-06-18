@@ -1,6 +1,6 @@
-"""Backtest report contracts and artifact classification."""
-
 from __future__ import annotations
+
+"""Backtest report contracts and artifact classification."""
 
 from dataclasses import dataclass, field
 from enum import Enum

@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """QuantConnect Cloud REST API client with defense-in-depth safety."""
 
-from __future__ import annotations
 
 import base64
 import hashlib
@@ -52,19 +53,19 @@ class QCApiError(Exception):
 
 
 class QCAuthenticationError(QCApiError):
-    """401 — invalid credentials; not retryable."""
+    """401 â€” invalid credentials; not retryable."""
 
 
 class QCRateLimitError(QCApiError):
-    """429 — rate limited; retryable."""
+    """429 â€” rate limited; retryable."""
 
 
 class QCServerError(QCApiError):
-    """5xx — server error; retryable."""
+    """5xx â€” server error; retryable."""
 
 
 class QCClientError(QCApiError):
-    """4xx (not 401/429) — client error; not retryable."""
+    """4xx (not 401/429) â€” client error; not retryable."""
 
 
 class QCNetworkError(QCApiError):
@@ -226,7 +227,7 @@ class QCApiClient:
 
         if resp.status_code == 401:
             raise QCAuthenticationError(
-                "Invalid QC credentials — authentication failed",
+                "Invalid QC credentials â€” authentication failed",
                 status_code=401,
                 response_body=resp.text,
             )
@@ -234,7 +235,7 @@ class QCApiClient:
         data = resp.json()
         if not data.get("success"):
             raise QCAuthenticationError(
-                "Invalid QC credentials — authentication failed",
+                "Invalid QC credentials â€” authentication failed",
                 response_body=resp.text,
             )
 
@@ -503,6 +504,8 @@ class QCApiClient:
         portfolio_equity = _decimal_from_quantconnect_value(
             statistics.get("Equity", runtime_statistics.get("Equity", cash))
         )
+        if cash == 0 and portfolio_equity > 0 and not holdings:
+            cash = portfolio_equity
         unrealized_profit = _decimal_from_quantconnect_value(
             statistics.get("Unrealized", runtime_statistics.get("Unrealized", 0))
         )

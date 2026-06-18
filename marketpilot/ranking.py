@@ -1,6 +1,6 @@
-"""Audit-only candidate ranking and Combined Swing readiness gate."""
-
 from __future__ import annotations
+
+"""Audit-only candidate ranking and Combined Swing readiness gate."""
 
 from dataclasses import dataclass, field
 from typing import Iterable, Mapping

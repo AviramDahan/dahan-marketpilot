@@ -1,6 +1,6 @@
-"""Audit-only MarketPilot scoring for setup evidence."""
-
 from __future__ import annotations
+
+"""Audit-only MarketPilot scoring for setup evidence."""
 
 from dataclasses import dataclass, field
 from enum import Enum

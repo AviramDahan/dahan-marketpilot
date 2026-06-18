@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Paper Trading activation modes and fail-closed eligibility decisions."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone

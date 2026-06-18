@@ -103,13 +103,12 @@ def _setup_result() -> SetupResult:
 def test_lean_main_uses_only_approved_bridge_lifecycle_hooks():
     text = LEAN_MAIN.read_text(encoding="utf-8")
 
-    assert "from marketpilot.lean_bridge import" in text
-    assert "initialize_runtime_bridge" in text
-    assert "select_dynamic_universe" in text
-    assert "on_securities_changed" in text
-    assert "on_completed_daily_bar" in text
-    assert "on_completed_bar" in text
-    assert "export_dashboard_evidence" in text
+    assert "class DahanMarketPilotRuntime(QCAlgorithm)" in text
+    assert "def on_command" in text
+    assert "poll_marketpilot_object_store_signal" in text
+    assert "paper_trading_only_required" in text
+    assert "duplicate_idempotency_key" in text
+    assert "market_order(symbol, quantity, tag=tag)" in text
 
 
 def test_runtime_bridge_static_policy_requires_full_runtime_path_tokens():
@@ -146,7 +145,7 @@ def test_bridge_and_lean_sources_keep_real_money_and_uncontrolled_order_tokens_f
     assert "market_order(" not in bridge_text
     assert lean_text.count("market_order(") == 1
     assert "def on_command" in lean_text
-    assert "tag=validation.tag" in lean_text
+    assert "tag=tag" in lean_text
 
 
 def test_completed_quantconnect_like_bar_maps_to_signal_valid_completed_bar():

@@ -1,6 +1,6 @@
-"""Offline data-quality vocabulary for Phase 2 universe decisions."""
-
 from __future__ import annotations
+
+"""Offline data-quality vocabulary for Phase 2 universe decisions."""
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -107,4 +107,3 @@ def unique_issues(issues: Iterable[DataQualityIssue]) -> tuple[DataQualityIssue,
             seen.add(issue)
             ordered.append(issue)
     return tuple(ordered)
-

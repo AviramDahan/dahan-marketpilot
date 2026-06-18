@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Validation, benchmark, and activation-gate contracts."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum

@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Documented QuantConnect API contract names for Phase 2 local tests."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass
 

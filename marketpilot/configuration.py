@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Typed YAML configuration loading for the Phase 1 foundation."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path

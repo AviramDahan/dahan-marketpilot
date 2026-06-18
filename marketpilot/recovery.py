@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Restart recovery and corporate-action placeholder contracts."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone

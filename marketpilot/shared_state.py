@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Shared production state adapters for Render-hosted worker/dashboard flows."""
 
-from __future__ import annotations
 
 import json
 import os

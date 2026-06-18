@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Phase 1-safe foundational domain models."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation

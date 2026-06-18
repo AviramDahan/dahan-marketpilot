@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Production scheduler runner for one autonomous Paper Trading cycle."""
 
-from __future__ import annotations
 
 import argparse
 import json

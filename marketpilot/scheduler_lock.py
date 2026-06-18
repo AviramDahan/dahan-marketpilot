@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Lease-based local scheduler lock contract."""
 
-from __future__ import annotations
 
 import json
 import os

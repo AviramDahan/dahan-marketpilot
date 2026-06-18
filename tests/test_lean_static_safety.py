@@ -38,9 +38,8 @@ def test_lean_adapter_keeps_benchmark_subscriptions_and_audited_dynamic_universe
     symbols = re.findall(r'add_equity\("([A-Z]+)"', text)
 
     assert symbols == ["SPY", "QQQ"]
-    assert "add_universe(" in text
-    assert "select_dynamic_universe" in text
-    assert "runtime_bridge.on_securities_changed" in text
+    assert "poll_marketpilot_object_store_signal" in text
+    assert "on_command" in text
 
 
 def test_lean_adapter_contains_no_uncontrolled_order_or_live_trading_calls():
@@ -51,15 +50,15 @@ def test_lean_adapter_contains_no_uncontrolled_order_or_live_trading_calls():
 
     assert text.count("market_order(") == 1
     assert "def on_command" in text
-    assert "tag=validation.tag" in text
+    assert "tag=tag" in text
 
 
 def test_lean_adapter_delegates_strategy_decisions_to_marketpilot_runtime():
     text = LEAN_MAIN.read_text(encoding="utf-8")
 
-    assert "LeanRuntimeBridge" in text
-    assert "runtime_bridge.on_completed_bar" in text
-    assert "runtime_bridge.export_dashboard_evidence" in text
+    assert "command_type" in text
+    assert "paper_trading_only_required" in text
+    assert "duplicate_idempotency_key" in text
     assert "run_runtime_pipeline(" not in text
     assert "score_setup_result(" not in text
     assert "rank_candidates(" not in text

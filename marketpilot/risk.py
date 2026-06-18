@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Paper-only portfolio risk and position sizing decisions."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation, ROUND_FLOOR

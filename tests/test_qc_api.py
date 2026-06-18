@@ -352,7 +352,7 @@ def test_read_live_algorithm_parses_real_live_dashboard_shape():
 
     assert result.deployment_status is QuantConnectDeploymentStatus.RUNNING
     assert result.portfolio_equity == Decimal("27027.03")
-    assert result.cash == Decimal("0")
+    assert result.cash == Decimal("27027.03")
 
 
 def test_read_live_orders_returns_tuple_of_orders():

@@ -1,6 +1,6 @@
-"""QuantConnect-authoritative Paper Trading reconciliation contracts."""
-
 from __future__ import annotations
+
+"""QuantConnect-authoritative Paper Trading reconciliation contracts."""
 
 from dataclasses import dataclass, field
 from enum import Enum

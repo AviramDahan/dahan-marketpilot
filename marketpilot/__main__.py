@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Command-line entrypoint for MarketPilot utilities."""
 
-from __future__ import annotations
 
 from marketpilot.sync import _main as sync_main
 

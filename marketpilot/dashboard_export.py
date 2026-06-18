@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Dashboard export payload builder and Object Store producer/loader."""
 
-from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field

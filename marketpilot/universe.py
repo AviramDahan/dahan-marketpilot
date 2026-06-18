@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Strict offline universe filtering for Phase 2."""
 
-from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path

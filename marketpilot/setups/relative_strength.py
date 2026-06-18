@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Relative Strength Leader setup evaluator with no trading side effects."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime

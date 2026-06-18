@@ -1,6 +1,6 @@
-"""Trend Pullback setup contracts and offline evaluator."""
-
 from __future__ import annotations
+
+"""Trend Pullback setup contracts and offline evaluator."""
 
 from dataclasses import dataclass
 from datetime import datetime

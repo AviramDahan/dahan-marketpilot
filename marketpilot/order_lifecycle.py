@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Paper-only order intent and lifecycle audit models."""
 
-from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass, field

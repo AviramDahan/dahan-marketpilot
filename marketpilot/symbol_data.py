@@ -1,6 +1,6 @@
-"""SymbolData lifecycle and readiness contracts for Phase 2."""
-
 from __future__ import annotations
+
+"""SymbolData lifecycle and readiness contracts for Phase 2."""
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -65,4 +65,3 @@ class SymbolData:
 
     def future_signal_ready(self, required: list[str] | tuple[str, ...], stale: bool = False) -> bool:
         return self.readiness_for(required, stale=stale) is IndicatorReadiness.READY
-

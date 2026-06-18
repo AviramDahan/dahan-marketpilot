@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Offline SPY/QQQ market-regime classifier for Phase 2."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum

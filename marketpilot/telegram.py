@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Telegram Bot API delivery boundary for notification-domain events."""
 
-from __future__ import annotations
 
 import os
 import json

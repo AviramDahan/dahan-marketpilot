@@ -1,6 +1,6 @@
-"""Timeframe and completed-bar contracts for setup evidence."""
-
 from __future__ import annotations
+
+"""Timeframe and completed-bar contracts for setup evidence."""
 
 from dataclasses import dataclass
 from datetime import datetime

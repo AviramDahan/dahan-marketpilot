@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Scheduler heartbeat and system-health records."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone

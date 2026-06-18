@@ -1,6 +1,6 @@
-"""Pure runtime orchestration contracts with no external side effects."""
-
 from __future__ import annotations
+
+"""Pure runtime orchestration contracts with no external side effects."""
 
 from dataclasses import dataclass, field
 from decimal import Decimal

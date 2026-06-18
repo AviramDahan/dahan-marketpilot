@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Append-only scheduler run storage and idempotency helpers."""
 
-from __future__ import annotations
 
 import hashlib
 import json

@@ -1,6 +1,7 @@
+﻿from __future__ import annotations
+
 """Single-cycle QuantConnect portfolio synchronization."""
 
-from __future__ import annotations
 
 import argparse
 import json

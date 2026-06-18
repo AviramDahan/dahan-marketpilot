@@ -1,6 +1,6 @@
-"""Pure command payload models for simulated QuantConnect paper trading."""
-
 from __future__ import annotations
+
+"""Pure command payload models for simulated QuantConnect paper trading."""
 
 import hashlib
 import json
