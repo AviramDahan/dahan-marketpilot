@@ -12,7 +12,6 @@ class DahanMarketPilotRuntime(QCAlgorithm):
 
     def initialize(self):
         self.set_start_date(2026, 1, 1)
-        self.set_end_date(2026, 1, 31)
         self.set_cash(27027.03)
 
         self.marketpilot_seen_idempotency_keys = set()
