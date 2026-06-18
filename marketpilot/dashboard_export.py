@@ -38,6 +38,9 @@ class DashboardExportPayload:
     fixture_label: str = "runtime-export"
     portfolio: Mapping[str, object] = field(default_factory=dict)
     runtime_evidence: Mapping[str, object] = field(default_factory=dict)
+    sync_status: str | None = None
+    reconciliation_clean: bool | None = None
+    generation: int | None = None
 
     def to_json(self) -> str:
         return json.dumps(self._to_dict(), default=_json_default)
@@ -52,6 +55,9 @@ class DashboardExportPayload:
             "fixture_label": self.fixture_label,
             "portfolio": dict(self.portfolio),
             "runtime_evidence": dict(self.runtime_evidence),
+            "sync_status": self.sync_status,
+            "reconciliation_clean": self.reconciliation_clean,
+            "generation": self.generation,
         }
 
 
@@ -72,6 +78,9 @@ def build_dashboard_export_payload(
         fixture_label=fixture_label,
         portfolio=portfolio,
         runtime_evidence=runtime_evidence,
+        sync_status=str(runtime_evidence.get("sync_status")) if runtime_evidence.get("sync_status") not in (None, "") else None,
+        reconciliation_clean=runtime_evidence.get("reconciliation_clean") if isinstance(runtime_evidence.get("reconciliation_clean"), bool) else None,
+        generation=int(runtime_evidence["generation"]) if str(runtime_evidence.get("generation") or "").isdigit() else None,
     )
 
 

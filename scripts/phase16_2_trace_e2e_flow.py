@@ -25,6 +25,7 @@ SECRET_VALUE_PATTERNS = (
     re.compile(r"\b\d{8,12}:[A-Za-z0-9_-]{25,}\b"),
     re.compile(r"\b[a-f0-9]{48,}\b", re.IGNORECASE),
 )
+QC_ORDER_AUTHORITY_SOURCE = "/live/orders/read"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -145,15 +146,37 @@ def _payload_proves_segment(segment: str, payload: Mapping[str, Any]) -> bool:
 
 
 def _payload_has_authoritative_fill(payload: Mapping[str, Any]) -> bool:
+    if str(payload.get("source") or "").strip().lower() != "quantconnect":
+        return False
+    if str(payload.get("authority_endpoint") or payload.get("source_endpoint") or "").strip() != QC_ORDER_AUTHORITY_SOURCE:
+        return False
+    if payload.get("paper_trading_only") is not True:
+        return False
+    order_id = str(payload.get("quantconnect_order_id") or payload.get("qc_order_id") or "").strip()
+    if not order_id:
+        return False
+    symbol = str(payload.get("symbol") or "").strip()
+    if not symbol:
+        return False
     orders_authority_status = str(payload.get("orders_authority_status") or "").strip().lower()
     order_status = str(payload.get("order_status") or payload.get("status") or "").strip().lower()
-    if orders_authority_status == "filled" or order_status == "filled":
-        return True
+    if orders_authority_status != "filled" and order_status != "filled":
+        return False
     filled_quantity = payload.get("filled_quantity", payload.get("quantity_filled"))
     try:
-        return filled_quantity is not None and float(str(filled_quantity)) > 0
+        if filled_quantity is None or float(str(filled_quantity)) <= 0:
+            return False
     except (TypeError, ValueError):
         return False
+    if _parse_timezone_aware_timestamp(payload.get("filled_at") or payload.get("fill_timestamp") or payload.get("order_timestamp")) is None:
+        return False
+    correlation_id = str(payload.get("correlation_id") or "").strip()
+    tag = str(payload.get("expected_order_tag") or payload.get("tag") or "").strip()
+    idempotency_key = str(payload.get("idempotency_key") or "").strip()
+    signal_id = str(payload.get("signal_id") or "").strip()
+    if not correlation_id:
+        return False
+    return correlation_id in {idempotency_key, signal_id} or (tag.startswith("mp:") and correlation_id in tag)
 
 
 def _payload_partially_proves_qc_order_authority(payload: Mapping[str, Any]) -> bool:
@@ -162,16 +185,38 @@ def _payload_partially_proves_qc_order_authority(payload: Mapping[str, Any]) -> 
     return orders_authority_status in PARTIAL_QC_ORDER_AUTHORITY_STATUSES or order_status in PARTIAL_QC_ORDER_AUTHORITY_STATUSES
 
 
+def _parse_timezone_aware_timestamp(value: object) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        return None
+    return parsed
+
+
 def _summarize_payload(segment: str, payload: Mapping[str, Any]) -> dict[str, object]:
     summary_keys = (
         "status",
         "correlation_id",
         "signal_id",
         "expected_order_tag",
+        "tag",
+        "idempotency_key",
+        "quantconnect_order_id",
+        "qc_order_id",
+        "authority_endpoint",
+        "source_endpoint",
+        "symbol",
         "order_status",
         "orders_authority_status",
         "filled_quantity",
         "quantity_filled",
+        "filled_at",
+        "fill_timestamp",
+        "order_timestamp",
         "source",
         "source_timestamp",
         "freshness_level",

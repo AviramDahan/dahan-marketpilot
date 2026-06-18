@@ -117,6 +117,9 @@ def build_dashboard_state_health(
             freshness_level=payload.get("freshness_level"),
             read_only_dashboard=payload.get("read_only_dashboard") is not False,
             paper_trading_only=payload.get("paper_trading_only") is not False,
+            sync_status=payload.get("sync_status"),
+            reconciliation_clean=payload.get("reconciliation_clean"),
+            generation=payload.get("generation"),
         )
 
     age_seconds = max(0, int((checked_at - source_timestamp).total_seconds()))
@@ -132,6 +135,9 @@ def build_dashboard_state_health(
         freshness_level=payload.get("freshness_level"),
         read_only_dashboard=payload.get("read_only_dashboard") is not False,
         paper_trading_only=payload.get("paper_trading_only") is not False,
+        sync_status=payload.get("sync_status"),
+        reconciliation_clean=payload.get("reconciliation_clean"),
+        generation=payload.get("generation"),
     )
 
 
@@ -171,6 +177,9 @@ def _dashboard_state_payload(
     freshness_level: object = None,
     read_only_dashboard: bool = True,
     paper_trading_only: bool = True,
+    sync_status: object = None,
+    reconciliation_clean: object = None,
+    generation: object = None,
 ) -> dict[str, object]:
     return {
         "status": status,
@@ -180,6 +189,9 @@ def _dashboard_state_payload(
         "source_timestamp": source_timestamp.astimezone(timezone.utc).isoformat() if source_timestamp else None,
         "age_seconds": age_seconds,
         "freshness_level": str(freshness_level) if freshness_level not in (None, "") else None,
+        "sync_status": str(sync_status) if sync_status not in (None, "") else None,
+        "reconciliation_clean": reconciliation_clean is True,
+        "generation": _safe_int(generation),
         "reason": reason,
         "read_only_dashboard": read_only_dashboard,
         "paper_trading_only": paper_trading_only,
@@ -188,6 +200,15 @@ def _dashboard_state_payload(
         "controls_orders": False,
         "controls_recovery": False,
     }
+
+
+def _safe_int(value: object) -> int | None:
+    if value in (None, ""):
+        return None
+    try:
+        return int(str(value))
+    except (TypeError, ValueError):
+        return None
 
 
 def _handler(max_age_seconds: int) -> type[BaseHTTPRequestHandler]:

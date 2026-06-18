@@ -469,7 +469,12 @@ def _dashboard_export_job(
     runtime_result = context.get("runtime_result")
     payload = build_dashboard_export_payload(
         portfolio=dict(latest_sync.get("portfolio") or {}),
-        runtime_evidence=_runtime_evidence(runtime_result),
+        runtime_evidence={
+            **_runtime_evidence(runtime_result),
+            "sync_status": latest_sync.get("sync_status"),
+            "reconciliation_clean": latest_sync.get("reconciliation_clean"),
+            "generation": latest_sync.get("generation"),
+        },
         source_timestamp=source_timestamp,
         fixture_label="scheduler-production-cycle",
     )

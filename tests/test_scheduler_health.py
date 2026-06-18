@@ -154,6 +154,9 @@ def test_deployed_dashboard_state_health_is_sanitized(monkeypatch):
             "authority": "authoritative",
             "source_timestamp": "2026-06-17T18:55:00+00:00",
             "freshness_level": "fresh",
+            "sync_status": "success",
+            "reconciliation_clean": True,
+            "generation": 7,
             "read_only_dashboard": True,
             "paper_trading_only": True,
             "redis_url": "redis://should-not-appear",
@@ -174,6 +177,9 @@ def test_deployed_dashboard_state_health_is_sanitized(monkeypatch):
     assert health["age_seconds"] == 60
     assert health["read_only_dashboard"] is True
     assert health["paper_trading_only"] is True
+    assert health["sync_status"] == "success"
+    assert health["reconciliation_clean"] is True
+    assert health["generation"] == 7
     assert health["controls_scheduler"] is False
     assert health["controls_orders"] is False
     assert "redis_url" not in health

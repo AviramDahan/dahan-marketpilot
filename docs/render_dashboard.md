@@ -42,6 +42,11 @@ The heartbeat health service also receives this private connection string from
 Render and exposes only sanitized JSON at `/heartbeat` and `/dashboard-state`;
 it never returns Redis URLs, internal keys, credentials, QuantConnect
 identifiers, Telegram tokens, dashboard passwords, or full dashboard payloads.
+The `/dashboard-state` response may expose only sanitized readiness metadata:
+source, source timestamp, freshness level, sync status, reconciliation-clean
+status, and generation. It must not expose portfolio contents, raw orders, Redis
+URLs, credentials, account identifiers, dashboard passwords, Telegram secrets,
+or QuantConnect secrets.
 
 ## Cache And Stale Data
 

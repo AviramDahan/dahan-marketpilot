@@ -8,7 +8,7 @@ import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Mapping
+from typing import Iterable, Mapping
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -63,21 +63,25 @@ def run_preflight(
     max_heartbeat_age_seconds: int,
     timeout_seconds: int,
 ) -> dict[str, object]:
+    deployed_observer = observe_deployed_session(
+        dashboard_url=dashboard_url,
+        heartbeat_path=heartbeat_path,
+        heartbeat_url=heartbeat_url,
+        shared_state_url=shared_state_url,
+        max_heartbeat_age_seconds=max_heartbeat_age_seconds,
+        require_shared_state=True,
+        require_heartbeat=True,
+        timeout_seconds=timeout_seconds,
+    )
+    observer_checks = deployed_observer.get("checks") if isinstance(deployed_observer, Mapping) else {}
+    shared_state = observer_checks.get("shared_state") if isinstance(observer_checks, Mapping) else {}
     checks: dict[str, object] = {
         "environment": _check_environment(env),
         "operator_probe_disabled": _check_operator_probe_disabled(env),
         "telegram_configuration": _check_telegram_configuration(env),
         "deployment": _check_quantconnect_deployment(env),
-        "deployed_observer": observe_deployed_session(
-            dashboard_url=dashboard_url,
-            heartbeat_path=heartbeat_path,
-            heartbeat_url=heartbeat_url,
-            shared_state_url=shared_state_url,
-            max_heartbeat_age_seconds=max_heartbeat_age_seconds,
-            require_shared_state=True,
-            require_heartbeat=True,
-            timeout_seconds=timeout_seconds,
-        ),
+        "deployed_observer": deployed_observer,
+        "reconciliation": _check_reconciliation(shared_state if isinstance(shared_state, Mapping) else {}, max_age_seconds=max_heartbeat_age_seconds),
     }
     status = "passed" if all(_check_passed(value) for value in checks.values()) else "blocked_external_not_verified"
     return {
@@ -136,8 +140,9 @@ def _check_quantconnect_deployment(env: Mapping[str, str]) -> dict[str, object]:
         deploy_id = str(_env_group_value(env, ("QC_DEPLOY_ID", "QUANTCONNECT_LIVE_DEPLOY_ID")) or "").strip()
         if not deploy_id:
             raise ValueError("QC_DEPLOY_ID_missing")
-        snapshot = QCApiClient().read_live_algorithm(project_id=project_id, deploy_id=deploy_id)
-        orders = QCApiClient().read_live_orders(project_id=project_id, deploy_id=deploy_id)
+        client = QCApiClient()
+        snapshot = client.read_live_algorithm(project_id=project_id, deploy_id=deploy_id)
+        orders = client.read_live_orders(project_id=project_id, deploy_id=deploy_id)
     except Exception as exc:
         return {
             "status": "failed",
@@ -150,9 +155,17 @@ def _check_quantconnect_deployment(env: Mapping[str, str]) -> dict[str, object]:
         or snapshot.algorithm_status is QuantConnectAlgorithmStatus.RUNNING
     )
     positive_cash_equity = snapshot.cash > 0 and snapshot.portfolio_equity > 0
-    open_orders = [order for order in orders if str(order.status).lower() not in {"filled", "canceled", "cancelled", "invalid", "rejected"}]
+    open_orders = [order for order in orders if _is_open_order_status(getattr(order, "status", ""))]
+    order_readiness = evaluate_probe_order_readiness(
+        orders,
+        correlation_id=str(env.get("MARKETPILOT_UAT_CORRELATION_ID") or "").strip() or None,
+        expected_order_tag=str(env.get("MARKETPILOT_EXPECTED_ORDER_TAG") or "").strip() or None,
+        idempotency_key=str(env.get("MARKETPILOT_UAT_IDEMPOTENCY_KEY") or "").strip() or None,
+        symbol=str(env.get("MARKETPILOT_OPERATOR_PAPER_PROBE_SYMBOL") or "").strip().upper() or None,
+        side=str(env.get("MARKETPILOT_OPERATOR_PAPER_PROBE_SIDE") or "buy").strip().lower() or None,
+    )
     return {
-        "status": "passed" if running and positive_cash_equity and not open_orders else "blocked_external_not_verified",
+        "status": "passed" if running and positive_cash_equity and order_readiness["readiness_decision"] == "passed" else "blocked_external_not_verified",
         "deployment_status": snapshot.deployment_status.value,
         "algorithm_status": snapshot.algorithm_status.value,
         "cash_positive": snapshot.cash > 0,
@@ -160,13 +173,112 @@ def _check_quantconnect_deployment(env: Mapping[str, str]) -> dict[str, object]:
         "holdings_count": len(snapshot.holdings),
         "orders_count": len(orders),
         "open_order_count": len(open_orders),
-        "unintended_duplicate_order_check": "passed" if not open_orders else "open_orders_present",
+        "order_readiness": order_readiness,
         "values_printed": False,
+    }
+
+
+def _check_reconciliation(shared_state: Mapping[str, object], *, max_age_seconds: int) -> dict[str, object]:
+    sync_status = str(shared_state.get("sync_status") or "").strip()
+    source = str(shared_state.get("source") or "").strip().lower()
+    source_timestamp_text = str(shared_state.get("source_timestamp") or "").strip()
+    freshness_level = str(shared_state.get("freshness_level") or "").strip().lower() or None
+    source_timestamp = _parse_timezone_aware(source_timestamp_text)
+    age_seconds = None
+    if source_timestamp is not None:
+        age_seconds = max(0, int((datetime.now(timezone.utc) - source_timestamp).total_seconds()))
+    fresh_enough = age_seconds is not None and age_seconds <= max_age_seconds and freshness_level in {"fresh", "ok", None}
+    passed = (
+        sync_status == "success"
+        and shared_state.get("reconciliation_clean") is True
+        and source == "quantconnect"
+        and source_timestamp is not None
+        and fresh_enough
+    )
+    return {
+        "status": "passed" if passed else "blocked_external_not_verified",
+        "sync_status": sync_status or None,
+        "reconciliation_clean": shared_state.get("reconciliation_clean") is True,
+        "source": source or None,
+        "source_timestamp": source_timestamp.astimezone(timezone.utc).isoformat() if source_timestamp else None,
+        "freshness_level": freshness_level,
+        "age_seconds": age_seconds,
+        "generation": _safe_int(shared_state.get("generation")),
+        "fresh_enough_for_market_gate": fresh_enough,
+        "values_printed": False,
+    }
+
+
+def evaluate_probe_order_readiness(
+    orders: Iterable[object],
+    *,
+    correlation_id: str | None,
+    expected_order_tag: str | None,
+    idempotency_key: str | None,
+    symbol: str | None,
+    side: str | None,
+) -> dict[str, object]:
+    total_open = 0
+    matching_probe = 0
+    duplicate = 0
+    leftover = 0
+    ambiguous = 0
+    for order in orders:
+        if not _is_open_order_status(getattr(order, "status", "")):
+            continue
+        total_open += 1
+        order_tag = str(getattr(order, "tag", "") or "")
+        order_idempotency_key = str(getattr(order, "idempotency_key", "") or "")
+        order_signal_id = str(getattr(order, "signal_id", "") or "")
+        order_symbol = str(getattr(order, "symbol", "") or "").upper()
+        order_side = _order_side(order)
+        metadata_known = bool(order_tag or order_idempotency_key or order_signal_id)
+        matches_correlation = bool(correlation_id and correlation_id in {order_idempotency_key, order_signal_id})
+        matches_tag = bool(expected_order_tag and order_tag == expected_order_tag)
+        matches_idempotency = bool(idempotency_key and order_idempotency_key == idempotency_key)
+        symbol_side_duplicate = bool(symbol and order_symbol == symbol.upper() and side and order_side == side)
+        is_probe_leftover = "operator" in order_tag.lower() or "probe" in order_tag.lower() or "operator" in order_idempotency_key.lower() or "probe" in order_idempotency_key.lower()
+        if matches_correlation or matches_tag or matches_idempotency:
+            matching_probe += 1
+        if symbol_side_duplicate:
+            duplicate += 1
+        if is_probe_leftover and not (matches_correlation or matches_tag or matches_idempotency):
+            leftover += 1
+        if symbol and order_symbol == symbol.upper() and not metadata_known:
+            ambiguous += 1
+    readiness = "passed" if matching_probe == 0 and duplicate == 0 and leftover == 0 and ambiguous == 0 else "blocked"
+    return {
+        "total_open_order_count": total_open,
+        "matching_probe_order_count": matching_probe,
+        "duplicate_order_status": "passed" if duplicate == 0 else "blocked",
+        "duplicate_symbol_side_count": duplicate,
+        "leftover_probe_status": "passed" if leftover == 0 else "blocked",
+        "leftover_probe_count": leftover,
+        "ambiguous_order_count": ambiguous,
+        "readiness_decision": readiness,
+        "raw_orders_exposed": False,
     }
 
 
 def _check_passed(value: object) -> bool:
     return isinstance(value, Mapping) and value.get("status") == "passed"
+
+
+def _is_open_order_status(status: object) -> bool:
+    return str(status or "").strip().lower() not in {"filled", "canceled", "cancelled", "invalid", "rejected", "closed"}
+
+
+def _order_side(order: object) -> str | None:
+    quantity = getattr(order, "quantity", None)
+    try:
+        parsed = float(str(quantity))
+    except (TypeError, ValueError):
+        return None
+    if parsed > 0:
+        return "buy"
+    if parsed < 0:
+        return "sell"
+    return None
 
 
 def _env_group_value(env: Mapping[str, str], names: tuple[str, ...]) -> str | None:
@@ -184,6 +296,27 @@ def _safe_detail(value: str) -> str:
         redacted = redacted.replace(word, "[redacted]")
         redacted = redacted.replace(word.upper(), "[redacted]")
     return redacted[:300]
+
+
+def _parse_timezone_aware(value: object) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        return None
+    return parsed.astimezone(timezone.utc)
+
+
+def _safe_int(value: object) -> int | None:
+    if value in (None, ""):
+        return None
+    try:
+        return int(str(value))
+    except (TypeError, ValueError):
+        return None
 
 
 if __name__ == "__main__":
