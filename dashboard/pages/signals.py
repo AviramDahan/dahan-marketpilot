@@ -14,8 +14,13 @@ class SignalsView:
 
 
 def build_signals(snapshot: DashboardSnapshot) -> SignalsView:
+    mode_line = (
+        "Product mode: simulation_only."
+        if snapshot.source_metadata.source == "internal_simulation"
+        else "Evidence is observational."
+    )
     lines = [
-        "Evidence is observational.",
+        mode_line,
         f"Freshness: {snapshot.source_metadata.freshness_status.value}",
         f"Signals status: {snapshot.signals.status.value}",
     ]

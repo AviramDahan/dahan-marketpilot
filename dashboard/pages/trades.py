@@ -14,8 +14,13 @@ class TradesView:
 
 
 def build_trades(snapshot: DashboardSnapshot) -> TradesView:
+    authority_line = (
+        "Internal simulation records only; no broker or QuantConnect order authority."
+        if snapshot.source_metadata.source == "internal_simulation"
+        else "QuantConnect authority for trade, fill, and activity records."
+    )
     lines = [
-        "QuantConnect authority for trade, fill, and activity records.",
+        authority_line,
         f"Freshness: {snapshot.source_metadata.freshness_status.value}",
         f"Trades status: {snapshot.trades.status.value}",
     ]

@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Scanner Simulator MVP
-status: Phase 16.3 planned; product pivot approved; Phase 16.2 remains open and parked as optional QuantConnect Paper validation
-stopped_at: Phase 16.3 is planned with 7 execution plans across 4 waves for `simulation_only`: product modes, universe builder, scanner engine, internal paper simulator, dashboard, Telegram alerts, and evidence/reporting. Phase 16.2 is not complete and remains parked for optional QC validation.
+status: Phase 16.3 implemented and locally verified; Phase 16.2 remains open and parked as optional QuantConnect Paper validation
+stopped_at: Phase 16.3 delivered the `simulation_only` Scanner Simulator MVP: product modes, universe builder, scanner engine, internal paper simulator, scheduler-bound simulation runner, dashboard, Telegram alerts, and evidence/reporting. Phase 16.2 is not complete and remains parked for optional QC validation.
 last_updated: "2026-06-19T00:00:00.000+03:00"
-last_activity: 2026-06-19 -- Operator approved product pivot from QuantConnect Paper authority as the main blocker to Autonomous Stock Scanner + Internal Paper Simulator MVP. Inserted and planned Phase 16.3. No code implementation, no Paper order, no operator probe, no real-money path, and no QC deletion occurred.
+last_activity: 2026-06-19 -- Executed Phase 16.3 Scanner Simulator MVP in `simulation_only` mode. No Paper order, no operator probe, no real-money path, and no QC deletion occurred.
 progress:
   total_phases: 8
   completed_phases: 5
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-06-15)
 
 Phase: 16.3 planned
 Plan: 16.3-01 through 16.3-07 planned across 4 waves; next recommended run is `/gsd-execute-phase 16.3`
-Status: Phase 16.3 is ready to execute as planning-only product pivot work. Phase 16.2 remains open, parked, and not complete; UAT-01/UAT-08/UAT-09/OPS-01 remain unresolved for optional QC validation.
-Last activity: 2026-06-19 -- Inserted Phase 16.3 Product Pivot - Scanner Simulator MVP and created GSD context, research, and seven plan files. Updated ROADMAP and REQUIREMENTS to make `simulation_only` the near-term MVP while preserving QC work as optional validation.
+Status: Phase 16.3 implementation is complete and locally verified for the `simulation_only` Scanner Simulator MVP. Phase 16.2 remains open, parked, and not complete; UAT-01/UAT-08/UAT-09/OPS-01 remain unresolved for optional QC validation.
+Last activity: 2026-06-19 -- Implemented Phase 16.3 Product Pivot - Scanner Simulator MVP across seven plans. Updated ROADMAP and REQUIREMENTS to make `simulation_only` complete for the near-term MVP while preserving QC work as optional validation.
 
 Progress: [█████████░] 85%
 
@@ -63,7 +63,7 @@ Progress: [█████████░] 85%
 
 - Last 5 planned plans: 16.3-03, 16.3-04, 16.3-05, 16.3-06, 16.3-07
 - Trend: Product pivot approved. The near-term product is now `simulation_only`, not QuantConnect Paper authority. Phase 16.2 QC validation remains open but parked.
-- Phase 16.3 plan: Wave 1 product modes and universe builder; Wave 2 scanner and internal paper simulator; Wave 3 dashboard and Telegram; Wave 4 evidence/reporting and MVP acceptance.
+- Phase 16.3 execution: Wave 1 product modes and universe builder; Wave 2 scanner and internal paper simulator; Wave 3 dashboard and Telegram; Wave 4 evidence/reporting and MVP acceptance.
 
 *Updated after each plan completion*
 | Phase 04 P01 | 6 min | 2 tasks | 4 files |
@@ -218,14 +218,14 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- Close runtime orchestrator gap: QuantConnect data -> setup evaluation -> scoring/ranking -> risk/order lifecycle -> paper reconciliation -> Telegram -> dashboard.
-- Close LEAN bridge gap: wire `lean/main.py` to safe MarketPilot strategy/runtime contracts without adding any real-money path.
-- Close dashboard source gap: add an approved QuantConnect Object Store/API/export producer or fetcher for read-only dashboard runtime data.
+- Optional parked QC validation: keep Phase 16.2 open for future QuantConnect Paper UAT if explicitly resumed.
+- Product deployment follow-up: point the Render worker/dashboard at the `simulation_only` runner and simulation dashboard source when the operator is ready to use the simulator MVP in production.
 
 ### Roadmap Evolution
 
 - Phase 10.1 inserted after Phase 10 (URGENT): Close gap: runtime orchestrator for strategy-to-paper E2E flow.
 - Phase 16.3 inserted after Phase 16.2 (URGENT): Product Pivot - Scanner Simulator MVP. Phase 16.2 remains parked as optional QuantConnect Paper validation.
+- Phase 16.3 executed: `simulation_only` Scanner Simulator MVP implemented and locally verified; QC validation remains parked optional work.
 
 ### Blockers/Concerns
 
@@ -246,6 +246,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-06-17T17:52:00.000+03:00
-Stopped at: Phase 15 order authority passed; next work is deployed product evidence and burn-in
-Resume file: .planning/phases/15-paper-trading-order-flow/15-12-SUMMARY.md
+Last session: 2026-06-19T00:00:00.000+03:00
+Stopped at: Phase 16.3 simulation-only Scanner Simulator MVP implemented and locally verified; Phase 16.2 remains parked optional QC validation.
+Resume file: .planning/phases/16.3-product-pivot-scanner-simulator-mvp/16.3-VERIFICATION.md

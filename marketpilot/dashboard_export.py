@@ -85,6 +85,49 @@ def build_dashboard_export_payload(
     )
 
 
+def build_simulation_dashboard_payload(
+    *,
+    portfolio: Mapping[str, object],
+    candidates: tuple[Mapping[str, object], ...] = (),
+    rejected_candidates: tuple[Mapping[str, object], ...] = (),
+    open_trades: tuple[Mapping[str, object], ...] = (),
+    closed_trades: tuple[Mapping[str, object], ...] = (),
+    notifications: tuple[Mapping[str, object], ...] = (),
+    activity: tuple[Mapping[str, object], ...] = (),
+    system: tuple[Mapping[str, object], ...] = (),
+    risk: tuple[Mapping[str, object], ...] = (),
+    strategy_performance: tuple[Mapping[str, object], ...] = (),
+    performance: Mapping[str, object] | None = None,
+    source_timestamp: datetime,
+    fixture_label: str = "simulation-mvp-export",
+) -> dict[str, object]:
+    """Build a read-only dashboard payload for the internal simulation product mode."""
+    return {
+        "product_mode": "simulation_only",
+        "source": "internal_simulation",
+        "authority": "internal_simulation",
+        "paper_trading_only": True,
+        "simulation_only": True,
+        "read_only_dashboard": True,
+        "dashboard_mutation_allowed": False,
+        "real_orders": False,
+        "quantconnect_required": False,
+        "source_timestamp": source_timestamp.isoformat(),
+        "fixture_label": fixture_label,
+        "portfolio": dict(portfolio),
+        "candidates": [dict(item) for item in candidates],
+        "rejected_candidates": [dict(item) for item in rejected_candidates],
+        "open_trades": [dict(item) for item in open_trades],
+        "closed_trades": [dict(item) for item in closed_trades],
+        "notifications": [dict(item) for item in notifications],
+        "activity": [dict(item) for item in activity],
+        "system": [dict(item) for item in system],
+        "risk": [dict(item) for item in risk],
+        "strategy_performance": [dict(item) for item in strategy_performance],
+        "performance": dict(performance or {}),
+    }
+
+
 class FakeObjectStoreWriter:
     """Testable Object Store writer that only accepts approved dashboard keys."""
 
@@ -274,4 +317,5 @@ __all__ = [
     "FakeObjectStoreWriter",
     "ObjectStoreSourceLoader",
     "build_dashboard_export_payload",
+    "build_simulation_dashboard_payload",
 ]

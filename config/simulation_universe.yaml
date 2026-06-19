@@ -1,0 +1,46 @@
+simulation_universe:
+  product_mode: simulation_only
+  paper_trading_only: true
+  source: deterministic_static_watchlist
+  symbols:
+    - symbol: AAPL
+      source: core_watchlist
+      sector: Technology
+      price: 195
+      history_bars: 300
+      average_volume_20: 55000000
+      average_dollar_volume_20: 10725000000
+      market_cap: 2900000000000
+    - symbol: MSFT
+      source: core_watchlist
+      sector: Technology
+      price: 430
+      history_bars: 300
+      average_volume_20: 25000000
+      average_dollar_volume_20: 10750000000
+      market_cap: 3200000000000
+    - symbol: NVDA
+      source: core_watchlist
+      sector: Technology
+      price: 135
+      history_bars: 300
+      average_volume_20: 250000000
+      average_dollar_volume_20: 33750000000
+      market_cap: 3300000000000
+    - symbol: JPM
+      source: core_watchlist
+      sector: Financials
+      price: 210
+      history_bars: 300
+      average_volume_20: 9000000
+      average_dollar_volume_20: 1890000000
+      market_cap: 600000000000
+    - symbol: UNH
+      source: core_watchlist
+      sector: Healthcare
+      price: 500
+      history_bars: 300
+      average_volume_20: 3500000
+      average_dollar_volume_20: 1750000000
+      market_cap: 460000000000
+

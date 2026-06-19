@@ -284,16 +284,16 @@ burn-in, restart recovery, missed-run monitoring, and complete signal -> order
 **Plans**:
 
 - Wave 1:
-  - [ ] 16.3-01-PLAN.md - Product mode contracts, safety fences, and requirements pivot
-  - [ ] 16.3-02-PLAN.md - Universe builder and deterministic scanner inputs
+  - [x] 16.3-01-PLAN.md - Product mode contracts, safety fences, and requirements pivot
+  - [x] 16.3-02-PLAN.md - Universe builder and deterministic scanner inputs
 - Wave 2 *(blocked on Wave 1 completion)*:
-  - [ ] 16.3-03-PLAN.md - Scanner engine over existing setup evaluators
-  - [ ] 16.3-04-PLAN.md - Internal paper simulator portfolio and trade lifecycle
+  - [x] 16.3-03-PLAN.md - Scanner engine over existing setup evaluators
+  - [x] 16.3-04-PLAN.md - Internal paper simulator portfolio and trade lifecycle
 - Wave 3 *(blocked on Waves 1 and 2 completion)*:
-  - [ ] 16.3-05-PLAN.md - Dashboard simulation MVP export and views
-  - [ ] 16.3-06-PLAN.md - Telegram simulation alerts and daily summary
+  - [x] 16.3-05-PLAN.md - Dashboard simulation MVP export and views
+  - [x] 16.3-06-PLAN.md - Telegram simulation alerts and daily summary
 - Wave 4 *(blocked on Waves 1 through 3 completion)*:
-  - [ ] 16.3-07-PLAN.md - Evidence report, documentation, and MVP acceptance gate
+  - [x] 16.3-07-PLAN.md - Evidence report, documentation, and MVP acceptance gate
 
 **Cross-cutting constraints:**
 
@@ -329,9 +329,9 @@ burn-in, restart recovery, missed-run monitoring, and complete signal -> order
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MODE-01 | 16.3 | Pending |
-| MODE-02 | 16.3 | Pending |
-| MODE-03 | 16.3 | Pending |
+| MODE-01 | 16.3 | Complete |
+| MODE-02 | 16.3 | Complete |
+| MODE-03 | 16.3 | Complete |
 | API-01 | 13 | Pending |
 | API-02 | 13 | Pending |
 | API-03 | 13 | Pending |
@@ -390,19 +390,19 @@ burn-in, restart recovery, missed-run monitoring, and complete signal -> order
 | UAT-08 | 16.2 | In progress - session 1 candidate recorded; needs next consecutive valid US market session |
 | UAT-09 | 16.2 | Pending |
 | OPS-01 | 16.2 | Pending |
-| SIM-01 | 16.3 | Pending |
-| SIM-02 | 16.3 | Pending |
-| SIM-03 | 16.3 | Pending |
-| SIM-04 | 16.3 | Pending |
-| SIM-05 | 16.3 | Pending |
-| SIM-06 | 16.3 | Pending |
-| SIM-07 | 16.3 | Pending |
-| SIM-08 | 16.3 | Pending |
-| SIM-09 | 16.3 | Pending |
-| SIM-10 | 16.3 | Pending |
-| SIM-11 | 16.3 | Pending |
-| SIM-12 | 16.3 | Pending |
-| SAFE-08 | 16.3 | Pending |
+| SIM-01 | 16.3 | Complete |
+| SIM-02 | 16.3 | Complete |
+| SIM-03 | 16.3 | Complete |
+| SIM-04 | 16.3 | Complete |
+| SIM-05 | 16.3 | Complete |
+| SIM-06 | 16.3 | Complete |
+| SIM-07 | 16.3 | Complete |
+| SIM-08 | 16.3 | Complete |
+| SIM-09 | 16.3 | Complete |
+| SIM-10 | 16.3 | Complete |
+| SIM-11 | 16.3 | Complete |
+| SIM-12 | 16.3 | Complete |
+| SAFE-08 | 16.3 | Complete |
 | MTF-01 | 17 | Pending |
 | MTF-02 | 17 | Pending |
 | MTF-03 | 17 | Pending |
@@ -416,7 +416,7 @@ burn-in, restart recovery, missed-run monitoring, and complete signal -> order
 | Milestone | Phases | Plans | Status | Shipped |
 |-----------|--------|-------|--------|---------|
 | v1.0 | 12 | 53 | Complete | 2026-06-15 |
-| v1.1 | 8 | TBD | Active; product MVP pivot approved; Phase 16.3 simulation-only product is now the near-term completion path while Phase 16.2 QC validation remains parked open | â€” |
+| v1.1 | 8 | TBD | Active; Phase 16.3 simulation-only MVP implemented and locally verified; Phase 16.2 QC validation remains parked open | â€” |
 
 ## v1.1 Completion Gate
 

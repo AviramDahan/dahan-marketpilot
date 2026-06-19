@@ -2,9 +2,9 @@
 
 ## Product Modes
 
-- [ ] **MODE-01**: `simulation_only` is the core v1.1 MVP mode and runs without QuantConnect credentials, deploy ids, `/live/orders/read`, broker credentials, or live order authority.
-- [ ] **MODE-02**: `qc_paper_validation` remains an optional parked validation mode for future external Paper execution proof and must not block `simulation_only`.
-- [ ] **MODE-03**: `qc_native_algorithm` remains a future mode only; it must not be implemented or implied during Phase 16.3.
+- [x] **MODE-01**: `simulation_only` is the core v1.1 MVP mode and runs without QuantConnect credentials, deploy ids, `/live/orders/read`, broker credentials, or live order authority.
+- [x] **MODE-02**: `qc_paper_validation` remains an optional parked validation mode for future external Paper execution proof and must not block `simulation_only`.
+- [x] **MODE-03**: `qc_native_algorithm` remains a future mode only; it must not be implemented or implied during Phase 16.3.
 
 ## QC API Client
 
@@ -94,18 +94,18 @@
 
 ## Scanner Simulator MVP
 
-- [ ] **SIM-01**: System builds or loads a deterministic stock universe from configurable sources, normalizes symbols, removes duplicates, applies available liquidity/data-quality filters, and records why each symbol was accepted or rejected.
-- [ ] **SIM-02**: Autonomous scanner runs on the existing scheduler/worker boundary in `simulation_only` mode without QuantConnect credentials, deploy id, `/live/orders/read`, or any broker dependency.
-- [ ] **SIM-03**: Scanner evaluates the existing Trend Pullback, Volume Breakout, and Relative Strength Leader setup evaluators for every eligible symbol without duplicating strategy logic.
-- [ ] **SIM-04**: Scanner output includes valid candidates, rejected candidates, rejection reasons, setup evidence, score, rank, timestamp, strategy name, and one correlation id per scan cycle.
-- [ ] **SIM-05**: Internal paper simulator opens simulated trades from approved risk decisions using explicit symbol, strategy, entry, stop, target, quantity, cash/equity snapshot, and idempotency key.
-- [ ] **SIM-06**: Internal paper simulator manages open simulated positions with mark-to-market, stop hit, target hit, explicit close, status transitions, and restart-safe persistence.
-- [ ] **SIM-07**: Internal paper simulator records closed trades with open time, close time, exit reason, realized P&L, risk multiple where available, and full decision evidence.
-- [ ] **SIM-08**: Simulated portfolio accounting tracks available cash, reserved allocation, open risk, equity, realized P&L, unrealized P&L, win rate, average gain/loss, and strategy performance breakdown.
-- [ ] **SIM-09**: Dashboard clearly displays internal simulation mode and shows top candidates, rejected candidates, open simulated trades, closed simulated trades, performance, portfolio simulation value, activity, system health, and decision audit trail.
-- [ ] **SIM-10**: Telegram sends simulation-labeled alerts for top candidates, simulated entries, simulated stops, simulated targets, simulated closes, daily summaries, and system issues while delivery remains non-authoritative.
-- [ ] **SIM-11**: Evidence report proves `simulation_only` produced no real orders, no live brokerage calls, no QuantConnect dependency, no dashboard mutation controls, no secret exposure, and no guaranteed-profit claims.
-- [ ] **SIM-12**: Documentation explains the difference between `simulation_only`, `qc_paper_validation`, and `qc_native_algorithm`, including what is implemented now and what is parked or future-only.
+- [x] **SIM-01**: System builds or loads a deterministic stock universe from configurable sources, normalizes symbols, removes duplicates, applies available liquidity/data-quality filters, and records why each symbol was accepted or rejected.
+- [x] **SIM-02**: Autonomous scanner runs on the existing scheduler/worker boundary in `simulation_only` mode without QuantConnect credentials, deploy id, `/live/orders/read`, or any broker dependency.
+- [x] **SIM-03**: Scanner evaluates the existing Trend Pullback, Volume Breakout, and Relative Strength Leader setup evaluators for every eligible symbol without duplicating strategy logic.
+- [x] **SIM-04**: Scanner output includes valid candidates, rejected candidates, rejection reasons, setup evidence, score, rank, timestamp, strategy name, and one correlation id per scan cycle.
+- [x] **SIM-05**: Internal paper simulator opens simulated trades from approved risk decisions using explicit symbol, strategy, entry, stop, target, quantity, cash/equity snapshot, and idempotency key.
+- [x] **SIM-06**: Internal paper simulator manages open simulated positions with mark-to-market, stop hit, target hit, explicit close, status transitions, and restart-safe persistence.
+- [x] **SIM-07**: Internal paper simulator records closed trades with open time, close time, exit reason, realized P&L, risk multiple where available, and full decision evidence.
+- [x] **SIM-08**: Simulated portfolio accounting tracks available cash, reserved allocation, open risk, equity, realized P&L, unrealized P&L, win rate, average gain/loss, and strategy performance breakdown.
+- [x] **SIM-09**: Dashboard clearly displays internal simulation mode and shows top candidates, rejected candidates, open simulated trades, closed simulated trades, performance, portfolio simulation value, activity, system health, and decision audit trail.
+- [x] **SIM-10**: Telegram sends simulation-labeled alerts for top candidates, simulated entries, simulated stops, simulated targets, simulated closes, daily summaries, and system issues while delivery remains non-authoritative.
+- [x] **SIM-11**: Evidence report proves `simulation_only` produced no real orders, no live brokerage calls, no QuantConnect dependency, no dashboard mutation controls, no secret exposure, and no guaranteed-profit claims.
+- [x] **SIM-12**: Documentation explains the difference between `simulation_only`, `qc_paper_validation`, and `qc_native_algorithm`, including what is implemented now and what is parked or future-only.
 
 ## Safety & Operations
 
@@ -116,7 +116,7 @@
 - [x] **SAFE-05**: Execution window guards skip stale signals if triggered outside valid execution window
 - [x] **SAFE-06**: Phase 15's remaining `/live/orders/read` order/fill/rejection verification must not be bypassed, faked, or marked complete outside a valid market-hours or next-open observation
 - [x] **SAFE-07**: Future milestones after v1.1 require explicit user approval; do not create v1.2 or add unrelated strategies/features during v1.1 production-readiness work
-- [ ] **SAFE-08**: Phase 16.3 simulation mode must never imply real-money trading, submit real or QuantConnect orders, accept live brokerage credentials, expose order controls in the dashboard, or use guaranteed-profit language.
+- [x] **SAFE-08**: Phase 16.3 simulation mode must never imply real-money trading, submit real or QuantConnect orders, accept live brokerage credentials, expose order controls in the dashboard, or use guaranteed-profit language.
 
 ---
 
@@ -142,9 +142,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MODE-01 | 16.3 | Pending |
-| MODE-02 | 16.3 | Pending |
-| MODE-03 | 16.3 | Pending |
+| MODE-01 | 16.3 | Complete |
+| MODE-02 | 16.3 | Complete |
+| MODE-03 | 16.3 | Complete |
 | API-01 | 13 | Pending |
 | API-02 | 13 | Pending |
 | API-03 | 13 | Pending |
@@ -191,18 +191,18 @@
 | UAT-08 | 16.2 | Pending |
 | UAT-09 | 16.2 | Pending |
 | OPS-01 | 16.2 | Pending |
-| SIM-01 | 16.3 | Pending |
-| SIM-02 | 16.3 | Pending |
-| SIM-03 | 16.3 | Pending |
-| SIM-04 | 16.3 | Pending |
-| SIM-05 | 16.3 | Pending |
-| SIM-06 | 16.3 | Pending |
-| SIM-07 | 16.3 | Pending |
-| SIM-08 | 16.3 | Pending |
-| SIM-09 | 16.3 | Pending |
-| SIM-10 | 16.3 | Pending |
-| SIM-11 | 16.3 | Pending |
-| SIM-12 | 16.3 | Pending |
+| SIM-01 | 16.3 | Complete |
+| SIM-02 | 16.3 | Complete |
+| SIM-03 | 16.3 | Complete |
+| SIM-04 | 16.3 | Complete |
+| SIM-05 | 16.3 | Complete |
+| SIM-06 | 16.3 | Complete |
+| SIM-07 | 16.3 | Complete |
+| SIM-08 | 16.3 | Complete |
+| SIM-09 | 16.3 | Complete |
+| SIM-10 | 16.3 | Complete |
+| SIM-11 | 16.3 | Complete |
+| SIM-12 | 16.3 | Complete |
 | MTF-01 | 17 | Pending |
 | MTF-02 | 17 | Pending |
 | MTF-03 | 17 | Pending |
@@ -220,7 +220,7 @@
 | SAFE-05 | 15 | Complete |
 | SAFE-06 | 16.1 | Complete |
 | SAFE-07 | 16.1 | Complete |
-| SAFE-08 | 16.3 | Pending |
+| SAFE-08 | 16.3 | Complete |
 
 ---
 

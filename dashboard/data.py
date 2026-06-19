@@ -112,6 +112,46 @@ class DashboardDataClient:
         )
 
     @staticmethod
+    def from_simulation_payload(
+        payload: Mapping[str, object],
+        *,
+        cache_timestamp: datetime,
+    ) -> DashboardSnapshot:
+        if str(payload.get("product_mode") or "") != "simulation_only":
+            raise ValueError("simulation dashboard payload requires product_mode=simulation_only")
+        source_timestamp = _parse_utc_datetime(payload.get("source_timestamp")) or _ensure_utc(cache_timestamp)
+        metadata = DashboardSourceMetadata(
+            source="internal_simulation",
+            source_timestamp=source_timestamp,
+            cache_timestamp=_ensure_utc(cache_timestamp),
+            freshness_status=DashboardFreshnessStatus.FRESH,
+            authority=DashboardAuthority.AUTHORITATIVE,
+            fixture_label=str(payload.get("fixture_label") or "simulation-dashboard"),
+            reasons=("internal_simulation_mode",),
+        )
+        portfolio_payload = _mapping(payload.get("portfolio"))
+        portfolio = DashboardPortfolioSection(
+            status=DashboardSectionStatus.AVAILABLE,
+            cash=_optional_decimal(portfolio_payload.get("cash")),
+            equity=_optional_decimal(portfolio_payload.get("equity")),
+            currency=str(portfolio_payload.get("currency") or "USD").strip().upper(),
+            reasons=("internal_simulation_mode",),
+        )
+        return DashboardSnapshot(
+            source_metadata=metadata,
+            portfolio=portfolio,
+            positions=_available_collection(payload.get("open_trades"), "internal_simulation_open_trades"),
+            trades=_available_collection(payload.get("closed_trades"), "internal_simulation_closed_trades"),
+            signals=_available_collection(payload.get("candidates"), "internal_simulation_candidates"),
+            backtests=_collection(DashboardSectionStatus.NOT_AVAILABLE, "not_part_of_simulation_mvp"),
+            strategies=_available_collection(payload.get("strategy_performance"), "internal_simulation_strategy_performance"),
+            risk=_available_collection(payload.get("risk"), "internal_simulation_risk"),
+            notifications=_available_collection(payload.get("notifications"), "internal_simulation_notifications"),
+            activity=_available_collection(payload.get("activity"), "internal_simulation_activity"),
+            system=_available_collection(payload.get("system"), "internal_simulation_system"),
+        )
+
+    @staticmethod
     def not_configured(*, missing: tuple[str, ...]) -> DashboardSnapshot:
         reasons = tuple(missing) or ("missing_quantconnect_configuration",)
         metadata = DashboardSourceMetadata(
@@ -200,6 +240,14 @@ def _collection(status: DashboardSectionStatus, *reasons: str) -> DashboardColle
     return DashboardCollectionSection(status=status, reasons=tuple(reasons))
 
 
+def _available_collection(value: object, reason: str) -> DashboardCollectionSection:
+    return DashboardCollectionSection(
+        status=DashboardSectionStatus.AVAILABLE,
+        items=_list_of_mappings(value),
+        reasons=(reason,),
+    )
+
+
 def _load_local_json_snapshot(path_value: str | None, *, cache_timestamp: datetime) -> DashboardSnapshot:
     if not path_value:
         return DashboardDataClient.not_configured(missing=("dashboard_data_source",))
@@ -216,6 +264,8 @@ def _load_local_json_snapshot(path_value: str | None, *, cache_timestamp: dateti
             payload = json.load(handle)
         if not isinstance(payload, Mapping):
             raise ValueError("dashboard source root must be a mapping")
+        if str(payload.get("product_mode") or "") == "simulation_only":
+            return DashboardDataClient.from_simulation_payload(payload, cache_timestamp=cache_timestamp)
         return DashboardDataClient.from_quantconnect_portfolio_fixture(
             payload,
             cache_timestamp=cache_timestamp,

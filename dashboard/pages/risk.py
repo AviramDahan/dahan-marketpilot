@@ -14,8 +14,13 @@ class RiskView:
 
 
 def build_risk(snapshot: DashboardSnapshot) -> RiskView:
+    mode_line = (
+        "Simulation-only risk state."
+        if snapshot.source_metadata.source == "internal_simulation"
+        else "Status only."
+    )
     lines = [
-        "Status only.",
+        mode_line,
         f"Freshness: {snapshot.source_metadata.freshness_status.value}",
         f"Risk status: {snapshot.risk.status.value}",
     ]

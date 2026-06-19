@@ -497,3 +497,44 @@ python scripts\telegram_runtime_smoke.py
 Phase 16.1 is not complete until deployed Render web/worker evidence,
 password-protected dashboard access, shared production data, Telegram runtime
 delivery, and local-computer independence are externally verified and recorded.
+
+## Phase 16.3 Scanner Simulator MVP Tests
+
+Phase 16.3 tests are deterministic and offline. They verify the approved
+`simulation_only` product pivot without requiring QuantConnect, market hours,
+broker credentials, deployment ids, `/live/orders/read`, Telegram delivery, or
+real orders.
+
+Run:
+
+```powershell
+python -m pytest tests/test_product_modes.py tests/test_simulation_mode_safety.py tests/test_universe.py tests/test_universe_sources.py tests/test_scanner.py tests/test_internal_paper_simulator.py tests/test_simulation_storage.py tests/test_simulation_runner.py tests/test_dashboard_simulation_source.py tests/test_simulation_notifications.py tests/test_phase16_3_simulation_evidence_report.py tests/test_risk_contract.py tests/test_position_sizing.py tests/test_ranking.py -q
+```
+
+The suite covers:
+
+- Product mode contracts for `simulation_only`, parked `qc_paper_validation`,
+  and future-only `qc_native_algorithm`.
+- Deterministic stock universe loading, normalization, de-duplication, and
+  acceptance/rejection reasons.
+- Scanner evaluation over existing setup evaluators, scoring, ranking, and
+  correlation-id-preserving evidence.
+- Internal paper simulator open/mark/close accounting and JSONL persistence.
+- Scheduler-bound simulation runner using existing lock, ledger, job ordering,
+  heartbeat, dashboard sink, and notification sink boundaries.
+- Dashboard simulation payload parsing and read-only simulation labels.
+- Telegram-domain simulation alerts that are informational and
+  non-authoritative.
+- Phase 16.3 evidence gate proving no real orders, no live brokerage path, no
+  QuantConnect dependency, no dashboard mutation controls, no secret-like
+  fields, and no guaranteed-profit claims.
+
+Run the evidence gate with sanitized JSON:
+
+```powershell
+python scripts/phase16_3_simulation_evidence_report.py --evidence-json <path-to-simulation-evidence.json>
+```
+
+Phase 16.3 evidence does not complete Phase 16.2. QuantConnect Paper validation
+remains a parked optional track unless separately approved and externally
+verified.

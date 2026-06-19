@@ -14,8 +14,13 @@ class PositionsView:
 
 
 def build_positions(snapshot: DashboardSnapshot) -> PositionsView:
+    authority = (
+        "simulation_only"
+        if snapshot.source_metadata.source == "internal_simulation"
+        else snapshot.source_metadata.authority.value
+    )
     lines = [
-        f"Authority: {snapshot.source_metadata.authority.value}",
+        f"Authority: {authority}",
         f"Freshness: {snapshot.source_metadata.freshness_status.value}",
         f"Positions status: {snapshot.positions.status.value}",
         f"Portfolio status: {snapshot.portfolio.status.value}",
