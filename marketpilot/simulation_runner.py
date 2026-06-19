@@ -287,6 +287,11 @@ def load_simulation_scheduler_config_from_env(env: Mapping[str, str] | None = No
 
 def run_simulation_scheduler_forever(config: SchedulerConfig | None = None) -> None:
     resolved = config or load_simulation_scheduler_config_from_env()
+    run_simulation_cycle(
+        resolved,
+        dependencies=build_simulation_dependencies_from_env(),
+        owner=_default_owner(),
+    )
     try:
         from apscheduler.schedulers.blocking import BlockingScheduler
         from apscheduler.triggers.cron import CronTrigger

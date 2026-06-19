@@ -85,6 +85,10 @@ from an accepted risk decision, publishes a dashboard payload to shared state
 when `REDIS_URL` is configured, and emits simulation-labeled Telegram events
 when Telegram config is present.
 
+Worker startup runs one simulation cycle immediately, then continues on the
+configured scheduler cadence. This keeps the deployed dashboard populated after
+deploy even before the next scheduled market-window trigger.
+
 ## Local Verification
 
 Run the focused Phase 16.3 suite:
