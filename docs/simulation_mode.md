@@ -65,6 +65,26 @@ The payload may include scanner candidates, rejected candidates, internal
 portfolio state, simulated trade records, dashboard records, and
 simulation-labeled notification events.
 
+Render uses the simulation runner for the near-term MVP worker:
+
+```powershell
+python -m marketpilot.simulation_runner scheduler
+```
+
+Local one-shot verification:
+
+```powershell
+python -m marketpilot.simulation_runner --dry-run
+python -m marketpilot.simulation_runner once
+```
+
+The default simulation app builds one deterministic scan cycle from
+`config/simulation_universe.yaml`, evaluates the scanner through a
+simulation-only setup registry, opens at most one internal simulated position
+from an accepted risk decision, publishes a dashboard payload to shared state
+when `REDIS_URL` is configured, and emits simulation-labeled Telegram events
+when Telegram config is present.
+
 ## Local Verification
 
 Run the focused Phase 16.3 suite:

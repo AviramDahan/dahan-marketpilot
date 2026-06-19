@@ -57,10 +57,11 @@ def test_render_blueprint_defines_scheduler_background_worker():
     assert service["type"] == "worker"
     assert service["runtime"] == "python"
     assert service["buildCommand"] == "pip install -r requirements.txt && pip install -e ."
-    assert service["startCommand"] == "python -m marketpilot.production_runner scheduler"
+    assert service["startCommand"] == "python -m marketpilot.simulation_runner scheduler"
     assert env_vars["PYTHON_VERSION"]["value"].startswith("3.11.")
     assert env_vars["PYTHONPATH"]["value"] == "."
-    assert env_vars["MARKETPILOT_ENV"]["value"] == "paper"
+    assert env_vars["MARKETPILOT_ENV"]["value"] == "simulation"
+    assert env_vars["MARKETPILOT_PRODUCT_MODE"]["value"] == "simulation_only"
     for name in {
         "QUANTCONNECT_USER_ID",
         "QUANTCONNECT_API_TOKEN",

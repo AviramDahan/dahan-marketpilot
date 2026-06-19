@@ -2,6 +2,11 @@ from __future__ import annotations
 
 """Scheduler-bound runner for the simulation-only scanner MVP."""
 
+import argparse
+import json
+import os
+import socket
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -9,11 +14,14 @@ from typing import Callable, Mapping, Protocol
 
 from marketpilot.constants import PAPER_TRADING_ONLY
 from marketpilot.product_modes import assert_simulation_only_safety
-from marketpilot.scheduler_config import SchedulerConfig
+from marketpilot.scheduler_config import SchedulerConfig, build_apscheduler_cron_kwargs
 from marketpilot.scheduler_health import SchedulerHeartbeatRecord, append_scheduler_heartbeat
 from marketpilot.scheduler_jobs import SchedulerJobId, SchedulerJobResult, SchedulerJobStatus, run_dependency_aware_jobs
 from marketpilot.scheduler_lock import FileLockStore, SchedulerLockLease
 from marketpilot.scheduler_storage import JsonlSchedulerStorage, build_run_id
+from marketpilot.shared_state import RenderKeyValueStore
+from marketpilot.simulation_app import build_simulation_scan_payload
+from marketpilot.telegram import TelegramDeliveryService, load_telegram_config
 
 
 class SimulationDashboardSink(Protocol):
@@ -176,9 +184,7 @@ def _dashboard_job(
 ) -> SchedulerJobResult:
     payload = context.get("scan_payload")
     if dependencies.dashboard_sink is not None and isinstance(payload, Mapping):
-        import json
-
-        dependencies.dashboard_sink.publish(json.dumps(payload, default=str))
+        dependencies.dashboard_sink.publish(json.dumps(_dashboard_payload(payload), default=str))
     return SchedulerJobResult.success(
         SchedulerJobId.DASHBOARD_EXPORT,
         started_at=now,
@@ -232,14 +238,162 @@ def _count(value: object) -> int:
     return len(value) if isinstance(value, list) else 0
 
 
+def build_simulation_dependencies_from_env(
+    *,
+    env: Mapping[str, str] | None = None,
+) -> SimulationRunnerDependencies:
+    """Build simulation-only deployment integrations from environment."""
+
+    source = env if env is not None else os.environ
+    shared_store = None
+    if str(source.get("REDIS_URL") or "").strip():
+        shared_store = RenderKeyValueStore.from_env(env=source)
+
+    notification_sink = None
+    if _env_flag(source.get("MARKETPILOT_TELEGRAM_ENABLED")):
+        try:
+            telegram_config = load_telegram_config(env=source)
+        except (FileNotFoundError, ValueError):
+            telegram_config = None
+        if telegram_config is not None and telegram_config.can_deliver:
+            notification_sink = _TelegramSimulationSink(TelegramDeliveryService(telegram_config))
+
+    return SimulationRunnerDependencies(
+        scan_func=build_simulation_scan_payload,
+        dashboard_sink=shared_store,
+        notification_sink=notification_sink,
+        lock_store=shared_store,
+    )
+
+
+def load_simulation_scheduler_config_from_env(env: Mapping[str, str] | None = None) -> SchedulerConfig:
+    source = env if env is not None else os.environ
+    data_dir = Path(str(source.get("MARKETPILOT_DATA_DIR") or "data"))
+    return SchedulerConfig(
+        project_id=1,
+        deploy_id="simulation-only",
+        cadence_minutes=_optional_int(source.get("MARKETPILOT_SCHEDULER_CADENCE_MINUTES"), 5),
+        stale_after_seconds=_optional_int(source.get("MARKETPILOT_SCHEDULER_STALE_AFTER_SECONDS"), 600),
+        lock_ttl_seconds=_optional_int(source.get("MARKETPILOT_SCHEDULER_LOCK_TTL_SECONDS"), 900),
+        data_dir=data_dir,
+        sync_jsonl_path=data_dir / "portfolio_sync.jsonl",
+        signal_ledger_path=data_dir / "paper_signal_ledger.jsonl",
+        audit_journal_path=data_dir / "paper_order_audit.jsonl",
+        scheduler_ledger_path=data_dir / "scheduler_runs.jsonl",
+        heartbeat_path=data_dir / "scheduler_heartbeat.jsonl",
+        lock_path=data_dir / "scheduler.lock.json",
+    )
+
+
+def run_simulation_scheduler_forever(config: SchedulerConfig | None = None) -> None:
+    resolved = config or load_simulation_scheduler_config_from_env()
+    try:
+        from apscheduler.schedulers.blocking import BlockingScheduler
+        from apscheduler.triggers.cron import CronTrigger
+    except ImportError:
+        while True:
+            run_simulation_cycle(
+                resolved,
+                dependencies=build_simulation_dependencies_from_env(),
+                owner=_default_owner(),
+            )
+            time.sleep(resolved.cadence_minutes * 60)
+    scheduler = BlockingScheduler(timezone=resolved.timezone_name)
+    scheduler.add_job(
+        lambda: run_simulation_cycle(
+            resolved,
+            dependencies=build_simulation_dependencies_from_env(),
+            owner=_default_owner(),
+        ),
+        trigger=CronTrigger(**build_apscheduler_cron_kwargs(resolved)),
+        id="marketpilot-simulation-cycle",
+        max_instances=1,
+        coalesce=True,
+        replace_existing=True,
+    )
+    scheduler.start()
+
+
+@dataclass(frozen=True)
+class _TelegramSimulationSink:
+    service: TelegramDeliveryService
+
+    def emit(self, event: object) -> bool:
+        from marketpilot.notification_events import NotificationDomainEvent
+
+        if not isinstance(event, NotificationDomainEvent):
+            return False
+        return self.service.deliver(event).delivered
+
+
+def _dashboard_payload(payload: Mapping[str, object]) -> dict[str, object]:
+    sanitized = dict(payload)
+    sanitized.pop("notification_events", None)
+    return sanitized
+
+
+def _default_owner() -> str:
+    return f"{socket.gethostname()}:{os.getpid()}"
+
+
+def _env_flag(value: object) -> bool:
+    return str(value or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _optional_int(value: object, default: int) -> int:
+    text = str(value or "").strip()
+    if not text:
+        return default
+    parsed = int(text)
+    if parsed <= 0:
+        raise ValueError("simulation scheduler integer settings must be positive")
+    return parsed
+
+
 def _aware_utc(value: datetime, field_name: str) -> datetime:
     if value.tzinfo is None or value.utcoffset() is None:
         raise ValueError(f"{field_name} must be timezone-aware")
     return value.astimezone(timezone.utc)
 
 
+def _main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Run MarketPilot simulation-only scanner worker.")
+    parser.add_argument("command", nargs="?", choices=("once", "scheduler"), default="once")
+    parser.add_argument("--dry-run", action="store_true", help="Print simulation config and exit.")
+    args = parser.parse_args(argv)
+
+    config = load_simulation_scheduler_config_from_env()
+    if args.dry_run:
+        print(
+            json.dumps(
+                {
+                    "status": "dry_run",
+                    "product_mode": "simulation_only",
+                    "deploy_id": config.deploy_id,
+                    "cadence_minutes": config.cadence_minutes,
+                    "paper_trading_only": True,
+                },
+                sort_keys=True,
+            )
+        )
+        return 0
+    if args.command == "scheduler":
+        run_simulation_scheduler_forever(config)
+        return 0
+    result = run_simulation_cycle(config, dependencies=build_simulation_dependencies_from_env(), owner=_default_owner())
+    print(json.dumps(result.to_json_dict(), sort_keys=True))
+    return 0 if result.status != "failed" else 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(_main())
+
+
 __all__ = [
     "SimulationRunnerDependencies",
     "SimulationRuntimeResult",
+    "build_simulation_dependencies_from_env",
+    "load_simulation_scheduler_config_from_env",
     "run_simulation_cycle",
+    "run_simulation_scheduler_forever",
 ]

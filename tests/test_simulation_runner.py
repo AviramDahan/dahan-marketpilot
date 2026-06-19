@@ -5,7 +5,11 @@ from marketpilot.scheduler_config import SchedulerConfig
 from marketpilot.scheduler_health import read_latest_heartbeat
 from marketpilot.scheduler_jobs import SchedulerJobId, SchedulerJobStatus
 from marketpilot.simulation_notifications import simulation_candidate_event
-from marketpilot.simulation_runner import SimulationRunnerDependencies, run_simulation_cycle
+from marketpilot.simulation_runner import (
+    SimulationRunnerDependencies,
+    load_simulation_scheduler_config_from_env,
+    run_simulation_cycle,
+)
 
 
 class FakeDashboardSink:
@@ -73,6 +77,7 @@ def test_simulation_cycle_runs_on_scheduler_boundary_without_qc(tmp_path):
     assert jobs[SchedulerJobId.DASHBOARD_EXPORT].details["dashboard_published"] is True
     assert jobs[SchedulerJobId.NOTIFICATION_EMISSION].details["emitted"] == 1
     assert json.loads(dashboard.payloads[0])["real_orders"] is False
+    assert "notification_events" not in json.loads(dashboard.payloads[0])
     assert notifications.events[0].payload["simulation_only"] is True
     assert read_latest_heartbeat(tmp_path / "scheduler_heartbeat.jsonl")["dependency_health"]["product_mode"] == "simulation_only"
 
@@ -94,3 +99,17 @@ def test_simulation_cycle_prevents_overlap(tmp_path):
 
     assert result.status == "skipped_overlap"
     assert result.job_results[0].status is SchedulerJobStatus.SKIPPED
+
+
+def test_simulation_scheduler_config_does_not_require_qc_env(tmp_path):
+    config = load_simulation_scheduler_config_from_env(
+        {
+            "MARKETPILOT_DATA_DIR": str(tmp_path),
+            "MARKETPILOT_SCHEDULER_CADENCE_MINUTES": "7",
+        }
+    )
+
+    assert config.project_id == 1
+    assert config.deploy_id == "simulation-only"
+    assert config.cadence_minutes == 7
+    assert config.scheduler_ledger_path == tmp_path / "scheduler_runs.jsonl"

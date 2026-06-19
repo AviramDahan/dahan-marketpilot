@@ -211,6 +211,31 @@ def test_shared_state_source_loads_latest_dashboard_payload(monkeypatch):
     assert snapshot.portfolio.status is DashboardSectionStatus.AVAILABLE
 
 
+def test_shared_state_source_loads_simulation_dashboard_payload(monkeypatch):
+    class FakeSharedSnapshot:
+        def __init__(self, payload):
+            self.payload = payload
+
+    payload = {
+        "product_mode": "simulation_only",
+        "source_timestamp": "2026-06-15T10:40:00+00:00",
+        "fixture_label": "simulation-runner",
+        "portfolio": {"cash": "100000", "equity": "100000", "currency": "USD"},
+        "candidates": [{"symbol": "MSFT", "classification": "BUY_CANDIDATE"}],
+        "open_trades": [{"symbol": "MSFT", "state": "open", "quantity": 10}],
+        "system": [{"name": "simulation_runner", "state": "ok"}],
+    }
+
+    monkeypatch.setattr("marketpilot.shared_state.load_dashboard_payload_from_env", lambda: FakeSharedSnapshot(payload))
+    snapshot = load_dashboard_snapshot(DashboardConfig(data_source_kind="shared_state"), now=NOW)
+
+    assert snapshot.source_metadata.source == "internal_simulation"
+    assert snapshot.source_metadata.fixture_label == "simulation-runner"
+    assert snapshot.portfolio.status is DashboardSectionStatus.AVAILABLE
+    assert snapshot.signals.items[0]["symbol"] == "MSFT"
+    assert snapshot.positions.items[0]["state"] == "open"
+
+
 def test_shared_state_source_loads_scheduler_system_health(monkeypatch):
     class FakeSharedSnapshot:
         def __init__(self, payload):

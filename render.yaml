@@ -49,14 +49,16 @@ services:
     runtime: python
     plan: starter
     buildCommand: pip install -r requirements.txt && pip install -e .
-    startCommand: python -m marketpilot.production_runner scheduler
+    startCommand: python -m marketpilot.simulation_runner scheduler
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: PYTHONPATH
         value: .
       - key: MARKETPILOT_ENV
-        value: paper
+        value: simulation
+      - key: MARKETPILOT_PRODUCT_MODE
+        value: simulation_only
       - key: MARKETPILOT_DATA_DIR
         value: data
       - key: MARKETPILOT_SCHEDULER_CADENCE_MINUTES

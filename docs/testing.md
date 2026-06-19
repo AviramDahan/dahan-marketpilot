@@ -522,6 +522,8 @@ The suite covers:
 - Internal paper simulator open/mark/close accounting and JSONL persistence.
 - Scheduler-bound simulation runner using existing lock, ledger, job ordering,
   heartbeat, dashboard sink, and notification sink boundaries.
+- Render worker blueprint now starts `python -m marketpilot.simulation_runner scheduler`
+  for the near-term `simulation_only` MVP.
 - Dashboard simulation payload parsing and read-only simulation labels.
 - Telegram-domain simulation alerts that are informational and
   non-authoritative.
@@ -533,6 +535,13 @@ Run the evidence gate with sanitized JSON:
 
 ```powershell
 python scripts/phase16_3_simulation_evidence_report.py --evidence-json <path-to-simulation-evidence.json>
+```
+
+Local worker command checks:
+
+```powershell
+python -m marketpilot.simulation_runner --dry-run
+python -m marketpilot.simulation_runner once
 ```
 
 Phase 16.3 evidence does not complete Phase 16.2. QuantConnect Paper validation

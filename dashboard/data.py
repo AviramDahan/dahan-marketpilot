@@ -608,6 +608,10 @@ def _load_shared_state_snapshot(*, cache_timestamp: datetime) -> DashboardSnapsh
         )
     payload = dict(snapshot.payload)
     try:
+        if str(payload.get("product_mode") or "") == "simulation_only":
+            dashboard_snapshot = DashboardDataClient.from_simulation_payload(payload, cache_timestamp=cache_timestamp)
+            dashboard_snapshot = _with_shared_state_sections(dashboard_snapshot, payload)
+            return dashboard_snapshot
         dashboard_snapshot = DashboardDataClient.from_quantconnect_portfolio_fixture(
             {
                 "fixture_label": str(payload.get("fixture_label") or "shared-state-production"),
