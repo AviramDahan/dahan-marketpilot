@@ -44,6 +44,7 @@ def test_render_blueprint_uses_python_311_and_secret_references_only():
 
     assert env_vars["PYTHON_VERSION"]["value"].startswith("3.11.")
     assert env_vars["PYTHONPATH"]["value"] == "."
+    assert env_vars["MARKETPILOT_TELEGRAM_ENABLED"]["value"] == "0"
     for name in SECRET_ENV_NAMES:
         assert name in env_vars
         assert env_vars[name]["sync"] is False
@@ -62,6 +63,7 @@ def test_render_blueprint_defines_scheduler_background_worker():
     assert env_vars["PYTHONPATH"]["value"] == "."
     assert env_vars["MARKETPILOT_ENV"]["value"] == "simulation"
     assert env_vars["MARKETPILOT_PRODUCT_MODE"]["value"] == "simulation_only"
+    assert env_vars["MARKETPILOT_TELEGRAM_ENABLED"]["value"] == "0"
     for name in {
         "QUANTCONNECT_USER_ID",
         "QUANTCONNECT_API_TOKEN",

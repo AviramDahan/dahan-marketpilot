@@ -22,7 +22,7 @@ services:
       - key: MARKETPILOT_CONFIG_DIR
         value: config
       - key: MARKETPILOT_TELEGRAM_ENABLED
-        value: "1"
+        value: "0"
       - key: DASHBOARD_AUTH_ENABLED
         value: "false"
       - key: REDIS_URL
@@ -68,7 +68,7 @@ services:
       - key: MARKETPILOT_SCHEDULER_LOCK_TTL_SECONDS
         value: "900"
       - key: MARKETPILOT_TELEGRAM_ENABLED
-        value: "1"
+        value: "0"
       - key: MARKETPILOT_RUNTIME_INPUT_KIND
         value: "none"
       - key: MARKETPILOT_OPERATOR_PAPER_PROBE_ENABLED
