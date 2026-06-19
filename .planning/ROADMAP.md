@@ -3,7 +3,7 @@
 ## Milestones
 
 - âœ… **v1.0 Paper Trading Research Platform** â€” Phases 1-10.1 (shipped 2026-06-15)
-- ðŸ”„ **v1.1 QuantConnect Live Paper Trading** â€” Phases 13-17, including 16.1 and 16.2 production readiness gates (active)
+- ðŸ”„ **v1.1 Scanner Simulator MVP** â€” Phases 13-17, with QuantConnect Paper validation preserved as optional infrastructure and Phase 16.3 now defining the near-term simulation-only product MVP (active)
 
 ## Phases
 
@@ -27,14 +27,15 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
 </details>
 
-### v1.1 QuantConnect Live Paper Trading
+### v1.1 Scanner Simulator MVP
 
 - [x] **Phase 13: QC API Client & Safety Foundation** â€” Authenticated API client with defense-in-depth paper-only safety (completed 2026-06-15)
 - [x] **Phase 14: Data Sync & Dashboard Integration** â€” Reliable portfolio sync from QC with freshness-aware dashboard display (completed 2026-06-16)
 - [x] **Phase 15: Paper Trading & Order Flow** â€” Signal delivery to live algorithm with full fill tracking and audit trail (completed 2026-06-17)
 - [x] **Phase 16: Production Scheduler** â€” Autonomous market-hours pipeline execution with fault tolerance (local implementation complete 2026-06-17; deployed product gates remain Phase 16.1/16.2)
 - [x] **Phase 16.1: Production Integration & Dashboard Go-Live** â€” Render dashboard, scheduler worker, shared state, password auth, fresh dashboard data, and Telegram runtime delivery verified 2026-06-17
-- [ ] **Phase 16.2: End-to-End UAT & Operational Burn-in** â€” Multi-session deployed-system proof under real QuantConnect Paper Trading conditions
+- [ ] **Phase 16.2: End-to-End UAT & Operational Burn-in** â€” Parked optional validation track for real QuantConnect Paper Trading authority and multi-session burn-in
+- [ ] **Phase 16.3: Product Pivot - Scanner Simulator MVP** â€” Autonomous stock scanner with internal paper simulator, dashboard, Telegram, and audit trail in `simulation_only` mode
 - [ ] **Phase 17: MTF Backtest Validation** â€” Automated comparative backtesting with regression detection
 
 ## Overview
@@ -46,7 +47,8 @@ Full details archived: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 | 15 | Paper Trading & Order Flow | Deliver signals to running algorithm; track fills with audit traceability | PTD-01..05, FT-01..04, SAFE-05 | 12/12 complete; external order authority passed |
 | 16 | Production Scheduler | Run pipeline autonomously on NYSE schedule with fault tolerance | SCHED-01..06, SAFE-03 | 5/5 complete |
 | 16.1 | Production Integration & Dashboard Go-Live | Deploy a working personal autonomous Paper Trading product on Render with real dashboard data and Telegram delivery | PROD-01..10, SAFE-06..07 | 6/6 complete; deployed go-live verified |
-| 16.2 | End-to-End UAT & Operational Burn-in | Prove the deployed product operates continuously across real market sessions | UAT-01..09, OPS-01 | 3/5 plans complete; 6/10 UAT rows passed; UAT-01 has partial real Paper fill authority evidence; UAT-08 has session 1 candidate |
+| 16.2 | End-to-End UAT & Operational Burn-in | Optional QC Paper validation track parked until the simulator MVP needs external execution proof | UAT-01..09, OPS-01 | 3/5 plans complete; 6/10 UAT rows passed; parked open, not a simulator MVP blocker |
+| 16.3 | Product Pivot - Scanner Simulator MVP | Deliver the near-term `simulation_only` product using scanner, internal paper simulator, dashboard, Telegram, and audit trail | MODE-01..03, SIM-01..12, SAFE-01..03, SAFE-08 | 7 plans |
 | 17 | MTF Backtest Validation | Validate strategy modes through automated comparative backtests | MTF-01..05 | 3 |
 
 ## Phase Details
@@ -260,6 +262,50 @@ burn-in, restart recovery, missed-run monitoring, and complete signal -> order
 
 ---
 
+### Phase 16.3: Product Pivot - Scanner Simulator MVP (INSERTED)
+
+**Goal:** Re-scope the near-term product to an autonomous stock scanner and internal paper simulator that works without QuantConnect dependency in `simulation_only` mode.
+
+**Depends on:** Phase 16 scheduler, Phase 10.1 runtime orchestration contracts, existing setup/scoring/ranking/risk/dashboard/Telegram/audit modules. Phase 16.2 remains open but parked as optional QC validation and is not a dependency for the simulator MVP.
+
+**Requirements:** MODE-01, MODE-02, MODE-03, SIM-01, SIM-02, SIM-03, SIM-04, SIM-05, SIM-06, SIM-07, SIM-08, SIM-09, SIM-10, SIM-11, SIM-12, SAFE-01, SAFE-02, SAFE-03, SAFE-08
+
+**Success Criteria** (what must be TRUE):
+
+1. System runs in `simulation_only` mode without QuantConnect credentials, deployment id, `/live/orders/read`, or any broker dependency.
+2. A deterministic universe is built or loaded, normalized, filtered, and explained with accepted and rejected symbols.
+3. Scanner evaluates Trend Pullback, Volume Breakout, and Relative Strength Leader for every eligible symbol and records setup evidence, scores, ranks, and rejection reasons.
+4. Internal paper simulator opens, updates, and closes simulated positions using explicit entry, stop, target, quantity, and risk data.
+5. Simulated portfolio cash/equity, realized/unrealized P&L, win rate, average gain/loss, and strategy breakdown are calculated from internal simulation records only.
+6. Dashboard clearly labels internal simulation mode and displays candidates, rejections, open simulated trades, closed simulated trades, performance, activity, system health, and decision audit trail.
+7. Telegram sends simulation-labeled alerts for candidates, simulated entries, exits, stop hits, target hits, daily summaries, and system issues; delivery remains non-authoritative.
+8. Evidence report proves no real orders, no live brokerage path, no QC dependency in simulation mode, no dashboard mutation controls, and no profitability guarantees.
+
+**Plans**:
+
+- Wave 1:
+  - [ ] 16.3-01-PLAN.md - Product mode contracts, safety fences, and requirements pivot
+  - [ ] 16.3-02-PLAN.md - Universe builder and deterministic scanner inputs
+- Wave 2 *(blocked on Wave 1 completion)*:
+  - [ ] 16.3-03-PLAN.md - Scanner engine over existing setup evaluators
+  - [ ] 16.3-04-PLAN.md - Internal paper simulator portfolio and trade lifecycle
+- Wave 3 *(blocked on Waves 1 and 2 completion)*:
+  - [ ] 16.3-05-PLAN.md - Dashboard simulation MVP export and views
+  - [ ] 16.3-06-PLAN.md - Telegram simulation alerts and daily summary
+- Wave 4 *(blocked on Waves 1 through 3 completion)*:
+  - [ ] 16.3-07-PLAN.md - Evidence report, documentation, and MVP acceptance gate
+
+**Cross-cutting constraints:**
+
+- `simulation_only` is the core MVP mode and must not require QuantConnect, broker credentials, live deployment ids, or market-hours order authority.
+- QuantConnect modules are preserved for optional `qc_paper_validation` and future `qc_native_algorithm` modes but are not simulator MVP blockers.
+- The dashboard remains read-only and must not expose order submission, recovery, scheduler execution, broker mutation, or Telegram-send controls.
+- Telegram delivery never controls scanner, simulator, risk, position, or safety decisions.
+- All simulated trades must be labeled as internal simulation, evidence-based, paper-only, and not financial advice.
+- No real-money trading, live brokerage integration, margin, leverage, short selling, options, crypto, Forex, HFT, scalping, or guaranteed-profit language is allowed.
+
+---
+
 ### Phase 17: MTF Backtest Validation
 
 **Goal:** Strategy modes are continuously validated through automated comparative backtesting with human-gated activation decisions
@@ -283,6 +329,9 @@ burn-in, restart recovery, missed-run monitoring, and complete signal -> order
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
+| MODE-01 | 16.3 | Pending |
+| MODE-02 | 16.3 | Pending |
+| MODE-03 | 16.3 | Pending |
 | API-01 | 13 | Pending |
 | API-02 | 13 | Pending |
 | API-03 | 13 | Pending |
@@ -341,27 +390,40 @@ burn-in, restart recovery, missed-run monitoring, and complete signal -> order
 | UAT-08 | 16.2 | In progress - session 1 candidate recorded; needs next consecutive valid US market session |
 | UAT-09 | 16.2 | Pending |
 | OPS-01 | 16.2 | Pending |
+| SIM-01 | 16.3 | Pending |
+| SIM-02 | 16.3 | Pending |
+| SIM-03 | 16.3 | Pending |
+| SIM-04 | 16.3 | Pending |
+| SIM-05 | 16.3 | Pending |
+| SIM-06 | 16.3 | Pending |
+| SIM-07 | 16.3 | Pending |
+| SIM-08 | 16.3 | Pending |
+| SIM-09 | 16.3 | Pending |
+| SIM-10 | 16.3 | Pending |
+| SIM-11 | 16.3 | Pending |
+| SIM-12 | 16.3 | Pending |
+| SAFE-08 | 16.3 | Pending |
 | MTF-01 | 17 | Pending |
 | MTF-02 | 17 | Pending |
 | MTF-03 | 17 | Pending |
 | MTF-04 | 17 | Pending |
 | MTF-05 | 17 | Pending |
 
-**Coverage:** 63/63 requirements mapped âœ“ (11 categories, 0 orphans)
+**Coverage:** 79/79 requirements mapped âœ“ (13 categories, 0 orphans)
 
 ## Progress
 
 | Milestone | Phases | Plans | Status | Shipped |
 |-----------|--------|-------|--------|---------|
 | v1.0 | 12 | 53 | Complete | 2026-06-15 |
-| v1.1 | 7 | TBD | Active; not complete until deployed product and burn-in are externally verified | â€” |
+| v1.1 | 8 | TBD | Active; product MVP pivot approved; Phase 16.3 simulation-only product is now the near-term completion path while Phase 16.2 QC validation remains parked open | â€” |
 
 ## v1.1 Completion Gate
 
 v1.1 must not be marked complete until all of the following are true:
 
-1. Phase 15's `/live/orders/read` order/fill gate is externally verified for simulated Paper Trading, but v1.1 still requires deployed end-to-end verification.
-2. Phase 16 scheduler exists but does not by itself satisfy production readiness.
-3. Phase 16.1 deploys the dashboard and autonomous worker as a working Render-hosted personal product with durable data transport, real dashboard data, real Telegram delivery, secure secrets, and operation while the local computer is off.
-4. Phase 16.2 proves multiple consecutive real market sessions and produces a final operational-readiness report.
+1. Phase 16.3 delivers the approved near-term `simulation_only` MVP: autonomous stock scanner, internal paper simulator, dashboard, Telegram, reports, and audit trail without QuantConnect dependency.
+2. The simulator MVP evidence report proves no real orders, no live brokerage path, no QC dependency in simulation mode, no dashboard mutation controls, and no fabricated performance.
+3. Phase 16 scheduler and Phase 16.1 Render deployment remain reusable infrastructure, but QuantConnect Paper authority is parked as optional `qc_paper_validation` and is not a blocker for the simulator MVP.
+4. Phase 16.2 remains open and visible as a parked optional QC validation track; it must not be marked complete or deleted without real QC evidence or explicit future operator approval.
 5. Any future milestone after v1.1 requires explicit user approval.

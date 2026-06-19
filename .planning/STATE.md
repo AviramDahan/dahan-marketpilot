@@ -1,15 +1,15 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.1
-milestone_name: QuantConnect Live Paper Trading
-status: Phase 16.2 execution in progress; Plans 01, 02, and 04 complete; UAT-02, UAT-03, UAT-04, UAT-05, UAT-06, and UAT-07 passed
-stopped_at: Phase 16.2 heartbeat/missed-run monitor, redeploy recovery, duplicate-lock prevention, stale shared-state health behavior, fake QuantConnect fail-closed behavior, and Telegram failure isolation are verified; UAT-01 has partial real QuantConnect Paper fill authority evidence but still needs a complete same-correlation seven-segment trace; UAT-08 has session 1 candidate and still needs the next consecutive market session
+milestone_name: Scanner Simulator MVP
+status: Phase 16.3 planned; product pivot approved; Phase 16.2 remains open and parked as optional QuantConnect Paper validation
+stopped_at: Phase 16.3 is planned with 7 execution plans across 4 waves for `simulation_only`: product modes, universe builder, scanner engine, internal paper simulator, dashboard, Telegram alerts, and evidence/reporting. Phase 16.2 is not complete and remains parked for optional QC validation.
 last_updated: "2026-06-19T00:00:00.000+03:00"
-last_activity: 2026-06-19 -- Phase 16.2 off-hours diagnostics hardened `/live/orders/read` parsing, pagination, sanitized deploy identity diagnostics, and bounded read-only order polling. Deployed Render worker preflight on commit `1e85138` stayed read-only and returned `blocked_external_not_verified` while the market was closed; the current deploy id preview/hash differs from the prior live-log fill deploy, so the next market run must treat deploy rotation/stale deploy identity as a primary diagnostic. No Paper order was submitted and the operator probe remained disabled; UAT-01 remains blocked until a market-session `/live/orders/read` row returns the required order id, tag/correlation/idempotency, fill status, quantity, symbol, and timestamp.
+last_activity: 2026-06-19 -- Operator approved product pivot from QuantConnect Paper authority as the main blocker to Autonomous Stock Scanner + Internal Paper Simulator MVP. Inserted and planned Phase 16.3. No code implementation, no Paper order, no operator probe, no real-money path, and no QC deletion occurred.
 progress:
-  total_phases: 7
+  total_phases: 8
   completed_phases: 5
-  total_plans: 35
+  total_plans: 42
   completed_plans: 32
   percent: 70
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-15)
 
 **Core value:** The system must provide an auditable paper-only swing-trading workflow where every signal, backtest, paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
-**Current focus:** v1.1 QuantConnect Live Paper Trading. Phase 15 order/fill authority is externally verified through `/live/orders/read` for simulated Paper Trading. Phase 16.1 deployed go-live is verified on Render with password-authenticated dashboard data and Telegram runtime delivery. Phase 16.2 execution has passed heartbeat/missed-run monitoring, redeploy recovery, duplicate-lock prevention, stale shared-state health behavior, fake QuantConnect fail-closed behavior, and Telegram failure isolation, while end-to-end Paper flow, burn-in, and final readiness remain open.
+**Current focus:** v1.1 Scanner Simulator MVP. Phase 16.3 is the approved near-term product path: autonomous stock scanner, internal paper simulator, dashboard, Telegram alerts, reports, and audit trail in `simulation_only` mode. Existing QuantConnect work is preserved; Phase 16.2 remains open and parked as optional `qc_paper_validation`.
 
 ## Current Position
 
-Phase: 16.2 execution in progress
-Plan: 16.2-01, 16.2-02, and 16.2-04 complete; 16.2-03 has partial real Paper fill authority evidence but remains open; 16.2-05 has session 1 burn-in candidate but remains open until the next consecutive valid US market session
-Status: UAT-02, UAT-03, UAT-04, UAT-05, UAT-06, and UAT-07 passed; UAT-01 remains blocked_external_not_verified; UAT-08 remains blocked_external_not_verified with one session candidate; UAT-09 and OPS-01 remain open; v1.1 remains active until UAT-01 through UAT-09 and OPS-01 pass
-Last activity: 2026-06-19 -- Phase 16.2 off-hours work added sanitized QuantConnect project/deploy identity diagnostics, paginated `/live/orders/read` parsing, bounded read-only order-authority retry metadata, and trace-gate tests proving live-log fills plus empty `/live/orders/read` remain partial evidence only. Render preflight verified the deployed worker is on commit `1e85138`, QuantConnect deployment reads are running, open-order readiness is clean, environment aliases are present, operator probe is disabled, and reconciliation is clean but stale/off-hours. No Paper order was submitted and UAT-01/UAT-08 remain open.
+Phase: 16.3 planned
+Plan: 16.3-01 through 16.3-07 planned across 4 waves; next recommended run is `/gsd-execute-phase 16.3`
+Status: Phase 16.3 is ready to execute as planning-only product pivot work. Phase 16.2 remains open, parked, and not complete; UAT-01/UAT-08/UAT-09/OPS-01 remain unresolved for optional QC validation.
+Last activity: 2026-06-19 -- Inserted Phase 16.3 Product Pivot - Scanner Simulator MVP and created GSD context, research, and seven plan files. Updated ROADMAP and REQUIREMENTS to make `simulation_only` the near-term MVP while preserving QC work as optional validation.
 
 Progress: [█████████░] 85%
 
@@ -61,9 +61,9 @@ Progress: [█████████░] 85%
 
 **Recent Trend:**
 
-- Last 5 planned plans: 16.2-01, 16.2-02, 16.2-03, 16.2-04, 16.2-05
-- Trend: Phase 15 external order authority passed; Phase 16.1 deployed go-live verified; Phase 16.2 UAT-02 heartbeat/missed-run monitoring, UAT-03 redeploy recovery, UAT-04 duplicate-lock prevention, UAT-05 stale shared-state health behavior, UAT-06 fake QuantConnect fail-closed behavior, and UAT-07 Telegram failure isolation passed; UAT-01 E2E Paper flow remains the main market-hours gate
-- Off-hours Phase 16.2 prep: UAT-01 acceptance now requires all seven segments to carry the same non-empty correlation ID and requires an authoritative QuantConnect Paper fill with `/live/orders/read` metadata, matching correlation/tag/idempotency context, order id, symbol, positive fill quantity, timezone-aware fill/order timestamp, and Paper-only confirmation; rejected/submitted/cancelled evidence is partial only. Preflight/evidence-collector tooling is prepared without closing UAT-01, UAT-08, UAT-09, OPS-01, Phase 16.2, or v1.1.
+- Last 5 planned plans: 16.3-03, 16.3-04, 16.3-05, 16.3-06, 16.3-07
+- Trend: Product pivot approved. The near-term product is now `simulation_only`, not QuantConnect Paper authority. Phase 16.2 QC validation remains open but parked.
+- Phase 16.3 plan: Wave 1 product modes and universe builder; Wave 2 scanner and internal paper simulator; Wave 3 dashboard and Telegram; Wave 4 evidence/reporting and MVP acceptance.
 
 *Updated after each plan completion*
 | Phase 04 P01 | 6 min | 2 tasks | 4 files |
@@ -225,6 +225,7 @@ Recent decisions affecting current work:
 ### Roadmap Evolution
 
 - Phase 10.1 inserted after Phase 10 (URGENT): Close gap: runtime orchestrator for strategy-to-paper E2E flow.
+- Phase 16.3 inserted after Phase 16.2 (URGENT): Product Pivot - Scanner Simulator MVP. Phase 16.2 remains parked as optional QuantConnect Paper validation.
 
 ### Blockers/Concerns
 

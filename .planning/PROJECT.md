@@ -2,13 +2,13 @@
 
 ## What This Is
 
-Dahan MarketPilot is a cloud-hosted US-equities swing-trading research, backtesting, and simulated Paper Trading product. It scans a dynamic universe of liquid US common equities, identifies predefined explainable swing setups, ranks candidates with transparent numeric evidence, validates rules through QuantConnect Cloud Backtests, and runs only approved simulated Paper Trading strategies in QuantConnect Cloud.
+Dahan MarketPilot is a cloud-hosted US-equities swing-trading research, scanning, and simulated Paper Trading product. Its near-term v1.1 MVP is an autonomous stock scanner with an internal paper simulator: it scans a defined universe of liquid US common equities, identifies predefined explainable swing setups, ranks candidates with transparent numeric evidence, simulates entries/exits internally, and displays candidates, open simulated trades, closed simulated trades, and performance in a read-only dashboard.
 
 The product is for research, validation, audit, and read-only monitoring. It must never execute real-money trades, never expose credentials, never fabricate performance, and never imply guaranteed profitability.
 
 ## Core Value
 
-The system must provide an auditable paper-only swing-trading workflow where every signal, backtest, paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
+The system must provide an auditable paper-only swing-trading workflow where every scan, signal, simulated paper action, portfolio display, alert, and report is traceable to verified rules and numeric evidence.
 
 ## Requirements
 
@@ -50,8 +50,8 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 - The project starts from an empty repository named `dahan-marketpilot`.
 - The master specification is stored at `docs/Dahan-MarketPilot-Master-Spec.md`.
 - The requested v1 architecture uses QuantConnect LEAN, QuantConnect Cloud Backtesting and Paper Trading, GitHub, GitHub Actions, Render, Streamlit, and Telegram.
-- QuantConnect must remain the source of truth for simulated cash, holdings, orders, fills, paper performance, algorithm status, and QuantConnect Backtest results.
-- Render is a read-only dashboard and must not maintain an independent simulated portfolio.
+- Phase 16.3 pivots the near-term product to `simulation_only`, where the internal simulator is authoritative for simulated positions and P&L. QuantConnect remains preserved for optional `qc_paper_validation` and future `qc_native_algorithm` modes.
+- Render is a read-only dashboard and must not expose order controls or mutation actions.
 - Telegram is a notification channel and must not be required for trading-safety logic to continue.
 - The starting simulated budget is 100,000 NIS, converted to USD at a configurable launch FX rate. Later FX changes may affect NIS display but must not rewrite historical USD accounting.
 - Expected holding period is approximately 3-30 trading days. `daily_only` preserves completed daily-bar signals, while MTF modes may use completed 4H primary setup bars with optional completed 1H confirmation.
@@ -65,7 +65,7 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 - **Trading scope**: v1 is US-listed common equities, long-only, swing-trading only, simulated Paper Trading only. No day trading, scalping, 5m/15m/HFT behavior, or mandatory same-day exits are allowed.
 - **Strategy modes**: `daily_only` is the default, compatibility mode, and benchmark. `daily_filter_4h_setup` uses Daily as a mandatory filter and completed 4H bars as primary setup signals. `daily_filter_4h_setup_1h_optional` adds optional 1H confirmation only.
 - **Execution timing**: Signals from completed bars must execute only at a later valid tradable price unless a phase proves a different execution assumption is technically valid. Future bars, incomplete bars, future context, and unrealistic same-bar assumptions are prohibited.
-- **Data authority**: QuantConnect is authoritative for paper portfolio state and backtest results.
+- **Data authority**: In `simulation_only`, the internal paper simulator is authoritative for simulated positions and P&L. In `qc_paper_validation`, QuantConnect is authoritative for external Paper portfolio state and order/fill validation.
 - **Dashboard**: Render Streamlit dashboard is read-only and password-protected.
 - **Credentials**: No credentials or secrets may be written to repository files or chat.
 - **Testing**: Core unit tests must use deterministic offline fixtures where practical and must not require QuantConnect, Telegram, Render, broker credentials, internet, or real market access.
@@ -126,15 +126,17 @@ The system must provide an auditable paper-only swing-trading workflow where eve
 **Stack:** Python 3.12, QuantConnect LEAN, Streamlit, Telegram, GitHub Actions
 **Milestone:** v1.0 complete and archived. See `.planning/MILESTONES.md`.
 
-## Current Milestone: v1.1 QuantConnect Live Paper Trading
+## Current Milestone: v1.1 Scanner Simulator MVP
 
-**Goal:** Connect the research platform to QuantConnect for autonomous paper trade execution with data integrity and scheduling.
+**Goal:** Deliver an autonomous stock scanner and internal paper simulator that works without QuantConnect dependency, while preserving existing QuantConnect work for optional validation.
 
 **Target features:**
-- QC Live API Connector (submit orders, manage algorithm, receive fills)
-- Data Sync & Reconciliation (portfolio sync, discrepancy detection)
-- MTF Backtest Validation (comparative multi-timeframe backtests)
-- Production Scheduler (cron-based pipeline execution on market hours)
+- Deterministic stock universe and scanner
+- Existing Trend Pullback, Volume Breakout, and Relative Strength Leader evaluation
+- Scoring, ranking, risk, and internal simulated entries/exits
+- Simulated portfolio, open trades, closed trades, P&L, and performance reports
+- Read-only dashboard and Telegram alerts clearly labeled as internal simulation
+- Optional parked QuantConnect Paper validation path
 
 ## Deferred Future Setup Ideas
 
@@ -151,4 +153,4 @@ After each phase:
 4. Refresh Context and Constraints if implementation reality changes.
 
 ---
-*Last updated: 2026-06-14 after Phase 6 execution and verification.*
+*Last updated: 2026-06-19 after Phase 16.3 product pivot planning.*
