@@ -48,7 +48,7 @@ def build_overview(snapshot: DashboardSnapshot) -> OverviewView:
     lines = (
         *_sync_portfolio_lines(sync_portfolio),
         DISCLAIMER,
-        f"QuantConnect source: {metadata.source}",
+        f"Data source: {metadata.source}",
         "Paper mode: paper-only",
         f"Portfolio status: {snapshot.portfolio.status.value}",
         f"Freshness: {metadata.freshness_status.value}",
@@ -76,7 +76,7 @@ def build_sync_portfolio_view(snapshot: DashboardSnapshot) -> SyncPortfolioView:
             unrealized_pnl=None,
             holdings=None,
             sync_status_label=_sync_status_label(snapshot),
-            authority_label=_authority_label(),
+            authority_label=_authority_label(snapshot),
         )
 
     source_time = _format_et_time(metadata.source_timestamp)
@@ -92,7 +92,7 @@ def build_sync_portfolio_view(snapshot: DashboardSnapshot) -> SyncPortfolioView:
         unrealized_pnl=_format_currency(_unrealized_pnl_from_holdings(snapshot)),
         holdings=holdings,
         sync_status_label=_sync_status_label(snapshot),
-        authority_label=_authority_label(),
+        authority_label=_authority_label(snapshot),
     )
 
 
@@ -138,7 +138,11 @@ def _sync_portfolio_lines(view: SyncPortfolioView | None) -> tuple[str, ...]:
     if view.holdings is None:
         holdings_line = "Holdings: not available"
     elif not view.holdings:
-        holdings_line = "Holdings: none reported by QuantConnect"
+        holdings_line = (
+            "Holdings: none reported by internal simulation"
+            if "internal simulation" in view.authority_label.lower()
+            else "Holdings: none reported by QuantConnect"
+        )
     else:
         symbols = ", ".join(row.symbol for row in view.holdings[:5])
         suffix = "" if len(view.holdings) <= 5 else f" +{len(view.holdings) - 5} more"
@@ -228,7 +232,9 @@ def _snapshot_error_count(snapshot: DashboardSnapshot) -> int:
     return sum(len(section.errors) for section in snapshot.sections())
 
 
-def _authority_label() -> str:
+def _authority_label(snapshot: DashboardSnapshot) -> str:
+    if snapshot.source_metadata.source == "internal_simulation":
+        return "Source: internal simulation (simulation-only)"
     return "Source: QuantConnect (authoritative)"
 
 

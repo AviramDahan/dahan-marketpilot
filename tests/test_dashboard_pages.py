@@ -120,7 +120,7 @@ def test_overview_renders_operational_state_from_typed_snapshot():
     assert "Last sync: 14:00:00 ET | Last poll: 14:01:00 ET | Errors: 0" in text
     assert "Source: QuantConnect (authoritative)" in text
     assert "SIMULATED PAPER TRADING ONLY - NOT FINANCIAL ADVICE" in text
-    assert "QuantConnect source: quantconnect" in text
+    assert "Data source: quantconnect" in text
     assert "Paper mode: paper-only" in text
     assert "Portfolio status: available" in text
     assert "Freshness: fresh" in text

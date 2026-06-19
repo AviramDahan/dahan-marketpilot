@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from dashboard.data import DashboardDataClient
 from dashboard.models import DashboardSectionStatus
+from dashboard.pages.overview import build_overview
 from dashboard.pages.positions import build_positions
 from dashboard.pages.signals import build_signals
 from dashboard.pages.trades import build_trades
@@ -43,3 +44,7 @@ def test_simulation_dashboard_views_label_internal_simulation():
     assert build_signals(snapshot).lines[0] == "Product mode: simulation_only."
     assert "Internal simulation records only" in build_trades(snapshot).lines[0]
     assert build_positions(snapshot).lines[0] == "Authority: simulation_only"
+    overview_text = "\n".join(build_overview(snapshot).lines)
+    assert "Source: internal simulation (simulation-only)" in overview_text
+    assert "Data source: internal_simulation" in overview_text
+    assert "Source: QuantConnect (authoritative)" not in overview_text
